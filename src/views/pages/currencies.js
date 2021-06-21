@@ -83,7 +83,7 @@ export const currencies = {
   AZN: {
     symbol: 'man.',
     name: 'Azerbaijani Manat',
-    symbol_native: 'ман.',
+    symbol_native: '₼',
     decimal_digits: 2,
     rounding: 0,
     code: 'AZN',
@@ -839,7 +839,7 @@ export const currencies = {
   RWF: {
     symbol: 'RWF',
     name: 'Rwandan Franc',
-    symbol_native: 'FR',
+    symbol_native: 'FRw',
     decimal_digits: 0,
     rounding: 0,
     code: 'RWF',
@@ -857,7 +857,7 @@ export const currencies = {
   SDG: {
     symbol: 'SDG',
     name: 'Sudanese Pound',
-    symbol_native: 'SDG',
+    symbol_native: 'ج.س',
     decimal_digits: 2,
     rounding: 0,
     code: 'SDG',
@@ -875,7 +875,7 @@ export const currencies = {
   SGD: {
     symbol: 'S$',
     name: 'Singapore Dollar',
-    symbol_native: '$',
+    symbol_native: 'S$',
     decimal_digits: 2,
     rounding: 0,
     code: 'SGD',
@@ -929,7 +929,7 @@ export const currencies = {
   TRY: {
     symbol: 'TL',
     name: 'Turkish Lira',
-    symbol_native: 'TL',
+    symbol_native: '₺',
     decimal_digits: 2,
     rounding: 0,
     code: 'TRY',

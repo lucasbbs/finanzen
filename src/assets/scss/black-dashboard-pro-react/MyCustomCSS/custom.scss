@@ -175,14 +175,24 @@ input[type='range']::-ms-fill-upper {
 input[type='range']:focus::-ms-fill-upper {
   background: #367ebd;
 }
-.modal-content {
-  background: linear-gradient(180deg, #222a42 0, #1d253b);
-  color: hsla(0, 0%, 100%, 0.8);
-}
+// .modal-content {
+//   background: linear-gradient(180deg, #222a42 0, #1d253b);
+//   color: hsla(0, 0%, 100%, 0.8);
+// }
 
 .borderColor {
   &:focus {
     border: 1px solid #e14eca !important;
     outline: none;
   }
+}
+.form-control[disabled],
+.form-control[readonly],
+fieldset[disabled] .form-control {
+  color: rgba(255, 255, 255, 0.8) !important;
+}
+
+.modal-search .modal-dialog .form-control {
+  border: none;
+  color: rgba(255, 255, 255, 0.8) !important;
 }

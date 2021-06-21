@@ -56,9 +56,9 @@ import {
   chartExample4,
   chartDefault,
 } from 'variables/charts.js';
-
+import { currencyFormat } from '../helpers/functions';
 import TableTopInvestments from '../components/TableTopInvestments/TableTopInvestments';
-import { fetchInvestments } from '../services/Investments';
+import { fetchInvestments, fetchAllInvestments } from '../services/Investments';
 import {
   getDataForTheFirstChart,
   getDataForTheInflationChart,
@@ -113,7 +113,8 @@ const Dashboard = () => {
 
   useEffect(() => {
     const getInvestmentDetails = async () => {
-      const investment = await fetchInvestments('', login);
+      const investment = await fetchAllInvestments('', login);
+      const currentInvestments = await fetchInvestments('', login);
       const inflation = await fetchInflation();
       setInvestments(investment);
       inflation.forEach((inf) => {
@@ -128,13 +129,17 @@ const Dashboard = () => {
 
       setInflationsToBeDisplayed(getDataForTheInflationChart(inflation));
 
-      const brokers = [...new Set(investment.map((inv) => inv.broker))];
+      const brokers = [
+        ...new Set(currentInvestments.map((inv) => inv.broker.name)),
+      ];
       const somas = [];
       for (let i = 0; i < brokers.length; i++) {
         let soma = 0;
-        for (let j = 0; j < investment.length; j++) {
-          if (investment[j].broker === brokers[i]) {
-            soma += investment[j].initial_amount + investment[j].accrued_income;
+        for (let j = 0; j < currentInvestments.length; j++) {
+          if (currentInvestments[j].broker.name === brokers[i]) {
+            soma +=
+              currentInvestments[j].initial_amount +
+              currentInvestments[j].accrued_income;
           }
         }
         somas.push(soma);
@@ -320,15 +325,6 @@ const Dashboard = () => {
   // // // used inside src/views/Dashboard.js
   // #########################################
 
-  function currencyFormat(label) {
-    let formatCurrency = new Intl.NumberFormat('pt-BR', {
-      style: 'currency',
-      currency: 'BRL',
-      minimumFractionDigits: 2,
-    });
-    return formatCurrency.format(Number(label));
-  }
-
   function handleFilter() {
     const initialDate = document.querySelector('#InitialDate').value;
     const finalDate = document.querySelector('#FinalDate').value;
@@ -355,6 +351,9 @@ const Dashboard = () => {
           <>
             <Row>
               <Col xs='12'>
+                <h1>
+                  <i className='tim-icons icon-chart-pie-36'></i> Dashboard
+                </h1>
                 <Card className='card-chart'>
                   <CardHeader>
                     <Row>
@@ -369,6 +368,7 @@ const Dashboard = () => {
                                   Informe uma data inicial
                                 </Label>
                                 <Input
+                                  className='borderColor'
                                   id='InitialDate'
                                   type='month'
                                   min={format(
@@ -392,6 +392,7 @@ const Dashboard = () => {
                                   Informe uma data final
                                 </Label>
                                 <Input
+                                  className='borderColor'
                                   id='FinalDate'
                                   type='month'
                                   min={format(
@@ -661,7 +662,6 @@ const Dashboard = () => {
                     <h6 className='title d-inline'>
                       Investimentos por Corretoras
                     </h6>
-                    {/* <p className='card-category d-inline'>today</p> */}
                     <UncontrolledDropdown>
                       <DropdownToggle
                         caret

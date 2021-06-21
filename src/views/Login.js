@@ -1,9 +1,11 @@
 import axios from 'axios';
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import { Button, Form, Input, Row } from 'reactstrap';
+import { Button, Form, FormGroup, Input, Label, Row } from 'reactstrap';
 import styles from '../assets/scss/black-dashboard-pro-react/MyCustomCSS/login.module.scss';
 import Config from '../config.json';
+import NotificationAlert from 'react-notification-alert';
+
 /*eslint-disable*/
 const Login = ({ location }) => {
   let history = useHistory();
@@ -46,16 +48,18 @@ const Login = ({ location }) => {
         if (res.data.isValidated) {
           localStorage.setItem('userInfo', JSON.stringify(res.data));
           setLogin(JSON.stringify(res.data));
-          console.log(res.data);
         }
       })
-      .catch((err) => console.log(err.response.data));
+      .catch((err) => notify(err.response.data, 'danger'));
   };
 
   const doRegister = async (e, name, email, password, confirmPassword) => {
     e.preventDefault();
     if (password !== confirmPassword) {
-      console.log('You must be sure that your password is correctly typed');
+      notify(
+        'You must be sure that your password is correctly typed',
+        'danger'
+      );
     } else {
       console.log('teste');
       await axios
@@ -69,15 +73,36 @@ const Login = ({ location }) => {
           config
         )
         .then((res) => {
-          // localStorage.setItem('userInfo', JSON.stringify(res.data));
           setLogin(JSON.stringify(res.data));
-          console.log(res.data);
+          notify(
+            'Você cadastrou com sucesso o seu usuário, para continuar, verifique o link que encaminhamos para você através do e-mail informado'
+          );
         })
-        .catch((err) => console.log(err.response.data));
+        .catch((err) => notify(err.response.data, 'danger'));
     }
+  };
+
+  const notificationAlertRef = useRef(null);
+  const notify = (message, type = 'success', place = 'tc') => {
+    var options = {};
+    options = {
+      place: place,
+      message: (
+        <div>
+          <div>{message}</div>
+        </div>
+      ),
+      type: type,
+      icon: 'tim-icons icon-bell-55',
+      autoDismiss: 7,
+    };
+    notificationAlertRef.current.notificationAlert(options);
   };
   return (
     <>
+      <div className='react-notification-alert-container'>
+        <NotificationAlert ref={notificationAlertRef} />
+      </div>
       <div className='content' style={{ padding: '100px' }}>
         <Row style={{ alignItems: 'center', justifyContent: 'center' }}>
           <div className={styles.container} id='container'>
@@ -251,6 +276,14 @@ const Login = ({ location }) => {
                     placeholder='Confirm Password'
                   />
                 </div>
+                <FormGroup check>
+                  <Label check>
+                    <Input name='optionCheckboxes' type='checkbox' />
+                    <span className='form-check-sign' />
+                    Accept the terms and conditions
+                  </Label>
+                </FormGroup>
+
                 <Button
                   color='primary'
                   className={styles.buttonStyle}

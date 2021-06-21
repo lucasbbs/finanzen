@@ -17,6 +17,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { currencies } from './currencies';
+import { countries } from './countries';
 // reactstrap components
 import {
   Button,
@@ -29,277 +30,95 @@ import {
   Input,
   Row,
   Col,
+  Label,
+  CardText,
 } from 'reactstrap';
 import Config from '../../config.json';
+import ReactBSAlert from 'react-bootstrap-sweetalert';
+import { useHistory } from 'react-router-dom';
 
 const User = () => {
+  let history = useHistory();
   const userInfo = JSON.parse(localStorage.getItem('userInfo'));
-  const countryListPortuguese = {
-    AF: 'Afeganistão',
-    AL: 'Albânia',
-    DZ: 'Argélia',
-    AS: 'Samoa Americana',
-    AD: 'Andorra',
-    AO: 'Angola',
-    AI: 'Anguila',
-    AQ: 'Antártica',
-    AG: 'Antigua e Barbuda',
-    AR: 'Argentina',
-    AM: 'Armênia',
-    AW: 'Aruba',
-    AU: 'Austrália',
-    AT: 'Áustria',
-    AZ: 'Azerbaijão',
-    BS: 'Bahamas',
-    BH: 'Bahrain',
-    BD: 'Bangladesh',
-    BB: 'Barbados',
-    BY: 'Belarus',
-    BE: 'Bélgica',
-    BZ: 'Belize',
-    BJ: 'Benin',
-    BM: 'Bermudas',
-    BT: 'Butão',
-    BO: 'Bolívia',
-    BA: 'Bósnia e Herzegovina',
-    BW: 'Botswana',
-    BV: 'Ilha Bouvet',
-    BR: 'Brasil',
-    IO: 'Território Britânico do Oceano Índico',
-    BN: 'Brunei Darussalam',
-    BG: 'Bulgária',
-    BF: 'Burkina Faso',
-    BI: 'Burundi',
-    CV: 'Cabo Verde',
-    KH: 'Camboja',
-    CM: 'Camarões',
-    CA: 'Canadá',
-    KY: 'Ilhas Cayman',
-    CF: 'República Centro-Africana',
-    TD: 'Chade',
-    CL: 'Chile',
-    CN: 'China',
-    CX: 'Ilha do Natal',
-    CC: 'Ilhas Cocos',
-    CO: 'Colômbia',
-    KM: 'Comores',
-    CD: 'República Democrática do Congo',
-    CG: 'República do Congo',
-    CK: 'Ilhas Cook',
-    CR: 'Costa Rica',
-    HR: 'Croácia',
-    CU: 'Cuba',
-    CW: 'Curaçao',
-    CY: 'Chipre',
-    CZ: 'Czechia',
-    CI: 'Costa do Marfim',
-    DK: 'Dinamarca',
-    DJ: 'Djibouti',
-    DM: 'Dominica',
-    DO: 'República Dominicana',
-    EC: 'Equador',
-    EG: 'Egito',
-    SV: 'El Salvador',
-    GQ: 'Guiné Equatorial',
-    ER: 'Eritreia',
-    EE: 'Estônia',
-    SZ: 'Eswatini',
-    ET: 'Etiópia',
-    FK: 'Ilhas Falkland',
-    FO: 'Ilhas Faroé',
-    FJ: 'Fiji',
-    FI: 'Finlândia',
-    FR: 'França',
-    GF: 'Guiana Francesa',
-    PF: 'Polinésia Francesa',
-    TF: 'Territórios Franceses do Sul',
-    GA: 'Gabão',
-    GM: 'Gâmbia',
-    GE: 'Georgia',
-    DE: 'Alemanha',
-    GH: 'Gana',
-    GI: 'Gibraltar',
-    GR: 'Grécia',
-    GL: 'Groenlândia',
-    GD: 'Granada',
-    GP: 'Guadalupe',
-    GU: 'Guam',
-    GT: 'Guatemala',
-    GG: 'Guernsey',
-    GN: 'Guiné',
-    GW: 'Guiné-Bissau',
-    GY: 'Guiana',
-    HT: 'Haiti',
-    HM: 'Ilha Heard e Ilhas McDonald',
-    VA: 'Santa Sé',
-    HN: 'Honduras',
-    HK: 'Hong Kong',
-    HU: 'Hungria',
-    IS: 'Islândia',
-    IN: 'Índia',
-    ID: 'Indonésia',
-    IR: 'Irã',
-    IQ: 'Iraque',
-    IE: 'Irlanda',
-    IM: 'Ilha de Man',
-    IL: 'Israel',
-    IT: 'Itália',
-    JM: 'Jamaica',
-    JP: 'Japão',
-    JE: 'Jersey',
-    JO: 'Jordânia',
-    KZ: 'Cazaquistão',
-    KE: 'Quênia',
-    KI: 'Kiribati',
-    KP: 'Coreia do Norte',
-    KR: 'Coreia do Sul',
-    KW: 'Kuwait',
-    KG: 'Quirguistão',
-    LA: 'República Democrática Popular do Laos',
-    LV: 'Letônia',
-    LB: 'Líbano',
-    LS: 'Lesoto',
-    LR: 'Libéria',
-    LY: 'Líbia',
-    LI: 'Liechtenstein',
-    LT: 'Lituânia',
-    LU: 'Luxemburgo',
-    MO: 'Macau',
-    MG: 'Madagáscar',
-    MW: 'Malawi',
-    MY: 'Malásia',
-    MV: 'Maldivas',
-    ML: 'Mali',
-    MT: 'Malta',
-    MH: 'Ilhas Marshall',
-    MQ: 'Martinica',
-    MR: 'Mauritânia',
-    MU: 'Maurício',
-    YT: 'Mayotte',
-    MX: 'México',
-    FM: 'Micronésia',
-    MD: 'Moldávia',
-    MC: 'Monaco',
-    MN: 'Mongólia',
-    ME: 'Montenegro',
-    MS: 'Montserrat',
-    MA: 'Marrocos',
-    MZ: 'Moçambique',
-    MM: 'Mianmar',
-    NA: 'Namíbia',
-    NR: 'Nauru',
-    NP: 'Nepal',
-    NL: 'Holanda',
-    NC: 'Nova Caledônia',
-    NZ: 'Nova Zelândia',
-    NI: 'Nicarágua',
-    NE: 'Níger',
-    NG: 'Nigéria',
-    NU: 'Niue',
-    NF: 'Ilha Norfolk',
-    MP: 'Ilhas Marianas do Norte',
-    NO: 'Noruega',
-    OM: 'Omã',
-    PK: 'Paquistão',
-    PW: 'Palau',
-    PS: 'Palestina',
-    PA: 'Panamá',
-    PG: 'Papua Nova Guiné',
-    PY: 'Paraguai',
-    PE: 'Peru',
-    PH: 'Filipinas',
-    PN: 'Pitcairn',
-    PL: 'Polônia',
-    PT: 'Portugal',
-    PR: 'Porto Rico',
-    QA: 'Catar',
-    MK: 'República da Macedônia do Norte',
-    RO: 'Romênia',
-    RU: 'Rússia',
-    RW: 'Ruanda',
-    RE: 'Reunião',
-    BL: 'São Bartolomeu',
-    SH: 'Santa Helena, Ascensão e Tristão da Cunha',
-    KN: 'São Cristóvão e Neves',
-    LC: 'Santa Lúcia',
-    MF: 'Saint Martin',
-    PM: 'São Pedro e Miquelon',
-    VC: 'São Vicente e Granadinas',
-    WS: 'Samoa',
-    SM: 'San Marino',
-    ST: 'São Tomé e Príncipe',
-    SA: 'Arábia Saudita',
-    SN: 'Senegal',
-    RS: 'Sérvia',
-    SC: 'Seychelles',
-    SL: 'Serra Leoa',
-    SG: 'Cingapura',
-    SX: 'Sint Maarten',
-    SK: 'Eslováquia',
-    SI: 'Eslovênia',
-    SB: 'Ilhas Salomão',
-    SO: 'Somália',
-    // XS: 'Somalilândia',
-    ZA: 'África do Sul',
-    GS: 'Ilhas Geórgia do Sul e Sandwich do Sul',
-    SS: 'Sudão do Sul',
-    ES: 'Espanha',
-    LK: 'Sri Lanka',
-    SD: 'Sudão',
-    SR: 'Suriname',
-    SJ: 'Svalbard e Jan Mayen',
-    SE: 'Suécia',
-    CH: 'Suíça',
-    SY: 'República Árabe da Síria',
-    TW: 'Taiwan',
-    TJ: 'Tajiquistão',
-    TZ: 'Tanzânia',
-    TH: 'Tailândia',
-    TL: 'Timor-Leste',
-    TG: 'Togo',
-    TK: 'Tokelau',
-    TO: 'Tonga',
-    TT: 'Trinidad e Tobago',
-    TN: 'Tunísia',
-    TR: 'Turquia',
-    TM: 'Turcomenistão',
-    TC: 'Ilhas Turks e Caicos',
-    TV: 'Tuvalu',
-    UG: 'Uganda',
-    UA: 'Ucrânia',
-    AE: 'Emirados Árabes Unidos',
-    GB: 'Grã-Bretanha',
-    UM: 'Ilhas Menores Distantes dos Estados Unidos',
-    US: 'Estados Unidos da América',
-    UY: 'Uruguai',
-    UZ: 'Uzbequistão',
-    VU: 'Vanuatu',
-    VE: 'Venezuela',
-    VN: 'Viet Nam',
-    VG: 'Ilhas Virgens (britânicas)',
-    VI: 'Ilhas Virgens (EUA)',
-    WF: 'Wallis e Futuna',
-    EH: 'Saara Ocidental',
-    YE: 'Iémen',
-    ZM: 'Zâmbia',
-    ZW: 'Zimbábue',
-    AX: 'Ilhas Åland',
-  };
+
+  const [match, setMatch] = useState(true);
+  const [password, setPassword] = useState(null);
+  const [email] = React.useState(
+    localStorage.getItem('userInfo')
+      ? JSON.parse(localStorage.getItem('userInfo')).email
+      : null
+  );
+  const [alert, setAlert] = useState(null);
+  const [source, setsource] = React.useState('');
+  const [destination, setdestination] = React.useState('');
+  const [sourceState, setsourceState] = React.useState('');
+  const [destinationState, setdestinationState] = React.useState('');
+
   const [isHidden, setIsHidden] = useState(false);
   const [name, setName] = useState(
-    JSON.parse(localStorage.getItem('userInfo')).name
+    localStorage.getItem('userInfo')
+      ? JSON.parse(localStorage.getItem('userInfo')).name
+      : null
   );
-  const [userId] = useState(JSON.parse(localStorage.getItem('userInfo'))._id);
-  const [email] = useState(JSON.parse(localStorage.getItem('userInfo')).email);
-  const [token] = useState(JSON.parse(localStorage.getItem('userInfo')).token);
+  const [userId] = useState(
+    localStorage.getItem('userInfo')
+      ? JSON.parse(localStorage.getItem('userInfo'))._id
+      : null
+  );
+  // const [email] = useState(JSON.parse(localStorage.getItem('userInfo')).email);
+  const [token] = useState(
+    localStorage.getItem('userInfo')
+      ? JSON.parse(localStorage.getItem('userInfo')).token
+      : null
+  );
   const [country, setCountry] = useState(
-    JSON.parse(localStorage.getItem('userInfo')).country
+    localStorage.getItem('userInfo')
+      ? JSON.parse(localStorage.getItem('userInfo')).country
+      : null
   );
   const [currency, setCurrency] = useState(
-    JSON.parse(localStorage.getItem('userInfo')).currency
+    localStorage.getItem('userInfo')
+      ? JSON.parse(localStorage.getItem('userInfo')).currency
+      : null
   );
-  // JSON.parse(localStorage.getItem('userInfo').currency)
+  // function that verifies if two strings are equal
+  const compare = (string1, string2) => {
+    if (string1 === string2) {
+      return true;
+    }
+    return false;
+  };
 
+  const stateFunctions = {
+    setsource: (value) => setsource(value),
+    setdestination: (value) => setdestination(value),
+    setsourceState: (value) => setsourceState(value),
+    setdestinationState: (value) => setdestinationState(value),
+  };
+  const change = (event, stateName, type, stateNameEqualTo, maxValue) => {
+    switch (type) {
+      case 'equalTo':
+        if (compare(event.target.value, stateNameEqualTo.value)) {
+          stateFunctions['set' + stateName + 'State']('has-success');
+          stateFunctions['set' + stateNameEqualTo.stateName + 'State'](
+            'has-success'
+          );
+          setMatch(true);
+          setPassword(event.target.value);
+        } else {
+          stateFunctions['set' + stateName + 'State']('has-danger');
+          stateFunctions['set' + stateNameEqualTo.stateName + 'State'](
+            'has-danger'
+          );
+          setMatch(false);
+        }
+        break;
+
+      default:
+        break;
+    }
+    stateFunctions['set' + stateName](event.target.value);
+  };
   const fetchCurrency = async (code) => {
     const response = await fetch(
       `https://restcountries.eu/rest/v2/alpha/${code}`
@@ -309,6 +128,28 @@ const User = () => {
     // return await response.json();
   };
   const handleSave = async (userObj) => {
+    if (!match) {
+    } else {
+      const config = {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      };
+      await axios
+        .put(`${Config.SERVER_ADDRESS}/api/users/${userId}`, userObj, config)
+        .then((res) => {
+          userInfo['country'] = country;
+          userInfo['currency'] = currency;
+          userInfo['name'] = name;
+          localStorage.setItem('userInfo', JSON.stringify(userInfo));
+          console.log('alterado com sucesso');
+        })
+        .catch((error) => console.log(error));
+    }
+  };
+
+  const handleDelete = async () => {
     const config = {
       headers: {
         'Content-Type': 'application/json',
@@ -316,19 +157,77 @@ const User = () => {
       },
     };
     await axios
-      .put(`${Config.SERVER_ADDRESS}/api/users/${userId}`, userObj, config)
+      .delete(`${Config.SERVER_ADDRESS}/api/users/${userId}`, config)
       .then((res) => {
-        userInfo['country'] = country;
-        userInfo['currency'] = currency;
-        userInfo['name'] = name;
-        localStorage.setItem('userInfo', JSON.stringify(userInfo));
+        successDelete();
         console.log(res);
+        localStorage.removeItem('userInfo');
       })
-      .catch((error) => console.log(error));
+      .catch((err) => console.log(err));
+  };
+
+  const successDelete = () => {
+    setAlert(
+      <ReactBSAlert
+        success
+        style={{ display: 'block', marginTop: '-100px' }}
+        title='Deletado!'
+        onConfirm={() => {
+          hideAlert();
+          history.push('/auth/login');
+        }}
+        onCancel={() => hideAlert()}
+        confirmBtnBsStyle='success'
+        btnSize=''
+      >
+        Seu investimento foi deletado...
+      </ReactBSAlert>
+    );
+  };
+  const cancelDelete = () => {
+    setAlert(
+      <ReactBSAlert
+        danger
+        style={{ display: 'block', marginTop: '-100px' }}
+        title='Cancelado'
+        onConfirm={() => hideAlert()}
+        onCancel={() => hideAlert()}
+        confirmBtnText='Ok'
+        confirmBtnBsStyle='success'
+        btnSize=''
+      ></ReactBSAlert>
+    );
+  };
+  const warningWithConfirmAndCancelMessage = () => {
+    setAlert(
+      <ReactBSAlert
+        warning
+        style={{ display: 'block', marginTop: '-100px' }}
+        title='Você tem certeza disso?'
+        onConfirm={() => {
+          try {
+            handleDelete();
+          } catch (error) {}
+        }}
+        onCancel={() => cancelDelete()}
+        confirmBtnBsStyle='success'
+        cancelBtnBsStyle='danger'
+        confirmBtnText='Sim, deletar!'
+        cancelBtnText='Cancelar'
+        showCancel
+        btnSize=''
+      >
+        Você não poderá recuperar os dados do seu investimentos
+      </ReactBSAlert>
+    );
+  };
+  const hideAlert = () => {
+    setAlert(null);
   };
   return (
     <>
       <div className='content'>
+        {alert}
         <Row>
           <Col md='12'>
             <Card>
@@ -349,21 +248,26 @@ const User = () => {
                         />
                       </FormGroup>
                     </Col> */}
-                    <Col className='pr-md-1' md='5'>
+                    <Col md='3' style={{ paddingRight: '0' }}>
                       <FormGroup>
                         <label>Nome</label>
                         <Input
                           value={name}
+                          style={{ backgroundColor: '#2b3553' }}
                           onChange={(e) => setName(e.target.value)}
                           className='borderColor'
                           type='text'
                         />
                       </FormGroup>
                     </Col>
-                    <Col className='pl-md-1' md='4'>
+                    <Col md='3' style={{ paddingRight: '0' }}>
                       <FormGroup>
                         <label>Endereço de Email</label>
                         <Input
+                          style={{
+                            backgroundColor: '#2b3553',
+                            color: 'rgba(255, 255, 255, 0.8)',
+                          }}
                           disabled
                           placeholder='email@email.com'
                           value={email}
@@ -440,7 +344,7 @@ const User = () => {
                       </FormGroup>
                     </Col>*/}
                     <Col md='3' style={{ paddingRight: '0' }}>
-                      <label>País</label>
+                      <Label>País</Label>
                       <Input
                         required
                         style={{ backgroundColor: '#2b3553' }}
@@ -455,17 +359,15 @@ const User = () => {
                         <option value='' disabled={true}>
                           Selecione uma opção
                         </option>
-                        {Object.entries(countryListPortuguese).map(
-                          (country) => (
-                            <option
-                              key={country[0]}
-                              id={country[0]}
-                              value={country[0]}
-                            >
-                              {country[1]}
-                            </option>
-                          )
-                        )}
+                        {Object.entries(countries).map((country) => (
+                          <option
+                            key={country[0]}
+                            id={country[0]}
+                            value={country[0]}
+                          >
+                            {country[1]}
+                          </option>
+                        ))}
                       </Input>
                     </Col>
                     <Col md='3' hidden={isHidden} style={{ paddingRight: '0' }}>
@@ -505,6 +407,51 @@ const User = () => {
                       </FormGroup>
                     </Col>
                   </Row> */}
+                  <Row>
+                    <Label sm='2'>Password</Label>
+                    <Col sm='2' style={{ paddingRight: '0' }}>
+                      <FormGroup className={sourceState}>
+                        <Input
+                          id='idSource'
+                          style={{ backgroundColor: '#2b3553' }}
+                          className='borderColor'
+                          placeholder='password'
+                          type='password'
+                          onChange={(e) =>
+                            change(e, 'source', 'equalTo', {
+                              value: destination,
+                              stateName: 'destination',
+                            })
+                          }
+                        />
+                      </FormGroup>
+                    </Col>
+                    <Col sm='2' style={{ paddingRight: '0' }}>
+                      <FormGroup className={destinationState}>
+                        <Input
+                          id='idDestination'
+                          style={{ backgroundColor: '#2b3553' }}
+                          className='borderColor'
+                          placeholder='confirm password'
+                          type='password'
+                          onChange={(e) =>
+                            change(e, 'destination', 'equalTo', {
+                              value: source,
+                              stateName: 'source',
+                            })
+                          }
+                        />
+                        {destinationState === 'has-danger' ? (
+                          <label className='error'>
+                            Please enter the same value.
+                          </label>
+                        ) : null}
+                      </FormGroup>
+                    </Col>
+                    {/* <Col className='label-on-right' tag='label' sm='4'>
+                      <code>equalTo="#idSource"</code>
+                    </Col> */}
+                  </Row>
                 </Form>
               </CardBody>
               <CardFooter>
@@ -513,16 +460,23 @@ const User = () => {
                   color='primary'
                   type='submit'
                   onClick={() => {
-                    console.log({ name, country, currency });
-                    handleSave({ name, country, currency });
+                    handleSave({ name, country, currency, password });
                   }}
                 >
                   Salvar
                 </Button>
+                <Button
+                  className='btn-fill'
+                  color='danger'
+                  type='submit'
+                  onClick={() => warningWithConfirmAndCancelMessage()}
+                >
+                  Excluir perfil
+                </Button>
               </CardFooter>
             </Card>
           </Col>
-          {/* <Col md='4'>
+          <Col md='4'>
             <Card className='card-user'>
               <CardBody>
                 <CardText />
@@ -561,7 +515,7 @@ const User = () => {
                 </div>
               </CardFooter>
             </Card>
-          </Col> */}
+          </Col>
         </Row>
       </div>
     </>

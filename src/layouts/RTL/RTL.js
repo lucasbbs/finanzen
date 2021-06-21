@@ -14,27 +14,27 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import React from "react";
-import { Route, Switch, Redirect, useLocation } from "react-router-dom";
+import React from 'react';
+import { Route, Switch, Redirect, useLocation } from 'react-router-dom';
 // javascript plugin used to create scrollbars on windows
-import PerfectScrollbar from "perfect-scrollbar";
+import PerfectScrollbar from 'perfect-scrollbar';
 // react plugin for creating notifications over the dashboard
-import NotificationAlert from "react-notification-alert";
+import NotificationAlert from 'react-notification-alert';
 
 // core components
-import RTLNavbar from "components/Navbars/RTLNavbar.js";
-import Footer from "components/Footer/Footer.js";
-import Sidebar from "components/Sidebar/Sidebar.js";
-import FixedPlugin from "components/FixedPlugin/FixedPlugin.js";
+import RTLNavbar from 'components/Navbars/RTLNavbar.js';
+import Footer from 'components/Footer/Footer.js';
+import Sidebar from 'components/Sidebar/Sidebar.js';
+// import FixedPlugin from "components/FixedPlugin/FixedPlugin.js";
 
-import routes from "routes.js";
+import routes from 'routes.js';
 
-import logo from "assets/img/react-logo.png";
+import logo from 'assets/img/react-logo.png';
 
 var ps;
 
 const RTL = (props) => {
-  const [activeColor, setActiveColor] = React.useState("blue");
+  const [activeColor, setActiveColor] = React.useState('blue');
   const [sidebarMini, setSidebarMini] = React.useState(true);
   const [opacity, setOpacity] = React.useState(0);
   const [sidebarOpened, setSidebarOpened] = React.useState(false);
@@ -50,38 +50,38 @@ const RTL = (props) => {
   }, [location]);
   React.useEffect(() => {
     let innerMainPanelRef = mainPanelRef;
-    if (navigator.platform.indexOf("Win") > -1) {
-      document.documentElement.classList.add("perfect-scrollbar-on");
-      document.documentElement.classList.remove("perfect-scrollbar-off");
+    if (navigator.platform.indexOf('Win') > -1) {
+      document.documentElement.classList.add('perfect-scrollbar-on');
+      document.documentElement.classList.remove('perfect-scrollbar-off');
       ps = new PerfectScrollbar(mainPanelRef.current);
       mainPanelRef.current &&
-        mainPanelRef.current.addEventListener("ps-scroll-y", showNavbarButton);
-      let tables = document.querySelectorAll(".table-responsive");
+        mainPanelRef.current.addEventListener('ps-scroll-y', showNavbarButton);
+      let tables = document.querySelectorAll('.table-responsive');
       for (let i = 0; i < tables.length; i++) {
         ps = new PerfectScrollbar(tables[i]);
       }
     }
-    window.addEventListener("scroll", showNavbarButton);
+    window.addEventListener('scroll', showNavbarButton);
     // on this page, we need on the body tag the classes .rtl and .menu-on-right
     // an on the html tag the classe .rtl-active
-    document.body.classList.add("rtl", "menu-on-right");
-    document.documentElement.classList.add("rtl-active");
+    document.body.classList.add('rtl', 'menu-on-right');
+    document.documentElement.classList.add('rtl-active');
     return function cleanup() {
-      if (navigator.platform.indexOf("Win") > -1) {
+      if (navigator.platform.indexOf('Win') > -1) {
         ps.destroy();
-        document.documentElement.classList.add("perfect-scrollbar-off");
-        document.documentElement.classList.remove("perfect-scrollbar-on");
+        document.documentElement.classList.add('perfect-scrollbar-off');
+        document.documentElement.classList.remove('perfect-scrollbar-on');
         innerMainPanelRef.current &&
           innerMainPanelRef.current.removeEventListener(
-            "ps-scroll-y",
+            'ps-scroll-y',
             showNavbarButton
           );
       }
-      window.removeEventListener("scroll", showNavbarButton);
+      window.removeEventListener('scroll', showNavbarButton);
       // when we exit this page, we need to delete the classes .rtl and .menu-on-right
       // from the body tag and the class rtl-active from the html tag
-      document.body.classList.remove("rtl", "menu-on-right");
-      document.documentElement.classList.remove("rtl-active");
+      document.body.classList.remove('rtl', 'menu-on-right');
+      document.documentElement.classList.remove('rtl-active');
     };
   });
   const showNavbarButton = () => {
@@ -104,7 +104,7 @@ const RTL = (props) => {
       if (prop.collapse) {
         return getRoutes(prop.views);
       }
-      if (prop.layout === "/rtl") {
+      if (prop.layout === '/rtl') {
         return (
           <Route
             path={prop.layout + prop.path}
@@ -118,7 +118,7 @@ const RTL = (props) => {
     });
   };
   const getActiveRoute = (routes) => {
-    let activeRoute = "Default Brand Text";
+    let activeRoute = 'Default Brand Text';
     for (let i = 0; i < routes.length; i++) {
       if (routes[i].collapse) {
         let collapseActiveRoute = getActiveRoute(routes[i].views);
@@ -141,45 +141,45 @@ const RTL = (props) => {
     setActiveColor(color);
   };
   const handleMiniClick = () => {
-    let notifyMessage = "Sidebar mini ";
-    if (document.body.classList.contains("sidebar-mini")) {
+    let notifyMessage = 'Sidebar mini ';
+    if (document.body.classList.contains('sidebar-mini')) {
       setSidebarMini(false);
-      notifyMessage += "deactivated...";
+      notifyMessage += 'deactivated...';
     } else {
       setSidebarMini(true);
-      notifyMessage += "activated...";
+      notifyMessage += 'activated...';
     }
     let options = {};
     options = {
-      place: "tc",
+      place: 'tc',
       message: notifyMessage,
-      type: "primary",
-      icon: "tim-icons icon-bell-55",
+      type: 'primary',
+      icon: 'tim-icons icon-bell-55',
       autoDismiss: 7,
     };
     notificationAlertRef.current.notificationAlert(options);
-    document.body.classList.toggle("sidebar-mini");
+    document.body.classList.toggle('sidebar-mini');
   };
   const toggleSidebar = () => {
     setSidebarOpened(!sidebarOpened);
-    document.documentElement.classList.toggle("nav-open");
+    document.documentElement.classList.toggle('nav-open');
   };
   const closeSidebar = () => {
     setSidebarOpened(false);
-    document.documentElement.classList.remove("nav-open");
+    document.documentElement.classList.remove('nav-open');
   };
   return (
-    <div className="wrapper">
-      <div className="rna-container">
+    <div className='wrapper'>
+      <div className='rna-container'>
         <NotificationAlert ref={notificationAlertRef} />
       </div>
-      <div className="navbar-minimize-fixed" style={{ opacity: opacity }}>
+      <div className='navbar-minimize-fixed' style={{ opacity: opacity }}>
         <button
-          className="minimize-sidebar btn btn-link btn-just-icon"
+          className='minimize-sidebar btn btn-link btn-just-icon'
           onClick={handleMiniClick}
         >
-          <i className="tim-icons icon-align-center visible-on-sidebar-regular text-muted" />
-          <i className="tim-icons icon-bullet-list-67 visible-on-sidebar-mini text-muted" />
+          <i className='tim-icons icon-align-center visible-on-sidebar-regular text-muted' />
+          <i className='tim-icons icon-bullet-list-67 visible-on-sidebar-mini text-muted' />
         </button>
       </div>
       <Sidebar
@@ -187,13 +187,13 @@ const RTL = (props) => {
         routes={routes}
         activeColor={activeColor}
         logo={{
-          outterLink: "https://www.creative-tim.com/",
-          text: "الإبداعية تيم",
+          outterLink: 'https://www.creative-tim.com/',
+          text: 'الإبداعية تيم',
           imgSrc: logo,
         }}
         closeSidebar={closeSidebar}
       />
-      <div className="main-panel" ref={mainPanelRef} data={activeColor}>
+      <div className='main-panel' ref={mainPanelRef} data={activeColor}>
         <RTLNavbar
           {...props}
           handleMiniClick={handleMiniClick}
@@ -203,21 +203,21 @@ const RTL = (props) => {
         />
         <Switch>
           {getRoutes(routes)}
-          <Redirect from="*" to="/admin/dashboard" />
+          <Redirect from='*' to='/admin/dashboard' />
         </Switch>
         {
           // we don't want the Footer to be rendered on full screen maps page
-          props.location.pathname.indexOf("full-screen-map") !== -1 ? null : (
+          props.location.pathname.indexOf('full-screen-map') !== -1 ? null : (
             <Footer fluid />
           )
         }
       </div>
-      <FixedPlugin
+      {/* <FixedPlugin
         activeColor={activeColor}
         sidebarMini={sidebarMini}
         handleActiveClick={handleActiveClick}
         handleMiniClick={handleMiniClick}
-      />
+      /> */}
     </div>
   );
 };

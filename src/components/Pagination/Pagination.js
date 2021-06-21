@@ -37,7 +37,7 @@ const PaginationUI = ({
             onClick={() => paginate(Math.max(currentPageNumber - 1, 1))}
           />
         </PaginationItem>
-        {currentPageNumber >= 3 ? (
+        {currentPageNumber >= 3 && incomeNumbers.length > 3 ? (
           <PaginationItem>
             <PaginationLink style={{ cursor: 'inherit' }}>
               <i className='fas fa-ellipsis-h'></i>
@@ -48,7 +48,19 @@ const PaginationUI = ({
         )}
 
         {incomeNumbers
-          .filter((number) => Math.abs(number - currentPageNumber) <= 1)
+          .filter((number) => {
+            if (currentPageNumber === 1) {
+              return [1, 2, 3].includes(number);
+            } else if (currentPageNumber === incomeNumbers.length) {
+              return [
+                incomeNumbers.length - 2,
+                incomeNumbers.length - 1,
+                incomeNumbers.length,
+              ].includes(number);
+            } else {
+              return Math.abs(number - currentPageNumber) <= 1;
+            }
+          })
           .map((number) => (
             <PaginationItem
               key={number}
@@ -64,7 +76,8 @@ const PaginationUI = ({
               </PaginationLink>
             </PaginationItem>
           ))}
-        {Math.ceil(totalIncomes / incomesPerPage) - currentPageNumber >= 2 ? (
+        {Math.ceil(totalIncomes / incomesPerPage) - currentPageNumber >= 2 &&
+        incomeNumbers.length > 3 ? (
           <PaginationItem>
             <PaginationLink style={{ cursor: 'inherit' }}>
               <i className='fas fa-ellipsis-h'></i>

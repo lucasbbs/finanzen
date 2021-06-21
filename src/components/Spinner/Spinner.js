@@ -43,7 +43,7 @@ const Spinner = () => {
               <span>D</span>
               <span>O</span>
             </div>
-          </section>{' '}
+          </section>
           <div className='row' style={{ flexWrap: 'nowrap' }}>
             <div
               className={[

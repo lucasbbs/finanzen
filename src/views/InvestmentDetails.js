@@ -39,6 +39,7 @@ const InvestmentDetails = () => {
 
   const [name, setName] = useState('');
   const [broker, setBroker] = useState('');
+  const [brokers, setBrokers] = useState([]);
   const [type, setType] = useState('');
   const [rate, setRate] = useState('');
   const [indexer, setIndexer] = useState('');
@@ -55,11 +56,21 @@ const InvestmentDetails = () => {
       : null
   );
   const { id } = useParams();
-
   useEffect(() => {
     const getInvestmentDetails = async () => {
+      const config = {
+        headers: {
+          Authorization: `Bearer ${login.token}`,
+        },
+      };
+      const brokersFromTheAPI = await axios.get(
+        `${Config.SERVER_ADDRESS}/api/brokers`,
+        config
+      );
+      setBrokers(brokersFromTheAPI.data);
       if (id !== ':id') {
         setIsLoading(true);
+
         const investment = await fetchInvestments(id, login);
         setInvestment(investment);
         setName(investment['invest'].name);
@@ -94,9 +105,8 @@ const InvestmentDetails = () => {
         setIsLoading(false);
       }
     };
-    console.log(id, login);
     getInvestmentDetails();
-  }, [id, login]);
+  }, [id, login, broker]);
 
   const indexOfFirstInvestment = currentPage * investmentsPerPage;
   const indexOfLastInvestment = indexOfFirstInvestment + investmentsPerPage;
@@ -133,7 +143,7 @@ const InvestmentDetails = () => {
       .then((response) => {
         console.log(investmentObj);
         notify(`${response.data.name} investimento cadastrado com Sucesso`);
-        history.push(`/app/investment/${response.data._id}`);
+        history.push(`/admin/investment/${response.data._id}`);
       })
       .catch((err) => {
         console.log(err);
@@ -162,10 +172,9 @@ const InvestmentDetails = () => {
                 marginBottom: '30px',
               }}
             >
-              <h1 style={{ marginBottom: '0' }}>{name}</h1>
-              <Button onClick={() => console.log(accruedIncome)}>
-                <span>Editar</span>
-              </Button>
+              <h1 style={{ marginBottom: '0' }}>
+                <i className='tim-icons icon-money-coins'></i> {name}
+              </h1>
             </div>
             <div
               style={{
@@ -177,7 +186,7 @@ const InvestmentDetails = () => {
               <Col md='10'>
                 <Row style={{ marginBottom: '10px' }}>
                   <Col md='6' style={{ paddingRight: '0' }}>
-                    <Label>Nome</Label>
+                    <Label>Name</Label>
                     <Input
                       required
                       style={{ backgroundColor: '#2b3553' }}
@@ -189,7 +198,7 @@ const InvestmentDetails = () => {
                     />
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
-                    <Label>Corretora</Label>
+                    <Label>Broker</Label>
                     <Input
                       required
                       style={{ backgroundColor: '#2b3553' }}
@@ -198,15 +207,21 @@ const InvestmentDetails = () => {
                       onChange={(e) => setBroker(e.target.value)}
                     >
                       <option value='' disabled={true}>
-                        Selecione uma opção
+                        Select an option
                       </option>
-                      <option>Inter</option>
-                      <option>Easynvest</option>
-                      <option>Ativa</option>
+                      {brokers.map((broker) => (
+                        <option
+                          key={broker._id}
+                          id={broker._id}
+                          value={broker._id}
+                        >
+                          {broker.name}
+                        </option>
+                      ))}
                     </Input>
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
-                    <Label>Tipo</Label>
+                    <Label>Type</Label>
                     <Input
                       style={{ backgroundColor: '#2b3553' }}
                       type='select'
@@ -214,7 +229,7 @@ const InvestmentDetails = () => {
                       onChange={(e) => setType(e.target.value)}
                     >
                       <option value='' disabled={true}>
-                        Selecione uma opção
+                        Select an option
                       </option>
                       <option>CDB</option>
                       <option>LCI</option>
@@ -223,7 +238,7 @@ const InvestmentDetails = () => {
                     </Input>
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
-                    <Label>Taxa</Label>
+                    <Label>Rate</Label>
                     <Input
                       style={{ backgroundColor: '#2b3553' }}
                       type='text'
@@ -234,7 +249,7 @@ const InvestmentDetails = () => {
                 </Row>
                 <Row>
                   <Col md='2' style={{ paddingRight: '0' }}>
-                    <Label>Indexador</Label>
+                    <Label>Indexer</Label>
                     <Input
                       required
                       style={{ backgroundColor: '#2b3553' }}
@@ -243,7 +258,7 @@ const InvestmentDetails = () => {
                       onChange={(e) => setIndexer(e.target.value)}
                     >
                       <option value='' disabled={true}>
-                        Selecione uma opção
+                        Select an option
                       </option>
                       <option>CDI</option>
                       <option>IPCA</option>
@@ -251,7 +266,7 @@ const InvestmentDetails = () => {
                     </Input>
                   </Col>
                   <Col md='3' style={{ paddingRight: '0' }}>
-                    <Label>Data do investimento</Label>
+                    <Label>Investment date</Label>
                     <Input
                       style={{ backgroundColor: '#2b3553' }}
                       type='date'
@@ -262,7 +277,7 @@ const InvestmentDetails = () => {
                     />
                   </Col>
                   <Col md='3' style={{ paddingRight: '0' }}>
-                    <Label>Data de vencimento</Label>
+                    <Label>Due date</Label>
                     <Input
                       style={{ backgroundColor: '#2b3553' }}
                       type='date'
@@ -271,7 +286,7 @@ const InvestmentDetails = () => {
                     />
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
-                    <Label>Montante Inicial</Label>
+                    <Label>Initial amount</Label>
                     <NumberFormat
                       style={{ backgroundColor: '#2b3553' }}
                       onChange={(e) => setInitialAmount(e.target.value)}
@@ -285,7 +300,7 @@ const InvestmentDetails = () => {
                     />
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
-                    <Label>Juros acumulados</Label>
+                    <Label>Accrued income</Label>
                     <NumberFormat
                       readOnly
                       style={{

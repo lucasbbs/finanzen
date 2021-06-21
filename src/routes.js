@@ -39,12 +39,18 @@ import Pricing from 'views/pages/Pricing.js';
 import Register from 'views/pages/Register.js';
 import Timeline from 'views/pages/Timeline.js';
 import User from 'views/pages/User.js';
+import Uploader from 'views/Uploader.js';
 // import Login from 'views/pages/Login.js';
 import Rtl from 'views/pages/Rtl.js';
 import Lock from 'views/pages/Lock.js';
 import Investments from 'views/InvestmentsList.js';
 import InvestmentDetails from 'views/InvestmentDetails';
+import ArchiveInvestments from 'views/ArchiveInvestments';
+
 import Login from 'views/Login';
+import BrokerList from 'views/BrokersList';
+import BrokerDetails from 'views/BrokerDetails';
+import ArchiveBrokers from 'views/ArchiveBrokers';
 
 const routes = [
   {
@@ -55,21 +61,73 @@ const routes = [
     component: Dashboard,
     layout: '/admin',
   },
+
   {
-    path: '/investments',
-    name: 'Investimentos',
-    rtlName: 'لوحة القيادة',
+    collapse: true,
+    name: 'Investiments',
     icon: 'tim-icons icon-wallet-43',
-    component: Investments,
-    layout: '/admin',
+    views: [
+      {
+        path: '/investments',
+        name: 'Investiments List',
+        icon: 'tim-icons icon-wallet-43',
+        component: Investments,
+        layout: '/admin',
+      },
+      {
+        path: '/archive-investments',
+        name: 'Archive Investments',
+        icon: 'fas fa-file-invoice-dollar',
+        component: ArchiveInvestments,
+        layout: '/admin',
+      },
+      {
+        path: '/investment/:id',
+        name: 'New Investiment',
+        icon: 'tim-icons icon-money-coins',
+        component: InvestmentDetails,
+        layout: '/admin',
+      },
+    ],
   },
   {
-    path: '/investment/:id',
-    name: 'Novo Investimento',
-    rtlName: 'لوحة القيادة',
-    icon: 'tim-icons icon-wallet-43',
-    component: InvestmentDetails,
+    path: '/upload',
+    name: 'Upload',
+    icon: 'fas fa-cloud-upload-alt',
+    mini: 'U',
+    component: Uploader,
     layout: '/admin',
+  },
+
+  {
+    collapse: true,
+    name: 'Brokers',
+    icon: 'fas fa-landmark',
+    mini: 'U',
+    state: 'brokersCollapse',
+    views: [
+      {
+        path: '/brokers',
+        name: 'Brokers List',
+        icon: 'fas fa-landmark',
+        component: BrokerList,
+        layout: '/admin',
+      },
+      {
+        path: '/archive-brokers',
+        name: 'Archive Brokers',
+        icon: 'fas fa-book',
+        component: ArchiveBrokers,
+        layout: '/admin',
+      },
+      {
+        path: '/broker/:id',
+        name: 'New Broker',
+        icon: 'far fa-handshake',
+        component: BrokerDetails,
+        layout: '/admin',
+      },
+    ],
   },
   {
     collapse: true,

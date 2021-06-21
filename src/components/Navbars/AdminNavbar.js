@@ -14,10 +14,11 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import React from 'react';
+import React, { useState, useEffect } from 'react';
+import moment from 'moment';
 // nodejs library that concatenates classes
 import classNames from 'classnames';
-
+import Avatar from 'react-avatar';
 // reactstrap components
 import {
   Button,
@@ -35,21 +36,48 @@ import {
   Container,
   Modal,
   UncontrolledTooltip,
+  ModalBody,
+  Row,
+  Col,
+  ModalHeader,
+  ModalFooter,
+  Table,
 } from 'reactstrap';
 import { logout } from 'services/auth';
 import { Link, useHistory } from 'react-router-dom';
-
+import { currencyFormat } from '../../helpers/functions';
+import { fetchAllInvestments } from '../../services/Investments';
+import MyTooltip from 'components/Tooltip/MyTooltip';
 const AdminNavbar = (props) => {
+  const [name, setName] = useState(
+    JSON.parse(localStorage.getItem('userInfo')).name
+  );
+  const getName = (input) => {
+    return input.split(' ').slice(0, -1).join(' ');
+  };
+  const [filter, setFilter] = useState('');
+  const [investments, setInvestments] = useState([]);
+  const [investmentsFiltered, setInvestmentsFiltered] = useState([]);
   const [collapseOpen, setCollapseOpen] = React.useState(false);
   const [modalSearch, setModalSearch] = React.useState(false);
+  const [modalInvestments, setmodalInvestments] = useState(false);
   const [color, setColor] = React.useState('navbar-transparent');
-  React.useEffect(() => {
-    window.addEventListener('resize', updateColor);
-    return function cleanup() {
-      window.removeEventListener('resize', updateColor);
-    };
-  });
-  // function that adds color white/transparent to the navbar on resize (this is for the collapse)
+  const [hasRunned, setHasRunned] = useState(false);
+  const [login] = useState(
+    localStorage.getItem('userInfo')
+      ? JSON.parse(localStorage.getItem('userInfo'))
+      : null
+  );
+
+  const handleAsyncFunction = async () => {
+    const investments = await fetchAllInvestments('', login);
+    setInvestments(investments);
+  };
+  if (!hasRunned) {
+    handleAsyncFunction();
+    setHasRunned(true);
+  }
+
   const updateColor = () => {
     if (window.innerWidth < 993 && collapseOpen) {
       setColor('bg-white');
@@ -57,6 +85,39 @@ const AdminNavbar = (props) => {
       setColor('navbar-transparent');
     }
   };
+
+  useEffect(() => {
+    const filteredInvestments =
+      filter.trim() === ''
+        ? [...investments]
+        : investments
+            .map((invest) => {
+              if (invest.broker === null) {
+                console.log(invest.broker);
+                invest.broker = { name: 'unavailable' };
+              }
+              return invest;
+            })
+            .filter(
+              (invest) =>
+                invest.name.toLowerCase().includes(filter) ||
+                invest.broker.name.toLowerCase().includes(filter) ||
+                invest.type.toLowerCase().includes(filter) ||
+                invest.rate.toLowerCase().includes(filter) ||
+                invest.indexer.toLowerCase().includes(filter) ||
+                invest.investment_date.toLowerCase().includes(filter) ||
+                invest.due_date.toLowerCase().includes(filter)
+            );
+    setInvestmentsFiltered(filteredInvestments);
+
+    window.addEventListener('resize', updateColor);
+    return function cleanup() {
+      window.removeEventListener('resize', updateColor);
+    };
+  }, [filter]);
+
+  // function that adds color white/transparent to the navbar on resize (this is for the collapse)
+
   // this function opens and closes the collapse on small devices
   const toggleCollapse = () => {
     if (collapseOpen) {
@@ -70,16 +131,160 @@ const AdminNavbar = (props) => {
   const toggleModalSearch = () => {
     setModalSearch(!modalSearch);
   };
+  const toggleModalInvestments = () => {
+    setmodalInvestments(!modalInvestments);
+  };
 
   const history = useHistory();
-  const handleFilter = (e) => {
-    localStorage.setItem('filter', JSON.stringify(e.target.value));
-    history.push(`/admin/investments/`);
-    window.location.reload(false);
-  };
 
   return (
     <>
+      <Modal
+        isOpen={modalInvestments}
+        modalClassName='modal-long modal-black '
+        toggle={toggleModalInvestments}
+        size='lg'
+      >
+        <ModalHeader toggle={toggleModalInvestments}>Investments</ModalHeader>
+        <ModalBody className='px-0'>
+          <Table>
+            <thead>
+              <tr>
+                <th
+                  style={{
+                    maxWidth: '100px',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    display: 'inline-block',
+                    textOverflow: 'ellipsis',
+                    minWidth: '30px',
+                  }}
+                >
+                  Name
+                </th>
+                <th>Broker</th>
+                <th>Type</th>
+                <th>Rate</th>
+                <th>Investment date</th>
+                <th>Due date</th>
+                <th>Initial amount</th>
+                <th
+                  style={{
+                    maxWidth: '180px',
+                    overflow: 'hidden',
+                    display: 'inline-block',
+                    textOverflow: 'ellipsis',
+                    minWidth: '80px',
+                    textAlign: 'center',
+                  }}
+                >
+                  Accrued income
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {investmentsFiltered.map((invest) => (
+                <tr>
+                  <td>
+                    <Link
+                      to={`/admin/investment/${invest._id}`}
+                      onClick={toggleModalInvestments}
+                    >
+                      <span
+                        id={`Tooltip-${invest._id}`}
+                        style={{
+                          maxWidth: '110px',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          display: 'inline-block',
+                          textOverflow: 'ellipsis',
+                          minWidth: '30px',
+                        }}
+                      >
+                        {invest.name}
+                        <MyTooltip
+                          placement='left'
+                          target={`Tooltip-${invest._id}`}
+                        >
+                          {invest.name}
+                          <br />
+                        </MyTooltip>
+                      </span>
+                    </Link>
+                  </td>
+                  <td>{invest.broker.name}</td>
+                  <td>{invest.type}</td>
+                  <td>{invest.rate}</td>
+                  <td>{moment(invest.investment_date).format('DD/MM/YYYY')}</td>
+                  <td>{moment(invest.due_date).format('DD/MM/YYYY')}</td>
+                  <td>{currencyFormat(invest.initial_amount)}</td>
+                  <td>
+                    <div
+                      style={{
+                        maxWidth: '180px',
+                        overflow: 'hidden',
+                        display: 'inline-block',
+                        textOverflow: 'ellipsis',
+                        minWidth: '80px',
+                        textAlign: 'right',
+                      }}
+                    >
+                      <span> {currencyFormat(invest.accrued_income)}</span>
+                    </div>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+            <tfoot>
+              <td>Total</td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td></td>
+              <td>
+                {currencyFormat(
+                  investmentsFiltered.reduce(
+                    (acum, curr) => acum + curr.initial_amount,
+                    0
+                  )
+                )}
+              </td>
+              <td>
+                {' '}
+                <div
+                  style={{
+                    maxWidth: '180px',
+                    overflow: 'hidden',
+                    display: 'inline-block',
+                    textOverflow: 'ellipsis',
+                    minWidth: '80px',
+                    textAlign: 'right',
+                  }}
+                >
+                  <span>
+                    {currencyFormat(
+                      investmentsFiltered.reduce(
+                        (acum, curr) => acum + curr.accrued_income,
+                        0
+                      )
+                    )}
+                  </span>
+                </div>
+              </td>
+            </tfoot>
+          </Table>
+        </ModalBody>
+        {/* <ModalFooter>
+          <Button color='primary' onClick={toggleModalInvestments}>
+            Do Something
+          </Button>
+          <Button color='secondary' onClick={toggleModalInvestments}>
+            Cancel
+          </Button>
+        </ModalFooter> */}
+      </Modal>
+
       <Navbar
         className={classNames('navbar-absolute', {
           [color]: props.location.pathname.indexOf('full-screen-map') === -1,
@@ -204,9 +409,14 @@ const AdminNavbar = (props) => {
                   onClick={(e) => e.preventDefault()}
                 >
                   <div className='photo'>
-                    <img
-                      alt='...'
-                      src={require('assets/img/mike.jpg').default}
+                    <Avatar
+                      name={`${name.split(' ').slice(0, 1).join(' ')} ${
+                        name.split(' ').slice(-1).join(' ') ===
+                        name.split(' ').slice(0, 1).join(' ')
+                          ? ''
+                          : name.split(' ').slice(-1).join(' ')
+                      }`}
+                      size='31px'
                     />
                   </div>
                   <b className='caret d-none d-lg-block d-xl-block' />
@@ -240,7 +450,7 @@ const AdminNavbar = (props) => {
         </Container>
       </Navbar>
       <Modal
-        modalClassName='modal-search'
+        modalClassName='modal-search modal-black'
         isOpen={modalSearch}
         toggle={toggleModalSearch}
       >
@@ -249,7 +459,13 @@ const AdminNavbar = (props) => {
             id='inlineFormInputGroup'
             placeholder='SEARCH'
             type='text'
-            onKeyPress={(e) => (e.key === 'Enter' ? handleFilter(e) : null)}
+            onKeyPress={(e) => {
+              if (e.key === 'Enter') {
+                toggleModalSearch();
+                toggleModalInvestments();
+              }
+              return e.key === 'Enter' ? setFilter(e.target.value) : null;
+            }}
           />
           <button
             aria-label='Close'

@@ -19,6 +19,7 @@ import React from 'react';
 import { VectorMap } from 'react-jvectormap';
 // reactstrap components
 import { Card, CardHeader, CardBody, Row, Col } from 'reactstrap';
+import { countries } from '../../views/pages/countries';
 
 var mapData = {
   AF: 16.63,
@@ -501,7 +502,7 @@ const VectorMapView = () => {
                     }}
                     onRegionTipShow={function (e, el, code) {
                       el.html(
-                        countryListPortuguese[code] +
+                        countries[code] +
                           '<br> (GDP - ' +
                           (mapData[code]
                             ? mapData[code]

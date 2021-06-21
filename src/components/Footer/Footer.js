@@ -15,42 +15,45 @@
 
 */
 /*eslint-disable*/
-import React from "react";
-import { Container, Row } from "reactstrap";
+import React from 'react';
+import { Container, Row } from 'reactstrap';
 // used for making the prop types of this component
-import PropTypes from "prop-types";
-
+import PropTypes from 'prop-types';
+import { useHistory } from 'react-router-dom';
 const Footer = (props) => {
+  let history = useHistory();
+  window.addEventListener('storage', () => {
+    if (!JSON.parse(window.localStorage.getItem('userInfo'))) {
+      history.push('/app/dashboard');
+    }
+  });
   return (
-    <footer className={"footer" + (props.default ? " footer-default" : "")}>
+    <footer className={'footer' + (props.default ? ' footer-default' : '')}>
       <Container fluid={props.fluid ? true : false}>
-        <ul className="nav">
-          <li className="nav-item">
-            <a className="nav-link" href="https://www.creative-tim.com">
+        {/* <ul className='nav'>
+          <li className='nav-item'>
+            <a className='nav-link' href='https://www.creative-tim.com'>
               Creative Tim
             </a>
-          </li>{" "}
-          <li className="nav-item">
+          </li>{' '}
+          <li className='nav-item'>
             <a
-              className="nav-link"
-              href="https://www.creative-tim.com/presentation"
+              className='nav-link'
+              href='https://www.creative-tim.com/presentation'
             >
               About us
             </a>
-          </li>{" "}
-          <li className="nav-item">
-            <a className="nav-link" href="https://blog.creative-tim.com">
+          </li>{' '}
+          <li className='nav-item'>
+            <a className='nav-link' href='https://blog.creative-tim.com'>
               Blog
             </a>
-          </li>
-        </ul>
-        <div className="copyright">
-          © {new Date().getFullYear()} made with{" "}
-          <i className="tim-icons icon-heart-2" /> by{" "}
-          <a href="https://www.creative-tim.com/" target="_blank">
-            Creative Tim
-          </a>{" "}
-          for a better web.
+          </li> */}
+        {/* </ul> */}
+        <div className='copyright'>
+          © {new Date().getFullYear()} made with{' '}
+          <i className='tim-icons icon-heart-2' /> by <a href='#'>lucasbbs</a>{' '}
+          for your financial freedom.
         </div>
       </Container>
     </footer>

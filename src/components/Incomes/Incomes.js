@@ -1,5 +1,6 @@
 import axios from 'axios';
 import { addDays, format, parse } from 'date-fns';
+
 import React, { useEffect, useRef, useState } from 'react';
 import NumberFormat from 'react-number-format';
 import { Link } from 'react-router-dom';
@@ -11,7 +12,6 @@ import {
   CardBody,
   CardHeader,
   Col,
-  FormFeedback,
   FormGroup,
   Input,
   Label,
@@ -26,8 +26,6 @@ import { reverseFormatNumber } from '../../helpers/functions';
 import { ptBR } from 'date-fns/locale';
 
 import Config from '../../config.json';
-
-import Slider from 'nouislider';
 
 const Incomes = ({
   incomes,
@@ -65,7 +63,11 @@ const Incomes = ({
   const [isAdding, setIsAdding] = useState(false);
   const [dateEl, setDateEl] = useState(format(new Date(), 'yyyy-MM'));
   const [valueEl, setValueEl] = useState('0');
-
+  const [login] = useState(
+    localStorage.getItem('userInfo')
+      ? JSON.parse(localStorage.getItem('userInfo'))
+      : null
+  );
   const [incomesPerPage, setIncomesPerPage] = useState(numberPerPage);
 
   useEffect(() => {
@@ -88,12 +90,12 @@ const Incomes = ({
     setIsValid(true);
   };
   const toggleAddIncome = (e, value = undefined) => {
-    setModalAddIncome(!modalAddIncome);
-    if (isEdit) {
+    if (value === 'voltar') {
       setIsEdit(false);
       setDateIncome('');
       setValueIncome(0.0);
     }
+    setModalAddIncome(!modalAddIncome);
   };
   const fun = (e, defaultValue = undefined) => {
     let inputEl = undefined;
@@ -118,7 +120,6 @@ const Incomes = ({
     setIsLoading(true);
     if (isEdit) {
       setDateEl(document.querySelector('#IncomeDate').value);
-      setIsEdit(false);
       setDateIncome('');
       setValueIncome(0.0);
     }
@@ -150,17 +151,43 @@ const Incomes = ({
     toggleAddIncome(null, true);
   };
   const handleAddIncome = async (incomesObj, index) => {
+    const config = {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${login.token}`,
+      },
+    };
     await axios
-      .put(`${Config.SERVER_ADDRESS}/api/investments/${id}/incomes`, incomesObj)
+      .put(
+        `${Config.SERVER_ADDRESS}/api/investments/${id}/incomes`,
+        incomesObj,
+        config
+      )
       .then((response) => {
         setIsLoading(false);
-        notify(
-          `Você cadastrou com sucesso a receita para o período de ${format(
-            parse(dateEl, 'yyyy-MM', new Date()),
-            'MMM/yyyy',
-            { locale: ptBR }
-          )}`
-        );
+        if (isEdit) {
+          setIsEdit(false);
+          setDateIncome('');
+          setValueIncome(0.0);
+          notify(
+            `You have successfully updated the income for ${format(
+              parse(dateEl, 'yyyy-MM', new Date()),
+              'MMM/yyyy',
+              { locale: ptBR }
+            )}`
+          );
+        } else {
+          setDateIncome('');
+          setValueIncome(0.0);
+          notify(
+            `You have successfully added the income for ${format(
+              parse(dateEl, 'yyyy-MM', new Date()),
+              'MMM/yyyy',
+              { locale: ptBR }
+            )}`
+          );
+        }
+
         if (index === -1) {
           incomes.push([
             format(parse(dateEl, 'yyyy-MM', new Date()), 'dd/MM/yyyy'),
@@ -218,8 +245,10 @@ const Incomes = ({
     const config = {
       headers: {
         'Content-Type': 'application/json',
+        Authorization: `Bearer ${login.token}`,
       },
     };
+
     await axios
       .put(
         `${Config.SERVER_ADDRESS}/api/investments/${id}/incomes`,
@@ -273,7 +302,11 @@ const Incomes = ({
   };
 
   const closeBtn = (
-    <button color='danger' className='close' onClick={toggleAddIncome}>
+    <button
+      color='danger'
+      className='close'
+      onClick={() => toggleAddIncome(null, 'voltar')}
+    >
       <span style={{ color: 'white' }}>×</span>
     </button>
   );
@@ -289,30 +322,29 @@ const Incomes = ({
       </div>
       <Modal
         isOpen={modalAddIncome}
-        toggle={() => toggleAddIncome(null, true)}
+        toggle={() => toggleAddIncome(null, 'voltar')}
         keyboard={true}
+        modalClassName='modal-black'
       >
         <ModalHeader
           close={closeBtn}
-          toggle={() => {
-            toggleAddIncome(null, true);
-          }}
+          toggle={() => toggleAddIncome(null, 'voltar')}
         >
           <span style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
-            Adicionar Receita
+            {isEdit ? 'Edit income' : 'Add income'}
           </span>
         </ModalHeader>
         <ModalBody>
           <FormGroup>
             <Row className='align-items-center'>
               <Col md='6'>
-                <Label style={{ marginBottom: '0' }}>Data do rendimento</Label>
+                <Label style={{ marginBottom: '0' }}>Income date</Label>
               </Col>
               <Col md='6'>
                 <Input
                   className='borderColor'
                   style={{
-                    color: 'rgba(255, 255, 255, 0.8);',
+                    color: 'rgba(255, 255, 255, 0.8)',
                     background: '#2b3553',
                   }}
                   readOnly={isEdit}
@@ -328,7 +360,7 @@ const Incomes = ({
             </Row>
             <Row className='align-items-center' style={{ marginTop: '6px' }}>
               <Col md='6'>
-                <Label style={{ marginBottom: '0' }}>Valor</Label>
+                <Label style={{ marginBottom: '0' }}>Value</Label>
               </Col>
               <Col md='6'>
                 <NumberFormat
@@ -336,7 +368,7 @@ const Incomes = ({
                   id='IncomeValue'
                   value={valueIncome}
                   style={{
-                    color: 'rgba(255, 255, 255, 0.8);',
+                    color: 'rgba(255, 255, 255, 0.8)',
                     background: '#2b3553',
                   }}
                   type='text'
@@ -366,20 +398,20 @@ const Incomes = ({
             }}
             style={{ margin: '0 20px 20px' }}
           >
-            Definir
+            Define
           </Button>
           <Button
             color='secondary'
-            onClick={() => toggleAddIncome(null, true)}
+            onClick={() => toggleAddIncome(null, 'voltar')}
             style={{ margin: '0 20px 20px' }}
           >
-            Voltar
+            Back
           </Button>
         </ModalFooter>
       </Modal>
-      <Modal isOpen={modal} toggle={toggle}>
+      <Modal isOpen={modal} toggle={toggle} modalClassName='modal-black'>
         <ModalHeader close={closeBtnForIncomesPerPage} toggle={toggle}>
-          Defina quantas receitas por página serão exibidas
+          Set quantity of incomes per page
         </ModalHeader>
         <ModalBody style={{ paddingBottom: '0' }}>
           <FormGroup style={{ marginBottom: '0' }}>
@@ -435,14 +467,14 @@ const Incomes = ({
             onClick={fun}
             style={{ margin: '0 20px 20px' }}
           >
-            Definir
+            Define
           </Button>
           <Button
             color='secondary'
             onClick={toggle}
             style={{ margin: '0 20px 20px' }}
           >
-            Voltar
+            Back
           </Button>
         </ModalFooter>
       </Modal>
@@ -454,10 +486,10 @@ const Incomes = ({
             alignItems: 'center',
           }}
         >
-          <h4 className='title d-inline'>Receitas</h4>
+          <h4 className='title d-inline'>Incomes</h4>
           <Link to='#' onClick={toggle}>
             <i
-              title='Defina quantas receitas de juros serão exibidas por página'
+              title='Please, set how many incomes should be presented per page'
               className='tim-icons icon-settings-gear-63'
               style={{ float: 'right', marginLeft: '20px', fontSize: '1.5em' }}
             />

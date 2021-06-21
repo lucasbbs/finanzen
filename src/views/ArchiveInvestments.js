@@ -20,7 +20,7 @@ import {
 import { Link } from 'react-router-dom';
 import moment from 'moment';
 import Spinner from '../components/Spinner/Spinner';
-import { fetchInvestments } from '../services/Investments';
+import { fetchArchiveInvestments } from '../services/Investments';
 import { reverseFormatNumber } from '../helpers/functions';
 import axios from 'axios';
 import NotificationAlert from 'react-notification-alert';
@@ -30,7 +30,7 @@ import NumberFormat from 'react-number-format';
 import MyTooltip from 'components/Tooltip/MyTooltip';
 
 /*eslint-disable*/
-const InvestmentsList = () => {
+const ArchiveInvestments = () => {
   const [id, setId] = useState('');
   const [name, setName] = useState('');
   const [broker, setBroker] = useState('');
@@ -163,7 +163,7 @@ const InvestmentsList = () => {
       );
 
       setBrokers(brokersFromTheAPI.data);
-      let investments = await fetchInvestments('', login);
+      let investments = await fetchArchiveInvestments('', login);
       const filter = JSON.parse(localStorage.getItem('filter'));
 
       if (filter !== null) {
@@ -287,7 +287,7 @@ const InvestmentsList = () => {
       <span style={{ color: 'white' }}>×</span>
     </button>
   );
-  const handleArchive = async (id) => {
+  const handleUnarchive = async (id) => {
     const config = {
       headers: {
         Authorization: `Bearer ${login.token}`,
@@ -295,9 +295,9 @@ const InvestmentsList = () => {
     };
     console.log(`Bearer ${login.token}`);
     await axios
-      .get(`${Config.SERVER_ADDRESS}/api/investments/${id}/archive`, config)
+      .get(`${Config.SERVER_ADDRESS}/api/investments/${id}/unarchive`, config)
       .then((res) => {
-        notify(`Você arquivou com sucesso o seu investimento ${name}`);
+        notify(`You have successfully unarchived your investment`);
         setInvestment(investment.filter((invest) => invest._id !== id));
       })
       .catch((err) => {
@@ -411,7 +411,7 @@ const InvestmentsList = () => {
                 </Input>
               </Col>
               <Col md='3' style={{ paddingRight: '0' }}>
-                <Label>Data do investimento</Label>
+                <Label>Investment date</Label>
                 <Input
                   style={{ backgroundColor: '#2b3553' }}
                   type='date'
@@ -487,7 +487,8 @@ const InvestmentsList = () => {
             <Card style={{ position: 'relative' }}>
               <CardHeader className='row justify-content-between ml-2 mt-1 mr-2 align-items-center'>
                 <CardTitle className='m-0' tag='h1'>
-                  <i className='tim-icons icon-wallet-43'></i> Investments
+                  <i className='fas fa-file-invoice-dollar'></i> Archive
+                  Investments
                 </CardTitle>
                 <Link to='/admin/investment/:id'>
                   <Button>New Investment</Button>
@@ -521,7 +522,25 @@ const InvestmentsList = () => {
                             {inves.name}
                           </Link>
                         </td>
-                        <td>{inves.broker.name}</td>
+                        <td>
+                          {inves.broker ? (
+                            inves.broker.name
+                          ) : (
+                            <span
+                              style={{ color: 'gray' }}
+                              id={`unavailable-${inves._id}`}
+                            >
+                              <MyTooltip
+                                placement='top'
+                                target={`unavailable-${inves._id}`}
+                              >
+                                This means that you have deleted the broker info
+                                about
+                              </MyTooltip>
+                              unavailable
+                            </span>
+                          )}
+                        </td>
                         <td>{inves.type}</td>
                         <td>{inves.rate}</td>
                         <td>{inves.indexer}</td>
@@ -544,13 +563,13 @@ const InvestmentsList = () => {
                         <td style={{ textAlign: 'center' }}>
                           <MyTooltip
                             placement='top'
-                            target={`archive-${inves._id}`}
+                            target={`unarchive-${inves._id}`}
                           >
-                            Arquivar
+                            Unarchive
                           </MyTooltip>
                           <Button
                             style={{ cursor: 'default' }}
-                            id={`archive-${inves._id}`}
+                            id={`unarchive-${inves._id}`}
                             color='info'
                             size='sm'
                             className={classNames('btn-icon btn-link like')}
@@ -558,9 +577,16 @@ const InvestmentsList = () => {
                             <i
                               style={{ cursor: 'pointer' }}
                               id={inves._id}
-                              className='fas fa-archive'
+                              className='tim-icons icon-upload'
                               onClick={(e) => {
-                                handleArchive(e.target.id);
+                                if (inves.broker) {
+                                  handleUnarchive(e.target.id);
+                                } else {
+                                  notify(
+                                    'In order to unarchive an investment you should set a broker name for the investment',
+                                    'danger'
+                                  );
+                                }
                               }}
                             ></i>
                           </Button>
@@ -568,7 +594,7 @@ const InvestmentsList = () => {
                             placement='top'
                             target={`Tooltip-${inves._id}`}
                           >
-                            Editar
+                            Edit
                           </MyTooltip>
                           <Button
                             id={`Tooltip-${inves._id}`}
@@ -585,7 +611,11 @@ const InvestmentsList = () => {
                                     e.target.parentElement.parentElement
                                       .parentElement.id
                                 );
-                                setBroker(filtered.broker._id);
+                                setBroker(
+                                  filtered.broker
+                                    ? filtered.broker._id
+                                    : 'default'
+                                );
                                 setId(filtered._id);
                                 setName(filtered.name);
                                 setType(filtered.type);
@@ -605,7 +635,7 @@ const InvestmentsList = () => {
                             placement='top'
                             target={`Delete-${inves._id}`}
                           >
-                            Excluir
+                            Delete
                           </MyTooltip>
                           <Button
                             id={`Delete-${inves._id}`}
@@ -647,4 +677,4 @@ const InvestmentsList = () => {
   );
 };
 
-export default InvestmentsList;
+export default ArchiveInvestments;
