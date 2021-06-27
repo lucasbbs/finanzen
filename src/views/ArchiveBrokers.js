@@ -23,10 +23,9 @@ import { currencies } from 'views/pages/currencies';
 import ReactBSAlert from 'react-bootstrap-sweetalert';
 import NotificationAlert from 'react-notification-alert';
 import { Link } from 'react-router-dom';
+import Spinner from 'components/Spinner/Spinner';
 
 const ArchiveBrokers = () => {
-  const imageRef = useRef(null);
-
   const sayIt = () => {
     // imageRef.current.sayHello();
   };
@@ -35,6 +34,7 @@ const ArchiveBrokers = () => {
       ? JSON.parse(localStorage.getItem('userInfo'))
       : null
   );
+  const [isLoading, setIsLoading] = useState(false);
   const [alert, setAlert] = useState(null);
   const [name, setName] = useState('');
   const [id, setId] = useState('');
@@ -138,6 +138,7 @@ const ArchiveBrokers = () => {
       setBrokers(brokersFromTheAPI.data);
     };
     handleAsyncFunction();
+    // eslint-disable-next-line
   }, []);
   const toggle = () => setModal(!modal);
   const closeBtn = (
@@ -228,7 +229,7 @@ const ArchiveBrokers = () => {
       })
       .catch((err) => {
         hideAlert();
-        console.log(err.response);
+        console.error(err.response);
         notify(
           'Não é possível arquivar uma corretora com investimentos ativos',
           'danger'
@@ -252,9 +253,8 @@ const ArchiveBrokers = () => {
       })
       .catch((err) => {
         hideAlert();
-        console.log(err, err.response.data.message);
         notify(
-          'Não é possível arquivar uma corretora com investimentos ativos',
+          'Não é possível deletar uma corretora com investimentos ativos cadastrados',
           'danger'
         );
         // notify(err.response.data.message, 'danger');
@@ -283,267 +283,289 @@ const ArchiveBrokers = () => {
         <NotificationAlert ref={notificationAlertRef} />
       </div>
       <div className='content'>
-        <Modal
-          modalClassName='modal-black'
-          style={{
-            background: 'linear-gradient(180deg,#222a42 0,#1d253b)!important',
-          }}
-          isOpen={modal}
-          toggle={toggle}
-          className='modal-lg'
-        >
-          <ModalHeader
-            style={{ color: 'hsla(0,0%,100%,.8)' }}
-            toggle={toggle}
-            close={closeBtn}
-          >
-            <span style={{ color: 'hsla(0,0%,100%,.9)' }} onClick={sayIt()}>
-              Edit Broker
-            </span>
-          </ModalHeader>
-          <ModalBody
-            style={{
-              background: 'linear-gradient(180deg,#222a42 0,#1d253b)!important',
-              paddingBottom: '0',
-            }}
-          >
-            <Row className='mb-10 align-items-center justify-content-center '>
-              <Col md='4' className='pr-0'>
-                <Label>Name</Label>
-                <Input
-                  required
-                  style={{ backgroundColor: '#2b3553' }}
-                  type='text'
-                  value={name}
+        {isLoading ? (
+          <Spinner />
+        ) : (
+          <>
+            <Modal
+              modalClassName='modal-black'
+              style={{
+                background:
+                  'linear-gradient(180deg,#222a42 0,#1d253b)!important',
+              }}
+              isOpen={modal}
+              toggle={toggle}
+              className='modal-lg'
+            >
+              <ModalHeader
+                style={{ color: 'hsla(0,0%,100%,.8)' }}
+                toggle={toggle}
+                close={closeBtn}
+              >
+                <span style={{ color: 'hsla(0,0%,100%,.9)' }} onClick={sayIt()}>
+                  Edit Broker
+                </span>
+              </ModalHeader>
+              <ModalBody
+                style={{
+                  background:
+                    'linear-gradient(180deg,#222a42 0,#1d253b)!important',
+                  paddingBottom: '0',
+                }}
+              >
+                <Row className='mb-10 align-items-center justify-content-center '>
+                  <Col md='4' className='pr-0'>
+                    <Label>Name</Label>
+                    <Input
+                      required
+                      style={{ backgroundColor: '#2b3553' }}
+                      type='text'
+                      value={name}
+                      onChange={(e) => {
+                        setName(e.target.value);
+                      }}
+                    />
+                  </Col>
+
+                  <Col md='4' className='pr-0'>
+                    <Label>Country</Label>
+                    <Input
+                      required
+                      style={{ backgroundColor: '#2b3553' }}
+                      type='select'
+                      value={country}
+                      onChange={(e) => {
+                        setCountry(e.target.value);
+                        fetchCurrency(e.target[e.target.selectedIndex].id);
+                      }}
+                    >
+                      <option value='' disabled={true}>
+                        Selecione uma opção
+                      </option>
+                      {Object.entries(countries).map((country) => (
+                        <option
+                          key={country[0]}
+                          id={country[0]}
+                          value={country[0]}
+                        >
+                          {country[1]}
+                        </option>
+                      ))}
+                    </Input>
+                  </Col>
+                  <Col md='4' className='pr-0'>
+                    <Label>Currency</Label>
+                    <Input
+                      required
+                      style={{ backgroundColor: '#2b3553' }}
+                      type='select'
+                      value={currency}
+                      onChange={(e) => setCurrency(e.target.value)}
+                    >
+                      <option value='' disabled={true}>
+                        Selecione uma opção
+                      </option>
+                      {Object.entries(currencies).map((currency) => (
+                        <option key={currency[0]} value={currency[0]}>
+                          {currency[1].name}
+                        </option>
+                      ))}
+                    </Input>
+                  </Col>
+                </Row>
+                <div className='row justify-content-center mt-4'>
+                  <img
+                    src={imagePreview}
+                    style={{ maxWidth: '250px', maxHeight: '250px' }}
+                    alt=''
+                  />
+                </div>
+                <CustomInput
+                  type='file'
+                  id='exampleCustomFileBrowser'
+                  name='customFile'
                   onChange={(e) => {
-                    setName(e.target.value);
+                    let reader = new FileReader();
+                    let file = e.target.files[0];
+                    reader.onloadend = () => {
+                      setImage(file);
+                      setImagePreview(reader.result);
+                    };
+                    reader.readAsDataURL(file);
                   }}
                 />
-              </Col>
-
-              <Col md='4' className='pr-0'>
-                <Label>Country</Label>
-                <Input
-                  required
-                  style={{ backgroundColor: '#2b3553' }}
-                  type='select'
-                  value={country}
-                  onChange={(e) => {
-                    setCountry(e.target.value);
-                    fetchCurrency(e.target[e.target.selectedIndex].id);
-                  }}
+              </ModalBody>
+              <ModalFooter
+                style={{
+                  background:
+                    'linear-gradient(180deg,#222a42 0,#1d253b)!important',
+                }}
+              >
+                <Button
+                  color='success'
+                  onClick={() =>
+                    handleUpdate({
+                      _id: id,
+                      name,
+                      country,
+                      currency,
+                    })
+                  }
                 >
-                  <option value='' disabled={true}>
-                    Selecione uma opção
-                  </option>
-                  {Object.entries(countries).map((country) => (
-                    <option key={country[0]} id={country[0]} value={country[0]}>
-                      {country[1]}
-                    </option>
-                  ))}
-                </Input>
-              </Col>
-              <Col md='4' className='pr-0'>
-                <Label>Currency</Label>
-                <Input
-                  required
-                  style={{ backgroundColor: '#2b3553' }}
-                  type='select'
-                  value={currency}
-                  onChange={(e) => setCurrency(e.target.value)}
-                >
-                  <option value='' disabled={true}>
-                    Selecione uma opção
-                  </option>
-                  {Object.entries(currencies).map((currency) => (
-                    <option key={currency[0]} value={currency[0]}>
-                      {currency[1].name}
-                    </option>
-                  ))}
-                </Input>
-              </Col>
+                  Save
+                </Button>
+                <Button color='secondary' onClick={toggle}>
+                  Cancel
+                </Button>
+              </ModalFooter>
+            </Modal>
+            {alert}
+            <Row>
+              <div className='col-md-10 mx-auto'>
+                <Card className='card mt-4 pr-5'>
+                  <CardHeader className='row justify-content-between ml-2 mt-1 mr-2 align-items-center'>
+                    <CardTitle className='m-0' tag='h1'>
+                      <i className='fas fa-landmark'></i> Archive Brokers
+                    </CardTitle>
+                  </CardHeader>
+                  <Table className='m-4'>
+                    <thead>
+                      <tr>
+                        <th>Picture</th>
+                        <th>Name</th>
+                        <th>Country</th>
+                        <th>Currency</th>
+                        <th style={{ textAlign: 'center' }}>Ações</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {brokers.map((brk) => (
+                        <tr key={brk._id} id={brk._id}>
+                          <th>
+                            <div
+                              style={{
+                                background: `url(${Config.SERVER_ADDRESS}${brk.filepath}) no-repeat center  center   / contain `,
+                                width: '100px',
+                                height: '100px',
+                                // backgroundPosition: 'center',
+                                // backgroundRepeat: 'no-repeat',
+                                // backgroundSize: '',
+                              }}
+                              alt='...'
+                              className='avatar'
+                            />
+                          </th>
+                          <th>
+                            <Link to={`/admin/broker/${brk._id}`}>
+                              {brk.name}
+                            </Link>
+                          </th>
+                          <th>{countries[brk.country]}</th>
+                          <th>{currencies[brk.currency].name}</th>
+                          <td style={{ textAlign: 'center' }}>
+                            <MyTooltip
+                              placement='top'
+                              target={`unarchive-${brk._id}`}
+                            >
+                              Unarchive
+                            </MyTooltip>
+                            <Button
+                              id={`unarchive-${brk._id}`}
+                              style={{ cursor: 'default' }}
+                              color='info'
+                              size='sm'
+                              className='btn-icon btn-link like'
+                            >
+                              <i
+                                id={brk._id}
+                                className='tim-icons icon-upload'
+                                style={{ cursor: 'pointer' }}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  warningWithConfirmAndCancelMessage(
+                                    e.target.id
+                                  );
+                                }}
+                              ></i>
+                            </Button>
+                            <MyTooltip
+                              placement='top'
+                              target={`edit-${brk._id}`}
+                            >
+                              Edit
+                            </MyTooltip>
+                            <Button
+                              id={`edit-${brk._id}`}
+                              style={{ cursor: 'default' }}
+                              color='warning'
+                              size='sm'
+                              className='btn-icon btn-link like'
+                            >
+                              <i
+                                className='tim-icons icon-pencil'
+                                style={{ cursor: 'pointer' }}
+                                onClick={(e) => {
+                                  toggle();
+                                  const filtered = brokers.find(
+                                    (brk) =>
+                                      brk._id ===
+                                      e.target.parentElement.parentElement
+                                        .parentElement.id
+                                  );
+                                  // imageRef.current.sayHello(
+                                  //   `${Config.SERVER_ADDRESS}${filtered.filepath}`
+                                  // );
+                                  setImagePreview(
+                                    `${Config.SERVER_ADDRESS}${filtered.filepath}`
+                                  );
+                                  setId(filtered._id);
+                                  setName(filtered.name);
+                                  setCountry(filtered.country);
+                                  setCurrency(filtered.currency);
+                                }}
+                              />
+                            </Button>
+                            <MyTooltip
+                              placement='top'
+                              target={`Delete-${brk._id}`}
+                            >
+                              Excluir
+                            </MyTooltip>
+                            <Button
+                              id={`Delete-${brk._id}`}
+                              size='sm'
+                              className='btn-icon btn-link'
+                              color='danger'
+                              style={{
+                                backgroundColor: 'transparent',
+                                outline: 'none',
+                                borderColor: 'transparent',
+                                cursor: 'default',
+                              }}
+                            >
+                              <i
+                                id={brk._id}
+                                onClick={(e) => {
+                                  e.preventDefault();
+                                  warningWithConfirmAndCancelMessage(
+                                    e.target.id,
+                                    'delete'
+                                  );
+                                }}
+                                style={{ cursor: 'pointer' }}
+                                className='tim-icons icon-trash-simple classVisible'
+                              ></i>
+                            </Button>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </Table>
+                </Card>
+              </div>
             </Row>
-            <div className='row justify-content-center mt-4'>
-              <img
-                src={imagePreview}
-                style={{ maxWidth: '250px', maxHeight: '250px' }}
-                alt=''
-              />
-            </div>
-            <CustomInput
-              type='file'
-              id='exampleCustomFileBrowser'
-              name='customFile'
-              onChange={(e) => {
-                let reader = new FileReader();
-                let file = e.target.files[0];
-                reader.onloadend = () => {
-                  setImage(file);
-                  setImagePreview(reader.result);
-                };
-                reader.readAsDataURL(file);
-              }}
-            />
-          </ModalBody>
-          <ModalFooter
-            style={{
-              background: 'linear-gradient(180deg,#222a42 0,#1d253b)!important',
-            }}
-          >
-            <Button
-              color='success'
-              onClick={() =>
-                handleUpdate({
-                  _id: id,
-                  name,
-                  country,
-                  currency,
-                })
-              }
-            >
-              Save
-            </Button>
-            <Button color='secondary' onClick={toggle}>
-              Cancel
-            </Button>
-          </ModalFooter>
-        </Modal>
-        {alert}
-        <Row>
-          <div className='col-md-10 mx-auto'>
-            <Card className='card mt-4 pr-5'>
-              <CardHeader className='row justify-content-between ml-2 mt-1 mr-2 align-items-center'>
-                <CardTitle className='m-0' tag='h1'>
-                  <i className='fas fa-landmark'></i> Archive Brokers
-                </CardTitle>
-                <Link to='/admin/broker/:id'>
-                  <Button>Nova Corretora</Button>
-                </Link>
-              </CardHeader>
-              <Table className='m-4'>
-                <thead>
-                  <tr>
-                    <th>Picture</th>
-                    <th>Name</th>
-                    <th>Country</th>
-                    <th>Currency</th>
-                    <th style={{ textAlign: 'center' }}>Ações</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {brokers.map((brk) => (
-                    <tr key={brk._id} id={brk._id}>
-                      <th>
-                        <div
-                          style={{
-                            background: `url(${Config.SERVER_ADDRESS}${brk.filepath}) no-repeat center  center   / contain `,
-                            width: '100px',
-                            height: '100px',
-                            // backgroundPosition: 'center',
-                            // backgroundRepeat: 'no-repeat',
-                            // backgroundSize: '',
-                          }}
-                          alt='...'
-                          className='avatar'
-                        />
-                      </th>
-                      <th>{brk.name}</th>
-                      <th>{countries[brk.country]}</th>
-                      <th>{currencies[brk.currency].name}</th>
-                      <td style={{ textAlign: 'center' }}>
-                        <MyTooltip
-                          placement='top'
-                          target={`unarchive-${brk._id}`}
-                        >
-                          Unarchive
-                        </MyTooltip>
-                        <Button
-                          id={`unarchive-${brk._id}`}
-                          style={{ cursor: 'default' }}
-                          color='info'
-                          size='sm'
-                          className='btn-icon btn-link like'
-                        >
-                          <i
-                            id={brk._id}
-                            className='tim-icons icon-upload'
-                            style={{ cursor: 'pointer' }}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              warningWithConfirmAndCancelMessage(e.target.id);
-                            }}
-                          ></i>
-                        </Button>
-                        <MyTooltip placement='top' target={`edit-${brk._id}`}>
-                          Edit
-                        </MyTooltip>
-                        <Button
-                          id={`edit-${brk._id}`}
-                          style={{ cursor: 'default' }}
-                          color='warning'
-                          size='sm'
-                          className='btn-icon btn-link like'
-                        >
-                          <i
-                            className='tim-icons icon-pencil'
-                            style={{ cursor: 'pointer' }}
-                            onClick={(e) => {
-                              toggle();
-                              const filtered = brokers.find(
-                                (brk) =>
-                                  brk._id ===
-                                  e.target.parentElement.parentElement
-                                    .parentElement.id
-                              );
-                              // imageRef.current.sayHello(
-                              //   `${Config.SERVER_ADDRESS}${filtered.filepath}`
-                              // );
-                              setImagePreview(
-                                `${Config.SERVER_ADDRESS}${filtered.filepath}`
-                              );
-                              setId(filtered._id);
-                              setName(filtered.name);
-                              setCountry(filtered.country);
-                              setCurrency(filtered.currency);
-                            }}
-                          />
-                        </Button>
-                        <MyTooltip placement='top' target={`Delete-${brk._id}`}>
-                          Excluir
-                        </MyTooltip>
-                        <Button
-                          id={`Delete-${brk._id}`}
-                          size='sm'
-                          className='btn-icon btn-link'
-                          color='danger'
-                          style={{
-                            backgroundColor: 'transparent',
-                            outline: 'none',
-                            borderColor: 'transparent',
-                            cursor: 'default',
-                          }}
-                        >
-                          <i
-                            id={brk._id}
-                            onClick={(e) => {
-                              e.preventDefault();
-                              warningWithConfirmAndCancelMessage(
-                                e.target.id,
-                                'delete'
-                              );
-                            }}
-                            style={{ cursor: 'pointer' }}
-                            className='tim-icons icon-trash-simple classVisible'
-                          ></i>
-                        </Button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </Table>
-            </Card>
-          </div>
-        </Row>
+          </>
+        )}
       </div>
     </>
   );

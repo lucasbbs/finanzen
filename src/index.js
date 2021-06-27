@@ -28,14 +28,23 @@ import 'assets/css/nucleo-icons.css';
 import 'react-notification-alert/dist/animate.css';
 import 'assets/scss/black-dashboard-pro-react.scss?v=1.2.0';
 import 'assets/demo/demo.css';
-import { isAuthenticated } from './services/auth';
+import { isAuthenticated, isFirtAccess } from './services/auth';
 
 const PrivateRoute = ({ component: Component, ...rest }) => (
   <Route
     {...rest}
     render={(props) =>
       isAuthenticated() ? (
-        <Component {...props} />
+        isFirtAccess() ? (
+          <Redirect
+            to={{
+              pathname: '/auth/first-access',
+              // state: { from: props.location },
+            }}
+          />
+        ) : (
+          <Component {...props} />
+        )
       ) : (
         <Redirect
           to={{ pathname: '/auth/login', state: { from: props.location } }}

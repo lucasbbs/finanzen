@@ -1,8 +1,7 @@
 {
-  "name": "black-dashboard-pro-react",
+  "name": "finanzen",
   "version": "1.1.0",
   "private": true,
-  "homepage": "https://demos.creative-tim.com/black-dashboard-pro-react/#/admin/dashboard",
   "dependencies": {
     "@fortawesome/fontawesome-free": "^5.15.3",
     "axios": "^0.21.1",
@@ -10,6 +9,7 @@
     "chart.js": "2.9.4",
     "classnames": "2.2.6",
     "date-fns": "^2.22.1",
+    "dotenv": "^10.0.0",
     "match-sorter": "6.0.2",
     "moment": "2.29.1",
     "node-sass": "4.14.1",
@@ -23,6 +23,7 @@
     "react-bootstrap-sweetalert": "5.2.0",
     "react-bootstrap-wizard": "0.0.9",
     "react-chartjs-2": "2.11.1",
+    "react-date-picker": "^8.2.0",
     "react-datetime": "3.0.4",
     "react-dom": "17.0.1",
     "react-jvectormap": "0.0.16",

@@ -13,10 +13,13 @@ const Verify = ({ location }) => {
         'Content-Type': 'application/json',
       },
     };
-    const address = `${Config.SERVER_ADDRESS}/api/users/verify/${emailToken}`;
-    console.log(address);
+
     await axios
-      .put(address, null, config)
+      .put(
+        `${Config.SERVER_ADDRESS}/api/users/verify/${emailToken}`,
+        null,
+        config
+      )
       .then((res) => {
         console.log(res);
         history.push('/admin/dashboard');

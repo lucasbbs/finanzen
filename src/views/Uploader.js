@@ -80,6 +80,7 @@ const Uploader = () => {
       );
     }
     console.log(investmentsBulkUpdate);
+    // eslint-disable-next-line
   }, [investmentsBulkUpdate, submitCount]);
   const onSubmit = async (e) => {
     e.preventDefault();
@@ -202,6 +203,7 @@ const Uploader = () => {
                 type='submit'
                 disabled={uploaded}
                 className='btn brn-primary btn-block mt-4'
+                value='Upload'
               />
             </form>
           </>

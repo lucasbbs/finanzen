@@ -26,6 +26,9 @@ import { reverseFormatNumber } from '../../helpers/functions';
 import { ptBR } from 'date-fns/locale';
 
 import Config from '../../config.json';
+import DatePicker from 'react-date-picker';
+import CalendarIcon from 'components/CalendarIcon/CalendarIcon';
+import ClearIcon from 'components/ClearIcon/ClearIcon';
 
 const Incomes = ({
   incomes,
@@ -57,7 +60,6 @@ const Incomes = ({
   const [dateIncome, setDateIncome] = useState('');
   const [modal, setModal] = useState(false);
   const [modalAddIncome, setModalAddIncome] = useState(false);
-  // eslint-disable-next-line
   const [isValid, setIsValid] = useState(true);
   const [isEdit, setIsEdit] = useState(false);
   const [updatedIncome, setUpdatedIncome] = useState(incomesToBeUpdated);
@@ -75,6 +77,7 @@ const Incomes = ({
     if (isAdding) {
       setIsAdding(false);
       let incomeObject = {};
+      console.log(dateEl);
       incomeObject[
         format(parse(dateEl, 'yyyy-MM', new Date()), 'yyyy-MM-dd')
       ] = reverseFormatNumber(valueEl);
@@ -82,9 +85,9 @@ const Incomes = ({
       var index = updatedIncome
         .map((key) => Object.keys(key)[0])
         .indexOf(Object.keys(incomeObject)[0]);
+
       handleAddIncome({ incomes: updatedIncome }, dateEl, valueEl, index);
     }
-    // eslint-disable-next-line
   }, [updatedIncome]);
 
   const toggle = () => {
@@ -121,12 +124,13 @@ const Incomes = ({
   const handleIncome = () => {
     setIsLoading(true);
     if (isEdit) {
-      setDateEl(document.querySelector('#IncomeDate').value);
+      // setDateEl(document.querySelector('#IncomeDate').value);
       setDateIncome('');
       setValueIncome(0.0);
     }
 
     let incomeObject = {};
+    console.log(dateEl);
     incomeObject[
       format(parse(dateEl, 'yyyy-MM', new Date()), 'yyyy-MM-dd')
     ] = reverseFormatNumber(valueEl);
@@ -134,7 +138,7 @@ const Incomes = ({
     const index = updatedIncome
       .map((key) => Object.keys(key)[0])
       .indexOf(Object.keys(incomeObject)[0]);
-
+    console.log(index, updatedIncome);
     if (index !== -1) {
       updatedIncome.splice(index, 1);
       setUpdatedIncome(
@@ -173,7 +177,7 @@ const Incomes = ({
           setValueIncome(0.0);
           notify(
             `You have successfully updated the income for ${format(
-              parse(dateEl, 'yyyy-MM', new Date()),
+              dateEl,
               'MMM/yyyy',
               { locale: ptBR }
             )}`
@@ -183,7 +187,7 @@ const Incomes = ({
           setValueIncome(0.0);
           notify(
             `You have successfully added the income for ${format(
-              parse(dateEl, 'yyyy-MM', new Date()),
+              dateEl,
               'MMM/yyyy',
               { locale: ptBR }
             )}`
@@ -192,12 +196,12 @@ const Incomes = ({
 
         if (index === -1) {
           incomes.push([
-            format(parse(dateEl, 'yyyy-MM', new Date()), 'dd/MM/yyyy'),
+            format(dateEl, 'dd/MM/yyyy'),
             reverseFormatNumber(valueEl),
           ]);
         } else {
           incomes[index] = [
-            format(parse(dateEl, 'yyyy-MM', new Date()), 'dd/MM/yyyy'),
+            format(dateEl, 'dd/MM/yyyy'),
             reverseFormatNumber(valueEl),
           ];
         }
@@ -233,7 +237,7 @@ const Incomes = ({
       })
       .catch((err) => {
         setIsLoading(false);
-        notify(err.response.data, 'danger');
+        notify(err.response, 'danger');
       });
     if (index === -1) {
     }
@@ -241,8 +245,6 @@ const Incomes = ({
 
   const handleRemoveIncome = async (input, removido) => {
     setIsLoading(true);
-    // console.log(setIsLoading(true));
-
     let incomesObj = { incomes: input };
     const config = {
       headers: {
@@ -318,7 +320,6 @@ const Incomes = ({
     </button>
   );
   return (
-    // eslint-disable
     <div>
       <div className='react-notification-alert-container'>
         <NotificationAlert ref={notificationAlertRef} />
@@ -344,7 +345,7 @@ const Incomes = ({
                 <Label style={{ marginBottom: '0' }}>Income date</Label>
               </Col>
               <Col md='6'>
-                <Input
+                {/* <Input
                   className='borderColor'
                   style={{
                     color: 'rgba(255, 255, 255, 0.8)',
@@ -357,6 +358,19 @@ const Incomes = ({
                   onChange={(e) => {
                     setDateIncome(e.target.value);
                     setDateEl(e.target.value);
+                  }}
+                /> */}
+                <DatePicker
+                  id='InitialDate'
+                  format='MMM/yyyy'
+                  yearPlaceholder='  ----'
+                  maxDetail='year'
+                  value={dateIncome}
+                  calendarIcon={<CalendarIcon />}
+                  clearIcon={<ClearIcon />}
+                  onChange={(date) => {
+                    setDateIncome(date);
+                    setDateEl(format(date, 'yyyy-MM'));
                   }}
                 />
               </Col>
@@ -381,9 +395,9 @@ const Incomes = ({
                   prefix={'R$'}
                   customInput={Input}
                   onChange={(e) => {
-                    if (isEdit) {
-                      setDateEl(document.querySelector('#IncomeDate').value);
-                    }
+                    // if (isEdit) {
+                    //   setDateEl(document.querySelector('#IncomeDate').value);
+                    // }
                     setValueIncome(e.target.value);
                     setValueEl(e.target.value);
                   }}
@@ -528,10 +542,12 @@ const Incomes = ({
                             e.target.getBoundingClientRect().top
                           ) {
                             setIsEdit(true);
-                            const date = format(
-                              parse(e.target.id, 'dd/MM/yyyy', new Date()),
-                              'yyyy-MM'
+                            const date = parse(
+                              e.target.id,
+                              'dd/MM/yyyy',
+                              new Date()
                             );
+
                             setDateIncome(date);
                             const value = reverseFormatNumber(
                               e.target.innerHTML
@@ -540,7 +556,10 @@ const Incomes = ({
                             const newObj = {};
                             newObj[
                               format(
-                                parse(e.target.id, 'dd/MM/yyyy', new Date()),
+                                addDays(
+                                  parse(e.target.id, 'dd/MM/yyyy', new Date()),
+                                  1
+                                ),
                                 'yyyy-MM-dd'
                               )
                             ] = value;

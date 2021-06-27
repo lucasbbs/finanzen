@@ -37,10 +37,7 @@ import {
   Modal,
   UncontrolledTooltip,
   ModalBody,
-  Row,
-  Col,
   ModalHeader,
-  ModalFooter,
   Table,
 } from 'reactstrap';
 import { logout } from 'services/auth';
@@ -49,12 +46,10 @@ import { currencyFormat } from '../../helpers/functions';
 import { fetchAllInvestments } from '../../services/Investments';
 import MyTooltip from 'components/Tooltip/MyTooltip';
 const AdminNavbar = (props) => {
-  const [name, setName] = useState(
-    JSON.parse(localStorage.getItem('userInfo')).name
-  );
-  const getName = (input) => {
-    return input.split(' ').slice(0, -1).join(' ');
-  };
+  const [name] = useState(JSON.parse(localStorage.getItem('userInfo')).name);
+  // const getName = (input) => {
+  //   return input.split(' ').slice(0, -1).join(' ');
+  // };
   const [filter, setFilter] = useState('');
   const [investments, setInvestments] = useState([]);
   const [investmentsFiltered, setInvestmentsFiltered] = useState([]);
@@ -100,20 +95,24 @@ const AdminNavbar = (props) => {
             })
             .filter(
               (invest) =>
-                invest.name.toLowerCase().includes(filter) ||
-                invest.broker.name.toLowerCase().includes(filter) ||
-                invest.type.toLowerCase().includes(filter) ||
-                invest.rate.toLowerCase().includes(filter) ||
-                invest.indexer.toLowerCase().includes(filter) ||
-                invest.investment_date.toLowerCase().includes(filter) ||
-                invest.due_date.toLowerCase().includes(filter)
+                invest.name.toLowerCase().includes(filter.toLowerCase()) ||
+                invest.broker.name
+                  .toLowerCase()
+                  .includes(filter.toLowerCase()) ||
+                invest.type.toLowerCase().includes(filter.toLowerCase()) ||
+                invest.rate.toLowerCase().includes(filter.toLowerCase()) ||
+                invest.indexer.toLowerCase().includes(filter.toLowerCase()) ||
+                invest.investment_date
+                  .toLowerCase()
+                  .includes(filter.toLowerCase()) ||
+                invest.due_date.toLowerCase().includes(filter.toLowerCase())
             );
     setInvestmentsFiltered(filteredInvestments);
 
     window.addEventListener('resize', updateColor);
     return function cleanup() {
       window.removeEventListener('resize', updateColor);
-    };
+    }; // eslint-disable-next-line
   }, [filter]);
 
   // function that adds color white/transparent to the navbar on resize (this is for the collapse)
@@ -184,7 +183,7 @@ const AdminNavbar = (props) => {
             </thead>
             <tbody>
               {investmentsFiltered.map((invest) => (
-                <tr>
+                <tr key={invest._id}>
                   <td>
                     <Link
                       to={`/admin/investment/${invest._id}`}
@@ -193,6 +192,7 @@ const AdminNavbar = (props) => {
                       <span
                         id={`Tooltip-${invest._id}`}
                         style={{
+                          height: '20px',
                           maxWidth: '110px',
                           whiteSpace: 'nowrap',
                           overflow: 'hidden',
@@ -221,6 +221,7 @@ const AdminNavbar = (props) => {
                   <td>
                     <div
                       style={{
+                        height: '20px',
                         maxWidth: '180px',
                         overflow: 'hidden',
                         display: 'inline-block',
@@ -236,42 +237,44 @@ const AdminNavbar = (props) => {
               ))}
             </tbody>
             <tfoot>
-              <td>Total</td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td></td>
-              <td>
-                {currencyFormat(
-                  investmentsFiltered.reduce(
-                    (acum, curr) => acum + curr.initial_amount,
-                    0
-                  )
-                )}
-              </td>
-              <td>
-                {' '}
-                <div
-                  style={{
-                    maxWidth: '180px',
-                    overflow: 'hidden',
-                    display: 'inline-block',
-                    textOverflow: 'ellipsis',
-                    minWidth: '80px',
-                    textAlign: 'right',
-                  }}
-                >
-                  <span>
-                    {currencyFormat(
-                      investmentsFiltered.reduce(
-                        (acum, curr) => acum + curr.accrued_income,
-                        0
-                      )
-                    )}
-                  </span>
-                </div>
-              </td>
+              <tr>
+                <td>Total</td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td></td>
+                <td>
+                  {currencyFormat(
+                    investmentsFiltered.reduce(
+                      (acum, curr) => acum + curr.initial_amount,
+                      0
+                    )
+                  )}
+                </td>
+                <td>
+                  <div
+                    style={{
+                      height: '20px',
+                      maxWidth: '180px',
+                      overflow: 'hidden',
+                      display: 'inline-block',
+                      textOverflow: 'ellipsis',
+                      minWidth: '80px',
+                      textAlign: 'right',
+                    }}
+                  >
+                    <span>
+                      {currencyFormat(
+                        investmentsFiltered.reduce(
+                          (acum, curr) => acum + curr.accrued_income,
+                          0
+                        )
+                      )}
+                    </span>
+                  </div>
+                </td>
+              </tr>
             </tfoot>
           </Table>
         </ModalBody>

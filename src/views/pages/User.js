@@ -31,14 +31,15 @@ import {
   Row,
   Col,
   Label,
-  CardText,
 } from 'reactstrap';
 import Config from '../../config.json';
 import ReactBSAlert from 'react-bootstrap-sweetalert';
 import { useHistory } from 'react-router-dom';
+// import DatePicker from 'react-date-picker';
 
 const User = () => {
   let history = useHistory();
+  // const [date, setDate] = useState(new Date());
   const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 
   const [match, setMatch] = useState(true);
@@ -47,6 +48,9 @@ const User = () => {
     localStorage.getItem('userInfo')
       ? JSON.parse(localStorage.getItem('userInfo')).email
       : null
+  ); // eslint-disable-next-line
+  const [registerConfirmPassword, setregisterConfirmPassword] = React.useState(
+    ''
   );
   const [alert, setAlert] = useState(null);
   const [source, setsource] = React.useState('');
@@ -94,6 +98,7 @@ const User = () => {
     setdestination: (value) => setdestination(value),
     setsourceState: (value) => setsourceState(value),
     setdestinationState: (value) => setdestinationState(value),
+    setregisterConfirmPassword: (value) => setregisterConfirmPassword(value),
   };
   const change = (event, stateName, type, stateNameEqualTo, maxValue) => {
     switch (type) {
@@ -128,24 +133,29 @@ const User = () => {
     // return await response.json();
   };
   const handleSave = async (userObj) => {
-    if (!match) {
+    if (source !== destination) {
+      setsourceState('has-danger');
+      setdestinationState('has-danger');
     } else {
-      const config = {
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${token}`,
-        },
-      };
-      await axios
-        .put(`${Config.SERVER_ADDRESS}/api/users/${userId}`, userObj, config)
-        .then((res) => {
-          userInfo['country'] = country;
-          userInfo['currency'] = currency;
-          userInfo['name'] = name;
-          localStorage.setItem('userInfo', JSON.stringify(userInfo));
-          console.log('alterado com sucesso');
-        })
-        .catch((error) => console.log(error));
+      if (!match) {
+      } else {
+        const config = {
+          headers: {
+            'Content-Type': 'application/json',
+            Authorization: `Bearer ${token}`,
+          },
+        };
+        await axios
+          .put(`${Config.SERVER_ADDRESS}/api/users/${userId}`, userObj, config)
+          .then((res) => {
+            userInfo['country'] = country;
+            userInfo['currency'] = currency;
+            userInfo['name'] = name;
+            localStorage.setItem('userInfo', JSON.stringify(userInfo));
+            console.log('alterado com sucesso');
+          })
+          .catch((error) => console.log(error));
+      }
     }
   };
 
@@ -180,7 +190,7 @@ const User = () => {
         confirmBtnBsStyle='success'
         btnSize=''
       >
-        Seu investimento foi deletado...
+        Seu usuário foi deletado...
       </ReactBSAlert>
     );
   };
@@ -344,7 +354,7 @@ const User = () => {
                       </FormGroup>
                     </Col>*/}
                     <Col md='3' style={{ paddingRight: '0' }}>
-                      <Label>País</Label>
+                      <Label>Country</Label>
                       <Input
                         required
                         style={{ backgroundColor: '#2b3553' }}
@@ -371,7 +381,7 @@ const User = () => {
                       </Input>
                     </Col>
                     <Col md='3' hidden={isHidden} style={{ paddingRight: '0' }}>
-                      <label>Moeda</label>
+                      <label>Currency</label>
                       <Input
                         required
                         style={{ backgroundColor: '#2b3553' }}
@@ -417,12 +427,14 @@ const User = () => {
                           className='borderColor'
                           placeholder='password'
                           type='password'
-                          onChange={(e) =>
-                            change(e, 'source', 'equalTo', {
-                              value: destination,
-                              stateName: 'destination',
-                            })
-                          }
+                          onChange={(e) => {
+                            change(e, 'source', 'password');
+                            sourceState === 'has-danger' &&
+                              change(e, 'source', 'equalTo', {
+                                value: destination,
+                                stateName: 'destination',
+                              });
+                          }}
                         />
                       </FormGroup>
                     </Col>
@@ -449,7 +461,6 @@ const User = () => {
                       </FormGroup>
                     </Col>
                     {/* <Col className='label-on-right' tag='label' sm='4'>
-                      <code>equalTo="#idSource"</code>
                     </Col> */}
                   </Row>
                 </Form>
@@ -476,7 +487,7 @@ const User = () => {
               </CardFooter>
             </Card>
           </Col>
-          <Col md='4'>
+          {/* <Col md='4'>
             <Card className='card-user'>
               <CardBody>
                 <CardText />
@@ -515,7 +526,7 @@ const User = () => {
                 </div>
               </CardFooter>
             </Card>
-          </Col>
+          </Col> */}
         </Row>
       </div>
     </>

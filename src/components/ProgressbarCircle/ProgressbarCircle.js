@@ -31,7 +31,7 @@ const ProgressbarCircle = ({
   useEffect(() => {
     if (handleAddIncomeCall) {
       handleAddIncome(incomesObj, id);
-    }
+    } // eslint-disable-next-line
   }, [handleAddIncomeCall]);
   const [percentage, setPercentage] = useState(0);
   const [login] = useState(

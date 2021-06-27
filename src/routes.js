@@ -40,6 +40,7 @@ import Register from 'views/pages/Register.js';
 import Timeline from 'views/pages/Timeline.js';
 import User from 'views/pages/User.js';
 import Uploader from 'views/Uploader.js';
+import WizardFirstAccess from 'views/WizardFirstAccess/Wizard.js';
 // import Login from 'views/pages/Login.js';
 import Rtl from 'views/pages/Rtl.js';
 import Lock from 'views/pages/Lock.js';
@@ -48,11 +49,19 @@ import InvestmentDetails from 'views/InvestmentDetails';
 import ArchiveInvestments from 'views/ArchiveInvestments';
 
 import Login from 'views/Login';
+import Verify from 'views/Verify';
 import BrokerList from 'views/BrokersList';
 import BrokerDetails from 'views/BrokerDetails';
 import ArchiveBrokers from 'views/ArchiveBrokers';
 
 const routes = [
+  {
+    path: '/first-access',
+    name: 'First Access',
+    icon: 'tim-icons icon-chart-pie-36',
+    component: WizardFirstAccess,
+    layout: '/auth',
+  },
   {
     path: '/dashboard',
     name: 'Dashboard',
@@ -170,6 +179,15 @@ const routes = [
         mini: 'L',
         rtlMini: 'هعذا',
         component: Login,
+        layout: '/auth',
+      },
+      {
+        path: '/verify/:id',
+        name: 'Verify',
+        rtlName: 'هعذاتسجيل الدخول',
+        mini: 'V',
+        rtlMini: 'هعذا',
+        component: Verify,
         layout: '/auth',
       },
       {

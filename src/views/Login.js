@@ -1,16 +1,42 @@
 import axios from 'axios';
 import React, { useEffect, useRef, useState } from 'react';
 import { useHistory } from 'react-router-dom';
-import { Button, Form, FormGroup, Input, Label, Row } from 'reactstrap';
+import {
+  Button,
+  Form,
+  FormGroup,
+  Input,
+  InputGroup,
+  InputGroupAddon,
+  InputGroupText,
+  Label,
+  Row,
+} from 'reactstrap';
 import styles from '../assets/scss/black-dashboard-pro-react/MyCustomCSS/login.module.scss';
 import Config from '../config.json';
 import NotificationAlert from 'react-notification-alert';
+import classnames from 'classnames';
 
 /*eslint-disable*/
 const Login = ({ location }) => {
   let history = useHistory();
 
+  const [fullnameFocus, setfullnameFocus] = useState('');
+  const [emailFocus, setemailFocus] = useState('');
+  const [passwordFocus, setPasswordFocus] = useState('');
+  const [confirmPasswordFocus, setConfirmPasswordFocus] = useState('');
   const [container, setContainer] = useState();
+  const [match, setMatch] = useState(true);
+  const [password, setPassword] = useState(null);
+  const [registerEmailState, setregisterEmailState] = useState('');
+  const [registerEmail, setregisterEmail] = useState('');
+
+  const [source, setsource] = useState('');
+  const [destination, setdestination] = useState('');
+  const [sourceState, setsourceState] = useState('');
+  const [loginFullName, setloginFullName] = useState('');
+  const [loginFullNameState, setloginFullNameState] = useState('');
+  const [destinationState, setdestinationState] = useState('');
   const [login, setLogin] = useState(
     localStorage.getItem('userInfo')
       ? JSON.parse(localStorage.getItem('userInfo'))
@@ -48,6 +74,8 @@ const Login = ({ location }) => {
         if (res.data.isValidated) {
           localStorage.setItem('userInfo', JSON.stringify(res.data));
           setLogin(JSON.stringify(res.data));
+        } else {
+          history.push(`/auth/verify/${res.data._id}`);
         }
       })
       .catch((err) => notify(err.response.data, 'danger'));
@@ -55,13 +83,46 @@ const Login = ({ location }) => {
 
   const doRegister = async (e, name, email, password, confirmPassword) => {
     e.preventDefault();
+    if (registerEmailState === '') {
+      setregisterEmailState('has-danger');
+    }
+
+    if (loginFullNameState === '') {
+      setloginFullNameState('has-danger');
+    }
+    if (
+      sourceState === '' ||
+      destinationState === '' ||
+      source === '' ||
+      destination === ''
+    ) {
+      setsourceState('has-danger');
+      setdestinationState('has-danger');
+    }
+
+    if (
+      registerEmailState === '' ||
+      registerEmailState === 'has-danger' ||
+      loginFullNameState === '' ||
+      loginFullNameState === 'has-danger' ||
+      sourceState === '' ||
+      source === '' ||
+      sourceState === 'has-danger' ||
+      destinationState === '' ||
+      destination === '' ||
+      destinationState === 'has-danger'
+    ) {
+      return;
+    }
+    e.preventDefault();
     if (password !== confirmPassword) {
+      setsourceState('has-danger');
+      setdestinationState('has-danger');
       notify(
         'You must be sure that your password is correctly typed',
         'danger'
       );
     } else {
-      console.log('teste');
       await axios
         .post(
           `${Config.SERVER_ADDRESS}/api/users`,
@@ -73,10 +134,12 @@ const Login = ({ location }) => {
           config
         )
         .then((res) => {
-          setLogin(JSON.stringify(res.data));
+          // setLogin(JSON.stringify(res.data));
           notify(
             'Você cadastrou com sucesso o seu usuário, para continuar, verifique o link que encaminhamos para você através do e-mail informado'
           );
+          console.log('teste de sucesso ao cadastrar um usuario');
+          history.push(`/auth/verify/${res.data._id}`);
         })
         .catch((err) => notify(err.response.data, 'danger'));
     }
@@ -97,6 +160,73 @@ const Login = ({ location }) => {
       autoDismiss: 7,
     };
     notificationAlertRef.current.notificationAlert(options);
+  };
+  const stateFunctions = {
+    setloginFullName: (value) => setloginFullName(value),
+    setloginFullNameState: (value) => setloginFullNameState(value),
+    setregisterEmail: (value) => setregisterEmail(value),
+    setregisterEmailState: (value) => setregisterEmailState(value),
+    setsource: (value) => setsource(value),
+    setdestination: (value) => setdestination(value),
+    setsourceState: (value) => setsourceState(value),
+    setdestinationState: (value) => setdestinationState(value),
+    setregisterConfirmPassword: (value) => setregisterConfirmPassword(value),
+  };
+  const verifyEmail = (value) => {
+    var emailRex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    if (emailRex.test(value)) {
+      return true;
+    }
+    return false;
+  };
+  const compare = (string1, string2) => {
+    if (string1 === string2) {
+      return true;
+    }
+    return false;
+  };
+  const verifyLength = (value, length) => {
+    if (value.length >= length) {
+      return true;
+    }
+    return false;
+  };
+  const change = (event, stateName, type, stateNameEqualTo, maxValue) => {
+    switch (type) {
+      case 'email':
+        if (verifyEmail(event.target.value)) {
+          stateFunctions['set' + stateName + 'State']('has-success');
+        } else {
+          stateFunctions['set' + stateName + 'State']('has-danger');
+        }
+        break;
+      case 'equalTo':
+        if (compare(event.target.value, stateNameEqualTo.value)) {
+          stateFunctions['set' + stateName + 'State']('has-success');
+          stateFunctions['set' + stateNameEqualTo.stateName + 'State'](
+            'has-success'
+          );
+          setMatch(true);
+          setPassword(event.target.value);
+        } else {
+          stateFunctions['set' + stateName + 'State']('has-danger');
+          stateFunctions['set' + stateNameEqualTo.stateName + 'State'](
+            'has-danger'
+          );
+          setMatch(false);
+        }
+        break;
+      case 'length':
+        if (verifyLength(event.target.value, stateNameEqualTo)) {
+          stateFunctions['set' + stateName + 'State']('has-success');
+        } else {
+          stateFunctions['set' + stateName + 'State']('has-danger');
+        }
+        break;
+      default:
+        break;
+    }
+    stateFunctions['set' + stateName](event.target.value);
   };
   return (
     <>
@@ -136,146 +266,384 @@ const Login = ({ location }) => {
                 <span className={styles.spanClass}>
                   or use your email for registration
                 </span>
-                <div
-                  style={{
-                    width: '100%',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    border: '1px solid #2b3553',
-                    borderRadius: '0.4285rem',
-                    margin: '8px 0',
-                  }}
-                  onFocus={(e) => {
-                    e.target.parentElement.classList.add('formControl');
-                  }}
-                  onBlur={(e) =>
-                    e.target.parentElement.classList.remove('formControl')
-                  }
+                <label htmlFor=''>teste</label>
+                <InputGroup
+                  className={classnames(loginFullNameState, {
+                    'input-group-focus': fullnameFocus,
+                  })}
                 >
-                  <i
-                    style={{ marginLeft: '5px' }}
-                    onClick={(e) => e.target.nextElementSibling.focus()}
-                    className='tim-icons icon-single-02'
-                  ></i>
+                  <InputGroupAddon addonType='prepend'>
+                    <InputGroupText>
+                      <i className='tim-icons icon-single-02' />
+                    </InputGroupText>
+                  </InputGroupAddon>
                   <Input
                     id='registerName'
-                    autoComplete='none'
-                    required
-                    style={{
-                      width: '100%',
-                      border: 'none',
-                      margin: '0',
-                      backgroundColor: 'transparent !important',
-                      color: 'white !important',
-                    }}
-                    className={styles.inputSyle}
+                    name='registerName'
+                    placeholder='Full Name...'
                     type='text'
-                    placeholder='Name'
+                    onChange={(e) => change(e, 'loginFullName', 'length', 1)}
+                    onFocus={(e) => setfullnameFocus(true)}
+                    onBlur={(e) => setfullnameFocus(false)}
                   />
-                </div>
-                <div
+                </InputGroup>
+                {loginFullNameState === 'has-danger' ? (
+                  <label
+                    style={{
+                      textAlign: 'right',
+                      color: '#ec250d',
+                      fontSize: '0.75rem',
+                      marginBottom: ' 5px',
+                      marginTop: '-10px',
+                    }}
+                    className='error'
+                  >
+                    This field is required.
+                  </label>
+                ) : null}
+                {/* <FormGroup
                   style={{
                     width: '100%',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    border: '1px solid #2b3553',
-                    borderRadius: '0.4285rem',
-                    margin: '8px 0',
+                    marginBottom: '0',
                   }}
-                  onFocus={(e) => {
-                    e.target.parentElement.classList.add('formControl');
-                  }}
-                  onBlur={(e) =>
-                    e.target.parentElement.classList.remove('formControl')
-                  }
+                  className={`has-label ${loginFullNameState}`}
                 >
-                  <i
-                    style={{ marginLeft: '5px' }}
-                    className='tim-icons icon-email-85'
-                    onClick={(e) => e.target.nextElementSibling.focus()}
-                  ></i>
+                  <div
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      border: '1px solid #2b3553',
+                      borderRadius: '0.4285rem',
+                      margin: '8px 0',
+                    }}
+                    onFocus={(e) => {
+                      e.target.parentElement.classList.add('formControl');
+                    }}
+                    onBlur={(e) =>
+                      e.target.parentElement.classList.remove('formControl')
+                    }
+                  >
+                    <i
+                      style={{ marginLeft: '5px' }}
+                      onClick={(e) => e.target.nextElementSibling.focus()}
+                      className='tim-icons icon-single-02'
+                    ></i>
+                    <Input
+                     
+                      autoComplete='none'
+                      required
+                      style={{
+                        width: '100%',
+                        border: 'none',
+                        margin: '0',
+                        backgroundColor: 'transparent !important',
+                        color: 'white !important',
+                      }}
+                      className={styles.inputSyle}
+                      type='text'
+                      placeholder='Name'
+                      onChange={(e) => change(e, 'loginFullName', 'length', 1)}
+                    />
+                  </div>
+                </FormGroup>
+
+                {loginFullNameState === 'has-danger' ? (
+                  <label
+                    style={{
+                      color: '#ec250d',
+                      fontSize: '12px',
+                      marginTop: '-8px',
+                    }}
+                    className='error mb-0'
+                  >
+                    This field is required.
+                  </label>
+                ) : null} */}
+                <InputGroup
+                  className={classnames(registerEmailState, {
+                    'input-group-focus': emailFocus,
+                  })}
+                >
+                  <InputGroupAddon addonType='prepend'>
+                    <InputGroupText>
+                      <i className='tim-icons icon-email-85' />
+                    </InputGroupText>
+                  </InputGroupAddon>
                   <Input
                     id='registerEmail'
-                    autoComplete='none'
-                    required
+                    name='email'
+                    placeholder='Email...'
+                    type='email'
+                    onChange={(e) => change(e, 'registerEmail', 'email')}
+                    onFocus={(e) => setemailFocus(true)}
+                    onBlur={(e) => setemailFocus(false)}
+                  />
+                </InputGroup>
+                {registerEmailState === 'has-danger' ? (
+                  <label
+                    style={{
+                      textAlign: 'right',
+                      color: '#ec250d',
+                      fontSize: '0.75rem',
+                      marginBottom: ' 5px',
+                      marginTop: '-10px',
+                    }}
+                    className='error'
+                  >
+                    This field is required.
+                  </label>
+                ) : null}
+                {/* <FormGroup
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '0',
+                  }}
+                  className={`has-label ${registerEmailState}`}
+                >
+                  <div
                     style={{
                       width: '100%',
-                      border: 'none',
-                      margin: '0',
-                      backgroundColor: 'transparent !important',
-                      color: 'white !important',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      border: '1px solid #2b3553',
+                      borderRadius: '0.4285rem',
+                      margin: '8px 0',
                     }}
-                    className={styles.inputSyle}
-                    type='email'
-                    placeholder='Email'
-                  />
-                </div>
-                <div
-                  style={{
-                    width: '100%',
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    border: '1px solid #2b3553',
-                    borderRadius: '0.4285rem',
-                    margin: '8px 0',
-                  }}
-                  onFocus={(e) => {
-                    e.target.parentElement.classList.add('formControl');
-                  }}
-                  onBlur={(e) =>
-                    e.target.parentElement.classList.remove('formControl')
-                  }
+                    onFocus={(e) => {
+                      e.target.parentElement.classList.add('formControl');
+                    }}
+                    onBlur={(e) =>
+                      e.target.parentElement.classList.remove('formControl')
+                    }
+                  >
+                    <i
+                      style={{ marginLeft: '5px' }}
+                      className='tim-icons icon-email-85'
+                      onClick={(e) => e.target.nextElementSibling.focus()}
+                    ></i>
+                    <Input
+                      id='registerEmail'
+                      autoComplete='none'
+                      required
+                      style={{
+                        width: '100%',
+                        border: 'none',
+                        margin: '0',
+                        backgroundColor: 'transparent !important',
+                        color: 'white !important',
+                      }}
+                      className={styles.inputSyle}
+                      onChange={(e) => change(e, 'registerEmail', 'email')}
+                      type='email'
+                      placeholder='Email'
+                    />
+                  </div>
+                </FormGroup>
+                {registerEmailState === 'has-danger' ? (
+                  <label
+                    style={{
+                      color: '#ec250d',
+                      fontSize: '12px',
+                      marginTop: '-8px',
+                    }}
+                    className='error'
+                  >
+                    Please enter a valid email address.
+                  </label>
+                ) : null} */}
+                <InputGroup
+                  className={classnames(sourceState, {
+                    'input-group-focus': passwordFocus,
+                  })}
                 >
-                  <i
-                    className='tim-icons icon-lock-circle'
-                    style={{ marginLeft: '5px' }}
-                    onClick={(e) => e.target.nextElementSibling.focus()}
-                  ></i>
+                  <InputGroupAddon addonType='prepend'>
+                    <InputGroupText>
+                      <i className='tim-icons icon-lock-circle' />
+                    </InputGroupText>
+                  </InputGroupAddon>
                   <Input
                     id='registerPassword'
-                    autoComplete='new-password'
-                    required
-                    style={{ width: '100%', border: 'none', margin: '0' }}
-                    className={styles.inputSyle}
+                    name='password'
+                    placeholder='Password...'
                     type='password'
-                    placeholder='Password'
+                    onChange={(e) => change(e, 'source', 'password')}
+                    onFocus={(e) => setPasswordFocus(true)}
+                    onBlur={(e) => setPasswordFocus(false)}
                   />
-                </div>
-                <div
+                </InputGroup>
+                {sourceState === 'has-danger' ? (
+                  <label
+                    style={{
+                      textAlign: 'right',
+                      color: '#ec250d',
+                      fontSize: '0.75rem',
+                      marginBottom: ' 5px',
+                      marginTop: '-10px',
+                    }}
+                    className='error'
+                  >
+                    This field is required.
+                  </label>
+                ) : null}
+                {/* <FormGroup
                   style={{
                     width: '100%',
                     display: 'flex',
                     justifyContent: 'space-between',
                     alignItems: 'center',
-                    border: '1px solid #2b3553',
-                    borderRadius: '0.4285rem',
-                    margin: '8px 0',
+                    marginBottom: '0',
                   }}
-                  onFocus={(e) => {
-                    e.target.parentElement.classList.add('formControl');
-                  }}
-                  onBlur={(e) =>
-                    e.target.parentElement.classList.remove('formControl')
-                  }
+                  className={sourceState}
                 >
-                  <i
-                    className='tim-icons icon-lock-circle'
-                    style={{ marginLeft: '5px' }}
-                    onClick={(e) => e.target.nextElementSibling.focus()}
-                  ></i>
+                  <div
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      border: '1px solid #2b3553',
+                      borderRadius: '0.4285rem',
+                      margin: '8px 0',
+                    }}
+                    onFocus={(e) => {
+                      e.target.parentElement.classList.add('formControl');
+                    }}
+                    onBlur={(e) =>
+                      e.target.parentElement.classList.remove('formControl')
+                    }
+                  >
+                    <i
+                      className='tim-icons icon-lock-circle'
+                      style={{ marginLeft: '5px' }}
+                      onClick={(e) => e.target.nextElementSibling.focus()}
+                    ></i>
+                    <Input
+                      id='registerPassword'
+                      style={{ width: '100%', border: 'none', margin: '0' }}
+                      className={styles.inputSyle}
+                      placeholder='password'
+                      type='password'
+                      onChange={(e) => {
+                        change(e, 'source', 'password');
+                        sourceState === 'has-danger' &&
+                          change(e, 'source', 'equalTo', {
+                            value: destination,
+                            stateName: 'destination',
+                          });
+                      }}
+                    />
+                  </div>
+                </FormGroup> */}
+
+                <InputGroup
+                  className={classnames(destinationState, {
+                    'input-group-focus': confirmPasswordFocus,
+                  })}
+                >
+                  <InputGroupAddon addonType='prepend'>
+                    <InputGroupText>
+                      <i className='tim-icons icon-lock-circle' />
+                    </InputGroupText>
+                  </InputGroupAddon>
                   <Input
                     id='confirm'
-                    autoComplete='new-password'
-                    required
-                    style={{ width: '100%', border: 'none', margin: '0' }}
-                    className={styles.inputSyle}
+                    equalto='#registerPassword'
+                    name='pasword'
+                    placeholder='Confirm password...'
                     type='password'
-                    placeholder='Confirm Password'
+                    onChange={(e) =>
+                      change(e, 'destination', 'equalTo', {
+                        value: source,
+                        stateName: 'source',
+                      })
+                    }
+                    onFocus={(e) => setConfirmPasswordFocus(true)}
+                    onBlur={(e) => setConfirmPasswordFocus(false)}
                   />
-                </div>
+                </InputGroup>
+                {destinationState === 'has-danger' ? (
+                  <label
+                    style={{
+                      textAlign: 'right',
+                      color: '#ec250d',
+                      fontSize: '0.75rem',
+                      marginBottom: ' 5px',
+                      marginTop: '-10px',
+                    }}
+                    className='error'
+                  >
+                    This field is required.
+                  </label>
+                ) : null}
+                {/* <FormGroup
+                  style={{
+                    width: '100%',
+                    display: 'flex',
+                    justifyContent: 'space-between',
+                    alignItems: 'center',
+                    marginBottom: '0',
+                  }}
+                  className={destinationState}
+                >
+                  <div
+                    style={{
+                      width: '100%',
+                      display: 'flex',
+                      justifyContent: 'space-between',
+                      alignItems: 'center',
+                      border: '1px solid #2b3553',
+                      borderRadius: '0.4285rem',
+                      margin: '8px 0',
+                    }}
+                    onFocus={(e) => {
+                      e.target.parentElement.classList.add('formControl');
+                    }}
+                    onBlur={(e) =>
+                      e.target.parentElement.classList.remove('formControl')
+                    }
+                  >
+                    <i
+                      className='tim-icons icon-lock-circle'
+                      style={{ marginLeft: '5px' }}
+                      onClick={(e) => e.target.nextElementSibling.focus()}
+                    ></i>
+                    <Input
+                      equalto='#registerPassword'
+                      id='confirm'
+                      style={{ width: '100%', border: 'none', margin: '0' }}
+                      className={styles.inputSyle}
+                      placeholder='confirm password'
+                      type='password'
+                      onChange={(e) =>
+                        change(e, 'destination', 'equalTo', {
+                          value: source,
+                          stateName: 'source',
+                        })
+                      }
+                    />
+                  </div>
+                </FormGroup>
+                {destinationState === 'has-danger' ? (
+                  <label
+                    style={{
+                      color: '#ec250d',
+                      fontSize: '12px',
+                      marginTop: '-8px',
+                    }}
+                    className='error mb-0'
+                  >
+                    Please, verify your password typed.
+                  </label>
+                ) : null} */}
                 <FormGroup check>
                   <Label check>
                     <Input name='optionCheckboxes' type='checkbox' />

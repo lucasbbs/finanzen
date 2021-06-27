@@ -83,7 +83,6 @@ const InvestmentsList = () => {
         if (!investmentObj['initial_amount']) {
           investmentObj['initial_amount'] = initialAmount;
         }
-        // console.log(investment.findIndex((invest) => invest._id === id));
         investment.splice(
           investment.findIndex((invest) => invest._id === id),
           1,
@@ -162,7 +161,7 @@ const InvestmentsList = () => {
         config
       );
 
-      setBrokers(brokersFromTheAPI.data);
+      setBrokers(brokersFromTheAPI.data.brokers);
       let investments = await fetchInvestments('', login);
       const filter = JSON.parse(localStorage.getItem('filter'));
 
@@ -175,8 +174,10 @@ const InvestmentsList = () => {
               );
         localStorage.removeItem('filter');
       }
-      setInvestment(investments);
-      if (investments.length !== 0) {
+      setInvestment(investments.investments);
+      console.log(investments);
+      console.log(investment);
+      if (investments.hasLoaded) {
         setIsLoading(false);
       }
       return investments;
@@ -184,64 +185,6 @@ const InvestmentsList = () => {
     getInvestments();
   }, []);
 
-  // const handleScrolling = (state) => {
-  //   // left: 37, up: 38, right: 39, down: 40,
-  //   // spacebar: 32, pageup: 33, pagedown: 34, end: 35, home: 36
-  //   var keys = { 37: 1, 38: 1, 39: 1, 40: 1 };
-
-  //   function preventDefault(e) {
-  //     e.preventDefault();
-  //   }
-
-  //   function preventDefaultForScrollKeys(e) {
-  //     if (keys[e.keyCode]) {
-  //       preventDefault(e);
-  //       return false;
-  //     }
-  //   }
-
-  //   // modern Chrome requires { passive: false } when adding event
-  //   var supportsPassive = false;
-  //   try {
-  //     window.addEventListener(
-  //       'test',
-  //       null,
-  //       Object.defineProperty({}, 'passive', {
-  //         get: function () {
-  //           supportsPassive = true;
-  //         },
-  //       })
-  //     );
-  //   } catch (e) {}
-
-  //   var wheelOpt = supportsPassive ? { passive: false } : false;
-  //   var wheelEvent =
-  //     'onwheel' in document.createElement('div') ? 'wheel' : 'mousewheel';
-
-  //   // call this to Disable
-  //   function disableScroll() {
-  //     window.addEventListener('DOMMouseScroll', preventDefault, false); // older FF
-  //     window.addEventListener(wheelEvent, preventDefault, wheelOpt); // modern desktop
-  //     window.addEventListener('touchmove', preventDefault, wheelOpt); // mobile
-  //     window.addEventListener('keydown', preventDefaultForScrollKeys, false);
-  //   }
-
-  //   // call this to Enable
-  //   function enableScroll() {
-  //     window.removeEventListener('DOMMouseScroll', preventDefault, false);
-  //     window.removeEventListener(wheelEvent, preventDefault, wheelOpt);
-  //     window.removeEventListener('touchmove', preventDefault, wheelOpt);
-  //     window.removeEventListener('keydown', preventDefaultForScrollKeys, false);
-  //   }
-
-  //   if (state) {
-  //     console.log(state);
-  //     disableScroll();
-  //   } else {
-  //     console.log(state);
-  //     enableScroll();
-  //   }
-  // };
   const notificationAlertRef = useRef(null);
   const notify = (message, type = 'success', place = 'tc') => {
     var options = {};
@@ -306,342 +249,356 @@ const InvestmentsList = () => {
   };
   return (
     <>
-      {isLoading ? <Spinner /> : ''}
       <div className='react-notification-alert-container'>
         <NotificationAlert ref={notificationAlertRef} />
       </div>
       <div className='content'>
-        <Modal
-          modalClassName='modal-black'
-          style={{
-            background: 'linear-gradient(180deg,#222a42 0,#1d253b)!important',
-          }}
-          isOpen={modal}
-          toggle={toggle}
-          className='modal-lg'
-        >
-          <ModalHeader
-            style={{ color: 'hsla(0,0%,100%,.8)' }}
-            toggle={toggle}
-            close={closeBtn}
-          >
-            <span style={{ color: 'hsla(0,0%,100%,.9)' }}>
-              Editar Investimento
-            </span>
-          </ModalHeader>
-          <ModalBody
-            style={{
-              background: 'linear-gradient(180deg,#222a42 0,#1d253b)!important',
-            }}
-          >
-            <Label>Nome</Label>
-            <Input
-              required
-              style={{ backgroundColor: '#2b3553' }}
-              type='text'
-              value={name}
-              onChange={(e) => {
-                setName(e.target.value);
+        {isLoading ? (
+          <Spinner />
+        ) : (
+          <>
+            <Modal
+              modalClassName='modal-black'
+              style={{
+                background:
+                  'linear-gradient(180deg,#222a42 0,#1d253b)!important',
               }}
-            />
-            <Row style={{ marginBottom: '10px' }}>
-              <Col md='3' style={{ paddingRight: '0' }}>
-                <Label>Corretora</Label>
+              isOpen={modal}
+              toggle={toggle}
+              className='modal-lg'
+            >
+              <ModalHeader
+                style={{ color: 'hsla(0,0%,100%,.8)' }}
+                toggle={toggle}
+                close={closeBtn}
+              >
+                <span style={{ color: 'hsla(0,0%,100%,.9)' }}>
+                  Editar Investimento
+                </span>
+              </ModalHeader>
+              <ModalBody
+                style={{
+                  background:
+                    'linear-gradient(180deg,#222a42 0,#1d253b)!important',
+                }}
+              >
+                <Label>Nome</Label>
                 <Input
                   required
                   style={{ backgroundColor: '#2b3553' }}
-                  type='select'
-                  value={broker}
-                  onChange={(e) => {
-                    console.log(broker, e.target.value);
-                    setBroker(e.target.value);
-                  }}
-                >
-                  <option value='default' disabled={true}>
-                    Selecione uma opção
-                  </option>
-                  {brokers.map((brk) => (
-                    <option key={brk._id} value={brk._id}>
-                      {brk.name}
-                    </option>
-                  ))}
-                </Input>
-              </Col>
-              <Col md='2' style={{ paddingRight: '0' }}>
-                <Label>Tipo</Label>
-                <Input
-                  style={{ backgroundColor: '#2b3553' }}
-                  type='select'
-                  value={type}
-                  onChange={(e) => setType(e.target.value)}
-                >
-                  <option value='' disabled={true}>
-                    Selecione uma opção
-                  </option>
-                  <option>CDB</option>
-                  <option>LCI</option>
-                  <option>LCA</option>
-                  <option>Debênture</option>
-                </Input>
-              </Col>
-              <Col md='2' style={{ paddingRight: '0' }}>
-                <Label>Taxa</Label>
-                <Input
-                  style={{ backgroundColor: '#2b3553' }}
                   type='text'
-                  value={rate}
-                  onChange={(e) => setRate(e.target.value)}
+                  value={name}
+                  onChange={(e) => {
+                    setName(e.target.value);
+                  }}
                 />
-              </Col>
-              <Col md='2' style={{ paddingRight: '0' }}>
-                <Label>Indexador</Label>
-                <Input
-                  required
-                  style={{ backgroundColor: '#2b3553' }}
-                  type='select'
-                  value={indexer}
-                  onChange={(e) => setIndexer(e.target.value)}
+                <Row style={{ marginBottom: '10px' }}>
+                  <Col md='3' style={{ paddingRight: '0' }}>
+                    <Label>Corretora</Label>
+                    <Input
+                      required
+                      style={{ backgroundColor: '#2b3553' }}
+                      type='select'
+                      value={broker}
+                      onChange={(e) => {
+                        console.log(broker, e.target.value);
+                        setBroker(e.target.value);
+                      }}
+                    >
+                      <option value='default' disabled={true}>
+                        Selecione uma opção
+                      </option>
+                      {brokers.map((brk) => (
+                        <option key={brk._id} value={brk._id}>
+                          {brk.name}
+                        </option>
+                      ))}
+                    </Input>
+                  </Col>
+                  <Col md='2' style={{ paddingRight: '0' }}>
+                    <Label>Tipo</Label>
+                    <Input
+                      style={{ backgroundColor: '#2b3553' }}
+                      type='select'
+                      value={type}
+                      onChange={(e) => setType(e.target.value)}
+                    >
+                      <option value='' disabled={true}>
+                        Selecione uma opção
+                      </option>
+                      <option>CDB</option>
+                      <option>LCI</option>
+                      <option>LCA</option>
+                      <option>Debênture</option>
+                    </Input>
+                  </Col>
+                  <Col md='2' style={{ paddingRight: '0' }}>
+                    <Label>Taxa</Label>
+                    <Input
+                      style={{ backgroundColor: '#2b3553' }}
+                      type='text'
+                      value={rate}
+                      onChange={(e) => setRate(e.target.value)}
+                    />
+                  </Col>
+                  <Col md='2' style={{ paddingRight: '0' }}>
+                    <Label>Indexador</Label>
+                    <Input
+                      required
+                      style={{ backgroundColor: '#2b3553' }}
+                      type='select'
+                      value={indexer}
+                      onChange={(e) => setIndexer(e.target.value)}
+                    >
+                      <option value='' disabled={true}>
+                        Selecione uma opção
+                      </option>
+                      <option>CDI</option>
+                      <option>IPCA</option>
+                      <option>Prefixado</option>
+                    </Input>
+                  </Col>
+                  <Col md='3' style={{ paddingRight: '0' }}>
+                    <Label>Data do investimento</Label>
+                    <Input
+                      style={{ backgroundColor: '#2b3553' }}
+                      type='date'
+                      value={investmentDate.slice(0, 10)}
+                      onChange={(e) => {
+                        setInvestmentDate(e.target.value);
+                      }}
+                    />
+                  </Col>
+                  <Col md='3' style={{ paddingRight: '0' }}>
+                    <Label>Data de vencimento</Label>
+                    <Input
+                      style={{ backgroundColor: '#2b3553' }}
+                      type='date'
+                      value={dueDate.slice(0, 10)}
+                      onChange={(e) => setDueDate(e.target.value)}
+                    />
+                  </Col>
+                  <Col md='2' style={{ paddingRight: '0' }}>
+                    <Label>Montante Inicial</Label>
+                    <NumberFormat
+                      style={{ backgroundColor: '#2b3553' }}
+                      onChange={(e) => {
+                        setHasChanged(true);
+                        setInitialAmount(e.target.value);
+                      }}
+                      type='text'
+                      value={initialAmount}
+                      placeholder='R$0.00'
+                      thousandSeparator={'.'}
+                      decimalSeparator={','}
+                      prefix={'R$'}
+                      customInput={Input}
+                    />
+                  </Col>
+                </Row>
+              </ModalBody>
+              <ModalFooter
+                style={{
+                  background:
+                    'linear-gradient(180deg,#222a42 0,#1d253b)!important',
+                }}
+              >
+                <Button
+                  color='success'
+                  onClick={() => {
+                    console.log(id);
+                    handleUpdate(
+                      {
+                        _id: id,
+                        name,
+                        broker,
+                        type,
+                        rate,
+                        indexer,
+                        investment_date: investmentDate,
+                        due_date: dueDate,
+                        accrued_income: accruedIncome,
+                      },
+                      id
+                    );
+                  }}
                 >
-                  <option value='' disabled={true}>
-                    Selecione uma opção
-                  </option>
-                  <option>CDI</option>
-                  <option>IPCA</option>
-                  <option>Prefixado</option>
-                </Input>
-              </Col>
-              <Col md='3' style={{ paddingRight: '0' }}>
-                <Label>Data do investimento</Label>
-                <Input
-                  style={{ backgroundColor: '#2b3553' }}
-                  type='date'
-                  value={investmentDate.slice(0, 10)}
-                  onChange={(e) => {
-                    setInvestmentDate(e.target.value);
-                  }}
-                />
-              </Col>
-              <Col md='3' style={{ paddingRight: '0' }}>
-                <Label>Data de vencimento</Label>
-                <Input
-                  style={{ backgroundColor: '#2b3553' }}
-                  type='date'
-                  value={dueDate.slice(0, 10)}
-                  onChange={(e) => setDueDate(e.target.value)}
-                />
-              </Col>
-              <Col md='2' style={{ paddingRight: '0' }}>
-                <Label>Montante Inicial</Label>
-                <NumberFormat
-                  style={{ backgroundColor: '#2b3553' }}
-                  onChange={(e) => {
-                    setHasChanged(true);
-                    setInitialAmount(e.target.value);
-                  }}
-                  type='text'
-                  value={initialAmount}
-                  placeholder='R$0.00'
-                  thousandSeparator={'.'}
-                  decimalSeparator={','}
-                  prefix={'R$'}
-                  customInput={Input}
-                />
+                  Salvar
+                </Button>
+                <Button color='secondary' onClick={toggle}>
+                  Cancelar
+                </Button>
+              </ModalFooter>
+            </Modal>
+            {alert}
+            <Row>
+              <Col md='12'>
+                <Card style={{ position: 'relative' }}>
+                  <CardHeader className='row justify-content-between ml-2 mt-1 mr-2 align-items-center'>
+                    <CardTitle className='m-0' tag='h1'>
+                      <i className='tim-icons icon-wallet-43'></i> Investments
+                    </CardTitle>
+                    <Link to='/admin/investment/:id'>
+                      <Button>New Investment</Button>
+                    </Link>
+                  </CardHeader>
+                  <CardBody>
+                    <Table
+                      className='tablesorter'
+                      // responsive
+                      style={{ overflowX: 'auto', position: 'relative' }}
+                    >
+                      <thead className='text-primary'>
+                        <tr>
+                          <th>Name</th>
+                          <th>Broker</th>
+                          <th>Type</th>
+                          <th>Rate</th>
+                          <th>Indexer</th>
+                          <th>investment date</th>
+                          <th>due date</th>
+                          <th className='text-center'>initial amount</th>
+                          <th className='text-center'>accrued income</th>
+                          <th>Actions</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {investment.map((inves) => (
+                          <tr id={inves._id} key={inves._id}>
+                            <td>
+                              <Link to={`/admin/investment/${inves._id}`}>
+                                {inves.name}
+                              </Link>
+                            </td>
+                            <td>{inves.broker.name}</td>
+                            <td>{inves.type}</td>
+                            <td>{inves.rate}</td>
+                            <td>{inves.indexer}</td>
+                            <td>
+                              {moment(inves.investment_date).format(
+                                'DD/MM/YYYY'
+                              )}
+                            </td>
+                            <td>
+                              {moment(inves.due_date).format('DD/MM/YYYY')}
+                            </td>
+                            <td className='text-center'>
+                              {inves.initial_amount.toLocaleString('pt-BR', {
+                                style: 'currency',
+                                currency: 'BRL',
+                              })}
+                            </td>
+                            <td className='text-center'>
+                              {inves.accrued_income.toLocaleString('pt-BR', {
+                                style: 'currency',
+                                currency: 'BRL',
+                              })}
+                            </td>
+                            <td style={{ textAlign: 'center' }}>
+                              <MyTooltip
+                                placement='top'
+                                target={`archive-${inves._id}`}
+                              >
+                                Arquivar
+                              </MyTooltip>
+                              <Button
+                                style={{ cursor: 'default' }}
+                                id={`archive-${inves._id}`}
+                                color='info'
+                                size='sm'
+                                className={classNames('btn-icon btn-link like')}
+                              >
+                                <i
+                                  style={{ cursor: 'pointer' }}
+                                  id={inves._id}
+                                  className='fas fa-archive'
+                                  onClick={(e) => {
+                                    handleArchive(e.target.id);
+                                  }}
+                                ></i>
+                              </Button>
+                              <MyTooltip
+                                placement='top'
+                                target={`Tooltip-${inves._id}`}
+                              >
+                                Editar
+                              </MyTooltip>
+                              <Button
+                                id={`Tooltip-${inves._id}`}
+                                color='warning'
+                                size='sm'
+                                className={classNames('btn-icon btn-link like')}
+                                style={{ cursor: 'default' }}
+                              >
+                                <i
+                                  onClick={(e) => {
+                                    const filtered = investment.find(
+                                      (invest) =>
+                                        invest._id ===
+                                        e.target.parentElement.parentElement
+                                          .parentElement.id
+                                    );
+                                    setBroker(filtered.broker._id);
+                                    setId(filtered._id);
+                                    setName(filtered.name);
+                                    setType(filtered.type);
+                                    setRate(filtered.rate);
+                                    setIndexer(filtered.indexer);
+                                    setDueDate(filtered.due_date);
+                                    setInvestmentDate(filtered.investment_date);
+                                    setInitialAmount(filtered.initial_amount);
+                                    setAccruedIncome(filtered.accrued_income);
+                                    toggle();
+                                  }}
+                                  className='tim-icons icon-pencil'
+                                  style={{ cursor: 'pointer' }}
+                                />
+                              </Button>
+                              <MyTooltip
+                                placement='top'
+                                target={`Delete-${inves._id}`}
+                              >
+                                Excluir
+                              </MyTooltip>
+                              <Button
+                                id={`Delete-${inves._id}`}
+                                size='sm'
+                                className={classNames('btn-icon btn-link')}
+                                color='danger'
+                                style={{
+                                  backgroundColor: 'transparent',
+                                  outline: 'none',
+                                  borderColor: 'transparent',
+                                  cursor: 'default',
+                                }}
+                              >
+                                <i
+                                  id={inves._id}
+                                  style={{
+                                    // display: 'inline-block !important',
+                                    cursor: 'pointer',
+                                  }}
+                                  className='tim-icons icon-trash-simple classVisible'
+                                  onClick={(e) => {
+                                    e.preventDefault();
+                                    console.log(e.target.id);
+                                    warningWithConfirmAndCancelMessage(
+                                      e.target.id
+                                    );
+                                  }}
+                                ></i>
+                              </Button>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </Table>
+                  </CardBody>
+                </Card>
               </Col>
             </Row>
-          </ModalBody>
-          <ModalFooter
-            style={{
-              background: 'linear-gradient(180deg,#222a42 0,#1d253b)!important',
-            }}
-          >
-            <Button
-              color='success'
-              onClick={() => {
-                console.log(id);
-                handleUpdate(
-                  {
-                    _id: id,
-                    name,
-                    broker,
-                    type,
-                    rate,
-                    indexer,
-                    investment_date: investmentDate,
-                    due_date: dueDate,
-                    accrued_income: accruedIncome,
-                  },
-                  id
-                );
-              }}
-            >
-              Salvar
-            </Button>
-            <Button color='secondary' onClick={toggle}>
-              Cancelar
-            </Button>
-          </ModalFooter>
-        </Modal>
-        {alert}
-        <Row>
-          <Col md='12'>
-            <Card style={{ position: 'relative' }}>
-              <CardHeader className='row justify-content-between ml-2 mt-1 mr-2 align-items-center'>
-                <CardTitle className='m-0' tag='h1'>
-                  <i className='tim-icons icon-wallet-43'></i> Investments
-                </CardTitle>
-                <Link to='/admin/investment/:id'>
-                  <Button>New Investment</Button>
-                </Link>
-              </CardHeader>
-              <CardBody>
-                <Table
-                  className='tablesorter'
-                  // responsive
-                  style={{ overflowX: 'auto', position: 'relative' }}
-                >
-                  <thead className='text-primary'>
-                    <tr>
-                      <th>Name</th>
-                      <th>Broker</th>
-                      <th>Type</th>
-                      <th>Rate</th>
-                      <th>Indexer</th>
-                      <th>investment date</th>
-                      <th>due date</th>
-                      <th className='text-center'>initial amount</th>
-                      <th className='text-center'>accrued income</th>
-                      <th>Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {investment.map((inves) => (
-                      <tr id={inves._id} key={inves._id}>
-                        <td>
-                          <Link to={`/admin/investment/${inves._id}`}>
-                            {inves.name}
-                          </Link>
-                        </td>
-                        <td>{inves.broker.name}</td>
-                        <td>{inves.type}</td>
-                        <td>{inves.rate}</td>
-                        <td>{inves.indexer}</td>
-                        <td>
-                          {moment(inves.investment_date).format('DD/MM/YYYY')}
-                        </td>
-                        <td>{moment(inves.due_date).format('DD/MM/YYYY')}</td>
-                        <td className='text-center'>
-                          {inves.initial_amount.toLocaleString('pt-BR', {
-                            style: 'currency',
-                            currency: 'BRL',
-                          })}
-                        </td>
-                        <td className='text-center'>
-                          {inves.accrued_income.toLocaleString('pt-BR', {
-                            style: 'currency',
-                            currency: 'BRL',
-                          })}
-                        </td>
-                        <td style={{ textAlign: 'center' }}>
-                          <MyTooltip
-                            placement='top'
-                            target={`archive-${inves._id}`}
-                          >
-                            Arquivar
-                          </MyTooltip>
-                          <Button
-                            style={{ cursor: 'default' }}
-                            id={`archive-${inves._id}`}
-                            color='info'
-                            size='sm'
-                            className={classNames('btn-icon btn-link like')}
-                          >
-                            <i
-                              style={{ cursor: 'pointer' }}
-                              id={inves._id}
-                              className='fas fa-archive'
-                              onClick={(e) => {
-                                handleArchive(e.target.id);
-                              }}
-                            ></i>
-                          </Button>
-                          <MyTooltip
-                            placement='top'
-                            target={`Tooltip-${inves._id}`}
-                          >
-                            Editar
-                          </MyTooltip>
-                          <Button
-                            id={`Tooltip-${inves._id}`}
-                            color='warning'
-                            size='sm'
-                            className={classNames('btn-icon btn-link like')}
-                            style={{ cursor: 'default' }}
-                          >
-                            <i
-                              onClick={(e) => {
-                                const filtered = investment.find(
-                                  (invest) =>
-                                    invest._id ===
-                                    e.target.parentElement.parentElement
-                                      .parentElement.id
-                                );
-                                setBroker(filtered.broker._id);
-                                setId(filtered._id);
-                                setName(filtered.name);
-                                setType(filtered.type);
-                                setRate(filtered.rate);
-                                setIndexer(filtered.indexer);
-                                setDueDate(filtered.due_date);
-                                setInvestmentDate(filtered.investment_date);
-                                setInitialAmount(filtered.initial_amount);
-                                setAccruedIncome(filtered.accrued_income);
-                                toggle();
-                              }}
-                              className='tim-icons icon-pencil'
-                              style={{ cursor: 'pointer' }}
-                            />
-                          </Button>
-                          <MyTooltip
-                            placement='top'
-                            target={`Delete-${inves._id}`}
-                          >
-                            Excluir
-                          </MyTooltip>
-                          <Button
-                            id={`Delete-${inves._id}`}
-                            size='sm'
-                            className={classNames('btn-icon btn-link')}
-                            color='danger'
-                            style={{
-                              backgroundColor: 'transparent',
-                              outline: 'none',
-                              borderColor: 'transparent',
-                              cursor: 'default',
-                            }}
-                          >
-                            <i
-                              id={inves._id}
-                              style={{
-                                // display: 'inline-block !important',
-                                cursor: 'pointer',
-                              }}
-                              className='tim-icons icon-trash-simple classVisible'
-                              onClick={(e) => {
-                                e.preventDefault();
-                                console.log(e.target.id);
-                                warningWithConfirmAndCancelMessage(e.target.id);
-                              }}
-                            ></i>
-                          </Button>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </Table>
-              </CardBody>
-            </Card>
-          </Col>
-        </Row>
+          </>
+        )}
       </div>
     </>
   );

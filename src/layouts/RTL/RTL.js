@@ -34,7 +34,7 @@ import logo from 'assets/img/react-logo.png';
 var ps;
 
 const RTL = (props) => {
-  const [activeColor, setActiveColor] = React.useState('blue');
+  const [activeColor] = React.useState('blue'); // eslint-disable-next-line
   const [sidebarMini, setSidebarMini] = React.useState(true);
   const [opacity, setOpacity] = React.useState(0);
   const [sidebarOpened, setSidebarOpened] = React.useState(false);
@@ -137,9 +137,9 @@ const RTL = (props) => {
     }
     return activeRoute;
   };
-  const handleActiveClick = (color) => {
-    setActiveColor(color);
-  };
+  // const handleActiveClick = (color) => {
+  //   setActiveColor(color);
+  // };
   const handleMiniClick = () => {
     let notifyMessage = 'Sidebar mini ';
     if (document.body.classList.contains('sidebar-mini')) {

@@ -16,17 +16,9 @@
 */
 import React from 'react';
 import classnames from 'classnames';
-import { NavLink } from 'react-router-dom';
 
 // reactstrap components
-import {
-  Collapse,
-  NavbarBrand,
-  Navbar,
-  NavItem,
-  Nav,
-  Container,
-} from 'reactstrap';
+import { Collapse, NavbarBrand, Navbar, Nav, Container } from 'reactstrap';
 
 const AuthNavbar = (props) => {
   const [collapseOpen, setCollapseOpen] = React.useState(false);

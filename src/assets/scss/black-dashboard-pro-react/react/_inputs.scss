@@ -13,39 +13,39 @@
   .input-group-focus:not(.has-danger):not(.has-success) {
     .input-group-prepend .input-group-text,
     .input-group-append .input-group-text {
-      border-color: $info;
+      border-color: $primary;
     }
     .form-control {
       &:focus {
-        border-color: $info;
+        border-color: $primary;
         & + .input-group-append .input-group-text,
         & ~ .input-group-append .input-group-text,
         & + .input-group-prepend .input-group-text,
         & ~ .input-group-prepend .input-group-text {
-          border: 1px solid $info;
+          border: 1px solid $primary;
         }
       }
     }
   }
   .input-group-focus:not(.has-danger):not(.has-success) {
     .form-control {
-      border-color: $info;
+      border-color: $primary;
       & + .input-group-append .input-group-text,
       & ~ .input-group-append .input-group-text,
       & + .input-group-prepend .input-group-text,
       & ~ .input-group-prepend .input-group-text {
-        border: 1px solid $info;
+        border: 1px solid $primary;
       }
     }
   }
 }
 .sweet-alert input.form-control:focus {
-  border-color: $info;
+  border-color: $primary;
   & + .input-group-append .input-group-text,
   & ~ .input-group-append .input-group-text,
   & + .input-group-prepend .input-group-text,
   & ~ .input-group-prepend .input-group-text {
-    border: 1px solid $info;
+    border: 1px solid $primary;
   }
 }
 .form-group .input-group-append .input-group-text,

@@ -14,20 +14,20 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import React from "react";
+import React from 'react';
 // react component used to create a calendar with events on it
-import { Calendar as BigCalendar, momentLocalizer } from "react-big-calendar";
+import { Calendar as BigCalendar, momentLocalizer } from 'react-big-calendar';
 // dependency plugin for react-big-calendar
-import moment from "moment";
+import moment from 'moment';
 // react component used to create alerts
-import SweetAlert from "react-bootstrap-sweetalert";
-
+import SweetAlert from 'react-bootstrap-sweetalert';
 // reactstrap components
-import { Card, CardBody, Row, Col } from "reactstrap";
+import { Card, CardBody, Row, Col } from 'reactstrap';
 
-import { events } from "variables/general.js";
+import { events } from 'variables/general.js';
 
 const localizer = momentLocalizer(moment);
+// const DnDCalendar = withDragAndDrop(BigCalendar);
 
 const Calendar = () => {
   const [event, setEvents] = React.useState(events);
@@ -40,12 +40,12 @@ const Calendar = () => {
       <SweetAlert
         input
         showCancel
-        style={{ display: "block", marginTop: "-100px" }}
-        title="Input something"
+        style={{ display: 'block', marginTop: '-100px' }}
+        title='Input something'
         onConfirm={(e) => addNewEvent(e, slotInfo)}
         onCancel={() => hideAlert()}
-        confirmBtnBsStyle="info"
-        cancelBtnBsStyle="danger"
+        confirmBtnBsStyle='info'
+        cancelBtnBsStyle='danger'
       />
     );
   };
@@ -63,32 +63,41 @@ const Calendar = () => {
     setAlert(null);
   };
   const eventColors = (event, start, end, isSelected) => {
-    var backgroundColor = "event-";
+    var backgroundColor = 'event-';
     event.color
       ? (backgroundColor = backgroundColor + event.color)
-      : (backgroundColor = backgroundColor + "default");
+      : (backgroundColor = backgroundColor + 'default');
     return {
       className: backgroundColor,
     };
   };
+  const handleMoveEvent = ({ event, start, end, allDay }) => {
+    const updatedEvent = { ...event.resource };
+    updatedEvent.startDate = start;
+    updatedEvent.endDate = end;
+    updatedEvent.isAllDay = allDay;
+    // updatedEvent.eventId = event.resource.id;
+    // (updatedEvent)
+  };
   return (
     <>
-      <div className="content">
+      <div className='content'>
         {alert}
         <Row>
-          <Col className="ml-auto mr-auto" md="10">
-            <Card className="card-calendar">
+          <Col className='ml-auto mr-auto' md='10'>
+            <Card className='card-calendar'>
               <CardBody>
                 <BigCalendar
                   selectable
                   localizer={localizer}
                   events={event}
-                  defaultView="month"
+                  defaultView='month'
                   scrollToTime={new Date(1970, 1, 1, 6)}
                   defaultDate={new Date()}
                   onSelectEvent={(event) => selectedEvent(event)}
                   onSelectSlot={(slotInfo) => addNewEventAlert(slotInfo)}
                   eventPropGetter={eventColors}
+                  onEventDrop={handleMoveEvent}
                 />
               </CardBody>
             </Card>

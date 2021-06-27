@@ -67,7 +67,7 @@ const InvestmentDetails = () => {
         `${Config.SERVER_ADDRESS}/api/brokers`,
         config
       );
-      setBrokers(brokersFromTheAPI.data);
+      setBrokers(brokersFromTheAPI.data.brokers);
       if (id !== ':id') {
         setIsLoading(true);
 
@@ -106,7 +106,7 @@ const InvestmentDetails = () => {
       }
     };
     getInvestmentDetails();
-  }, [id, login, broker]);
+  }, [id, login]);
 
   const indexOfFirstInvestment = currentPage * investmentsPerPage;
   const indexOfLastInvestment = indexOfFirstInvestment + investmentsPerPage;
@@ -154,7 +154,6 @@ const InvestmentDetails = () => {
   return (
     <>
       {!isLoading ? '' : <Spinner />}
-
       <div className='react-notification-alert-container'>
         <NotificationAlert ref={notificationAlertRef} />
       </div>
