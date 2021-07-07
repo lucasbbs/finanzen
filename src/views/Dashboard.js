@@ -1,5 +1,5 @@
 // eslint-disable
-import { addDays, format } from 'date-fns';
+import { addDays, format, parse } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
 import React, { useEffect, useState } from 'react';
 // nodejs library that concatenates classes
@@ -40,7 +40,11 @@ import {
   chartExample4,
   chartDefault,
 } from 'variables/charts.js';
-import { currencyFormat } from '../helpers/functions';
+import {
+  currencyFormat,
+  percentageFormat,
+  reverseFormatNumber,
+} from '../helpers/functions';
 // eslint-disable-next-line
 import TableTopInvestments from '../components/TableTopInvestments/TableTopInvestments';
 import TableSalaries from '../components/TableSalaries/TableSalaries';
@@ -49,9 +53,20 @@ import {
   getDataForTheFirstChart,
   getDataForTheInflationChart,
   handleSlicesOfInvestments,
+  getDataForTotalTaxes,
+  getGlobalAverageReturn,
+  getHowMuchMoneyToFinancialFreedom,
+  getSimpleMovingAverage,
 } from '../helpers/functions';
-import { fetchInflation } from '../services/Inflation';
+import {
+  // fetchInflation,
+  fetchInflationsFromLocalAPI,
+} from '../services/Inflation';
 import Spinner from '../components/Spinner/Spinner';
+import axios from 'axios';
+import Config from '../config.json';
+// import { Link } from 'react-router-dom';
+// import { locale } from 'moment';
 
 var mapData = {
   AU: 760,
@@ -76,6 +91,18 @@ Array.prototype.min = function () {
 };
 
 const Dashboard = () => {
+  const [globalAverageReturn, setGlobalAverageReturn] = useState(
+    '0,0000000000%'
+  );
+  const [taxes, setTaxes] = useState([]);
+  const [taxesToBeDisplayed, setTaxesToBeDisplayed] = useState(0);
+  const [filterForTaxes, setFilterForTaxes] = useState('');
+  const [filterForGlobalAverage, setFilterForGlobalAverage] = useState('');
+  const [currentMoney, setCurrentMoney] = useState(
+    localStorage.getItem('userInfo')
+      ? JSON.parse(localStorage.getItem('userInfo')).fundsToInvest
+      : 0
+  );
   const [investments, setInvestments] = useState([]);
   const [Incomes, setIncomes] = useState([]);
   const [investmentsToBeDisplayed, setInvestmentsToBeDisplayed] = useState([]);
@@ -92,16 +119,16 @@ const Dashboard = () => {
     setDataChartInvetmentsPerartBrokers,
   ] = useState([]);
 
-  const [bigChartData, setbigChartData] = React.useState('data1');
+  const [bigChartData, setbigChartData] = useState('data1');
   const setBgChartData = (name) => {
     setbigChartData(name);
   };
 
   useEffect(() => {
-    const getInvestmentDetails = async () => {
+    const getInvestments = async () => {
       const investment = await fetchAllInvestments('', login);
       const currentInvestments = await fetchInvestments('', login);
-      const inflation = await fetchInflation();
+      const inflation = await fetchInflationsFromLocalAPI(login.country); //fetchInflation();
       setInvestments(investment);
       inflation.forEach((inf) => {
         const dataPartes = inf.data.split('/');
@@ -110,13 +137,18 @@ const Dashboard = () => {
       });
       setIncomes(getDataForTheFirstChart(investment));
       setInvestmentsToBeDisplayed(getDataForTheFirstChart(investment));
+      setTaxes(getDataForTotalTaxes(investment));
 
-      setInflations(inflation);
-
-      setInflationsToBeDisplayed(getDataForTheInflationChart(inflation));
-      console.log(
-        currentInvestments.investments.map((invest) => invest.broker.name)
+      setTaxesToBeDisplayed(
+        getDataForTotalTaxes(investment)[1].reduce((acc, curr) => acc + curr, 0)
       );
+      setInflations(inflation);
+      setInflationsToBeDisplayed(getDataForTheInflationChart(inflation));
+      console.log(getSimpleMovingAverage(inflation));
+      const inflationsFromLocalStorate = await fetchInflationsFromLocalAPI(
+        login.country
+      );
+      console.log(inflationsFromLocalStorate);
       const brokers = [
         ...new Set(
           currentInvestments.investments.map((invest) => invest.broker.name)
@@ -136,9 +168,39 @@ const Dashboard = () => {
       }
       setDataChartInvetmentsPerartBrokers([[...somas], [...brokers]]);
     };
-    getInvestmentDetails();
-  }, []);
+    if (dataChartInvetmentsPerBrokers.length === 0) {
+      getInvestments();
+    }
+    let newDate = new Date().toISOString();
+    newDate = newDate.split('T');
+    if (Incomes.length !== 0) {
+      let date =
+        Incomes[1].length !== 0
+          ? parse(Incomes[1][Incomes[1].length - 1], 'MMM/yyyy', new Date(), {
+              locale: ptBR,
+            })
+          : new Date();
+
+      setGlobalAverageReturn(
+        percentageFormat(
+          getGlobalAverageReturn(investments, format(date, 'yyyy-MM-dd'))
+        )
+      );
+
+      setFilterForGlobalAverage(format(date, 'yyyy-MM'));
+    }
+  }, [investments, Incomes]);
   // eslint-disable-next-line
+
+  const handleFilterForTaxes = (input) => {
+    setTaxesToBeDisplayed(taxes[1][taxes[0].indexOf(`${input}-01`)]);
+  };
+
+  const handleFilterForGlobalAverage = (input) => {
+    setGlobalAverageReturn(
+      percentageFormat(getGlobalAverageReturn(investments, `${input}-01`))
+    );
+  };
 
   let chart1_2_options = {
     onClick: function (c, i) {
@@ -180,7 +242,8 @@ const Dashboard = () => {
 
           return bigChartData === 'data1'
             ? `${data.labels[indice]}:  ${currencyFormat(
-                data.datasets[0].data[indice]
+                data.datasets[0].data[indice],
+                login.currency
               )}`
             : `${data.labels[indice]}:  ${(
                 data.datasets[0].data[indice] / 100
@@ -206,7 +269,7 @@ const Dashboard = () => {
             count: 0,
             callback: (label) =>
               bigChartData === 'data1'
-                ? currencyFormat(Number(label))
+                ? currencyFormat(Number(label), login.currency)
                 : (Number(label) / 100).toLocaleString('pt-br', {
                     style: 'percent',
                     minimumFractionDigits: 2,
@@ -330,6 +393,21 @@ const Dashboard = () => {
       handleSlicesOfInvestments(Incomes, initialDate + '-02', finalDate + '-02')
     );
   }
+
+  const handleCurrentMoney = async (salary) => {
+    const config = { headers: { Authorization: `Bearer ${login.token}` } };
+    await axios
+      .put(
+        `${Config.SERVER_ADDRESS}/api/users/${login._id}`,
+        { fundsToInvest: currentMoney + salary },
+        config
+      )
+      .then((res) => {
+        login['fundsToInvest'] = currentMoney + salary;
+        setCurrentMoney(currentMoney + salary);
+        localStorage.setItem('userInfo', JSON.stringify(login));
+      });
+  };
   return (
     <>
       <div className='content'>
@@ -492,14 +570,18 @@ const Dashboard = () => {
                   <CardBody>
                     <Row>
                       <Col xs='5'>
-                        <div className='info-icon text-center icon-warning'>
-                          <i className='tim-icons icon-chat-33' />
+                        <div className='info-icon text-center icon-success'>
+                          <i className='tim-icons icon-money-coins' />
                         </div>
                       </Col>
                       <Col xs='7'>
                         <div className='numbers'>
-                          <p className='card-category'>Number</p>
-                          <CardTitle tag='h3'>150GB</CardTitle>
+                          <p className='card-category'>
+                            Your current funds to invest
+                          </p>
+                          <CardTitle tag='h3'>
+                            {currencyFormat(currentMoney, login.currency)}
+                          </CardTitle>
                         </div>
                       </Col>
                     </Row>
@@ -515,7 +597,10 @@ const Dashboard = () => {
                       }}
                       className='stats table-full-width table-responsive'
                     >
-                      <TableSalaries />
+                      <TableSalaries
+                        handleCurrentMoney={handleCurrentMoney}
+                        currentMoney={currentMoney}
+                      />
                     </div>
                   </CardFooter>
                 </Card>
@@ -531,8 +616,10 @@ const Dashboard = () => {
                       </Col>
                       <Col xs='7'>
                         <div className='numbers'>
-                          <p className='card-category'>Followers</p>
-                          <CardTitle tag='h3'>+45k</CardTitle>
+                          <p className='card-category'>Taxes</p>
+                          <CardTitle tag='h3'>
+                            {currencyFormat(taxesToBeDisplayed, login.currency)}
+                          </CardTitle>
                         </div>
                       </Col>
                     </Row>
@@ -543,7 +630,48 @@ const Dashboard = () => {
                       className='stats'
                       style={{ height: '60px', width: '92%' }}
                     >
-                      <i className='tim-icons icon-sound-wave' /> Last Research
+                      <div>
+                        <i className='tim-icons icon-calendar-60' />{' '}
+                        <span>Filter period</span>
+                        <Button
+                          onClick={() => {
+                            setFilterForTaxes('');
+                            setTaxesToBeDisplayed(
+                              taxes[1].reduce((acc, curr) => acc + curr, 0)
+                            );
+                          }}
+                          className='btn-link'
+                          color='primary'
+                          style={{ float: 'right', padding: 0, margin: 0 }}
+                        >
+                          Clear Filter &times;
+                        </Button>
+                      </div>
+                      <Input
+                        type='month'
+                        value={filterForTaxes}
+                        onChange={(e) => {
+                          setFilterForTaxes(e.target.value);
+                          handleFilterForTaxes(e.target.value);
+                        }}
+                        max={
+                          Incomes[1].length === 0
+                            ? format(new Date(), 'yyyy-MM')
+                            : format(
+                                addDays(
+                                  parse(
+                                    Incomes[1][Incomes[1].length - 1],
+                                    'MMM/yyyy',
+                                    new Date(),
+                                    { locale: ptBR }
+                                  ),
+                                  1
+                                ),
+                                'yyyy-MM',
+                                { locale: ptBR }
+                              )
+                        }
+                      />
                     </div>
                   </CardFooter>
                 </Card>
@@ -552,15 +680,25 @@ const Dashboard = () => {
                 <Card className='card-stats'>
                   <CardBody>
                     <Row>
-                      <Col xs='5'>
-                        <div className='info-icon text-center icon-success'>
-                          <i className='tim-icons icon-single-02' />
+                      <Col xs='3'>
+                        <div className='info-icon text-center icon-warning'>
+                          <i className='tim-icons icon-trophy' />
                         </div>
                       </Col>
-                      <Col xs='7'>
+                      <Col xs='9'>
                         <div className='numbers'>
-                          <p className='card-category'>Users</p>
-                          <CardTitle tag='h3'>150,000</CardTitle>
+                          <p className='card-category'>
+                            How much until your financial freedom
+                          </p>
+                          <CardTitle tag='h3'>
+                            {currencyFormat(
+                              getHowMuchMoneyToFinancialFreedom(
+                                login.equityObjective,
+                                investments
+                              ),
+                              login.currency
+                            )}
+                          </CardTitle>
                         </div>
                       </Col>
                     </Row>
@@ -571,7 +709,8 @@ const Dashboard = () => {
                       className='stats'
                       style={{ height: '60px', width: '92%' }}
                     >
-                      <i className='tim-icons icon-trophy' /> Customers feedback
+                      <i className='tim-icons icon-single-02' /> Customers
+                      feedback
                     </div>
                   </CardFooter>
                 </Card>
@@ -580,15 +719,25 @@ const Dashboard = () => {
                 <Card className='card-stats'>
                   <CardBody>
                     <Row>
-                      <Col xs='5'>
+                      <Col xs='3'>
                         <div className='info-icon text-center icon-danger'>
-                          <i className='tim-icons icon-molecule-40' />
+                          <i className='fas fa-percent'></i>
                         </div>
                       </Col>
-                      <Col xs='7'>
+                      <Col xs='9'>
                         <div className='numbers'>
-                          <p className='card-category'>Errors</p>
-                          <CardTitle tag='h3'>12</CardTitle>
+                          <p className='card-category'>Global Average Return</p>
+                          <CardTitle tag='h3' style={{ marginBottom: 0 }}>
+                            {globalAverageReturn}
+                          </CardTitle>
+                          <h6 style={{ marginBottom: 0 }}>
+                            {`Equivalent annual rate of ${percentageFormat(
+                              (reverseFormatNumber(globalAverageReturn) / 100 +
+                                1) **
+                                12 -
+                                1
+                            )}`}
+                          </h6>
                         </div>
                       </Col>
                     </Row>
@@ -599,8 +748,33 @@ const Dashboard = () => {
                       className='stats'
                       style={{ height: '60px', width: 'inherit' }}
                     >
-                      <i className='tim-icons icon-watch-time' /> In the last
-                      hours
+                      <i className='tim-icons icon-calendar-60' />{' '}
+                      <span>Filter Period</span>
+                      <Input
+                        type='month'
+                        value={filterForGlobalAverage}
+                        onChange={(e) => {
+                          setFilterForGlobalAverage(e.target.value);
+                          handleFilterForGlobalAverage(e.target.value);
+                        }}
+                        max={
+                          Incomes[1].length === 0
+                            ? format(new Date(), 'yyyy-MM')
+                            : format(
+                                addDays(
+                                  parse(
+                                    Incomes[1][Incomes[1].length - 1],
+                                    'MMM/yyyy',
+                                    new Date(),
+                                    { locale: ptBR }
+                                  ),
+                                  1
+                                ),
+                                'yyyy-MM',
+                                { locale: ptBR }
+                              )
+                        }
+                      />
                     </div>
                   </CardFooter>
                 </Card>

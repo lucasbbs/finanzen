@@ -78,7 +78,10 @@ const Login = ({ location }) => {
           history.push(`/auth/verify/${res.data._id}`);
         }
       })
-      .catch((err) => notify(err.response.data, 'danger'));
+      .catch((err) => {
+        console.error(err);
+        notify(err.response?.data, 'danger');
+      });
   };
 
   const doRegister = async (e, name, email, password, confirmPassword) => {

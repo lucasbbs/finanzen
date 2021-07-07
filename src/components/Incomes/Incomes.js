@@ -24,7 +24,7 @@ import {
 } from 'reactstrap';
 import { reverseFormatNumber } from '../../helpers/functions';
 import { ptBR } from 'date-fns/locale';
-
+import { currencies } from '../../views/pages/currencies';
 import Config from '../../config.json';
 
 const Incomes = ({
@@ -53,11 +53,17 @@ const Incomes = ({
     };
     notificationAlertRef.current.notificationAlert(options);
   };
+  const [tax, setTax] = useState('');
+  const [taxRate, setTaxRate] = useState('');
+  const [checkbox, setCheckbox] = useState(true);
+  const [formerValue, setFormerValue] = useState(0);
   const [valueIncome, setValueIncome] = useState(0);
   const [dateIncome, setDateIncome] = useState('');
   const [modal, setModal] = useState(false);
   const [modalAddIncome, setModalAddIncome] = useState(false);
+  const [modalAddFunds, setModalAddFunds] = useState(false);
   // eslint-disable-next-line
+
   const [isValid, setIsValid] = useState(true);
   const [isEdit, setIsEdit] = useState(false);
   const [updatedIncome, setUpdatedIncome] = useState(incomesToBeUpdated);
@@ -71,17 +77,25 @@ const Incomes = ({
   );
   const [incomesPerPage, setIncomesPerPage] = useState(numberPerPage);
 
+  function countChars(char, string) {
+    return string
+      .split('')
+      .reduce((acc, ch) => (ch === char ? acc + 1 : acc), 0);
+  }
   useEffect(() => {
     if (isAdding) {
       setIsAdding(false);
       let incomeObject = {};
       incomeObject[
-        format(parse(dateEl, 'yyyy-MM', new Date()), 'yyyy-MM-dd')
+        dateEl.length === 7
+          ? format(parse(dateEl, 'yyyy-MM', new Date()), 'yyyy-MM-dd')
+          : `${format(parse(dateEl, 'yyyy-MM-dd', new Date()), 'yyyy-MM-dd')}`
       ] = reverseFormatNumber(valueEl);
 
       var index = updatedIncome
         .map((key) => Object.keys(key)[0])
         .indexOf(Object.keys(incomeObject)[0]);
+
       handleAddIncome({ incomes: updatedIncome }, dateEl, valueEl, index);
     }
     // eslint-disable-next-line
@@ -96,8 +110,18 @@ const Incomes = ({
       setIsEdit(false);
       setDateIncome('');
       setValueIncome(0.0);
+      setTax(0);
+      setTaxRate(0);
     }
     setModalAddIncome(!modalAddIncome);
+  };
+  const toggleAddFunds = (e, value = undefined) => {
+    if (value === 'voltar') {
+      setIsEdit(false);
+      setDateIncome('');
+      setValueIncome(0.0);
+    }
+    setModalAddFunds(!modalAddFunds);
   };
   const fun = (e, defaultValue = undefined) => {
     let inputEl = undefined;
@@ -128,29 +152,122 @@ const Incomes = ({
 
     let incomeObject = {};
     incomeObject[
-      format(parse(dateEl, 'yyyy-MM', new Date()), 'yyyy-MM-dd')
-    ] = reverseFormatNumber(valueEl);
-
+      `${format(parse(dateEl, 'yyyy-MM', new Date()), 'yyyy-MM-dd')}income`
+    ] = {
+      value: reverseFormatNumber(valueEl),
+      tax,
+      type: 'income',
+    };
     const index = updatedIncome
       .map((key) => Object.keys(key)[0])
       .indexOf(Object.keys(incomeObject)[0]);
-
     if (index !== -1) {
       updatedIncome.splice(index, 1);
+
+      // const incomesObjects = [
+      //   ...updatedIncome.filter(
+      //     (income) => Object.values(income)[0].type === 'income'
+      //   ),
+      //   incomeObject,
+      // ].sort((a, b) => Object.keys(a)[0].localeCompare(Object.keys(b)[0]));
+
       setUpdatedIncome(
-        [...updatedIncome, incomeObject].sort(
-          (a, b) => new Date(Object.keys(a)[0]) - new Date(Object.keys(b)[0])
+        [...updatedIncome, incomeObject].sort((a, b) =>
+          Object.keys(a)[0].localeCompare(Object.keys(b)[0])
         )
       );
     } else {
       setUpdatedIncome(
-        [...updatedIncome, incomeObject].sort(
-          (a, b) => new Date(Object.keys(a)[0]) - new Date(Object.keys(b)[0])
+        [...updatedIncome, incomeObject].sort((a, b) =>
+          Object.keys(a)[0].localeCompare(Object.keys(b)[0])
         )
       );
     }
 
     toggleAddIncome(null, true);
+  };
+  const handleCurrentMoney = async (fundsReturn = 0) => {
+    console.log(
+      formerValue,
+      'isEdit',
+      isEdit,
+      'isRemove',
+      isEdit
+        ? login.fundsToInvest + fundsReturn - formerValue
+        : login.fundsToInvest + fundsReturn
+    );
+    const config = { headers: { Authorization: `Bearer ${login.token}` } };
+    await axios
+      .put(
+        `${Config.SERVER_ADDRESS}/api/users/${login._id}`,
+        {
+          fundsToInvest: isEdit
+            ? login.fundsToInvest + fundsReturn - formerValue
+            : login.fundsToInvest + fundsReturn,
+        },
+        config
+      )
+      .then((res) => {
+        login['fundsToInvest'] = isEdit
+          ? login.fundsToInvest + fundsReturn - formerValue
+          : login.fundsToInvest + fundsReturn;
+        localStorage.setItem('userInfo', JSON.stringify(login));
+      });
+  };
+  const handleDeleteMoney = async (formerValue) => {
+    const config = { headers: { Authorization: `Bearer ${login.token}` } };
+    await axios
+      .put(
+        `${Config.SERVER_ADDRESS}/api/users/${login._id}`,
+        {
+          fundsToInvest: login.fundsToInvest - formerValue,
+        },
+        config
+      )
+      .then((res) => {
+        login['fundsToInvest'] = login.fundsToInvest - formerValue;
+        localStorage.setItem('userInfo', JSON.stringify(login));
+      });
+  };
+  const handleFunds = () => {
+    setIsLoading(true);
+    if (isEdit) {
+      setDateEl(document.querySelector('#FundDate').value);
+      setDateIncome('');
+      setValueIncome(0.0);
+    }
+
+    let fundObject = {};
+    fundObject[
+      `${format(parse(dateEl, 'yyyy-MM-dd', new Date()), 'yyyy-MM-dd')}fund`
+    ] = {
+      value: -1 * reverseFormatNumber(valueEl),
+      type: 'fund',
+    };
+
+    const index = updatedIncome
+      .map((key) => Object.keys(key)[0])
+      .indexOf(Object.keys(fundObject)[0]);
+
+    handleCurrentMoney(reverseFormatNumber(valueEl));
+    if (index !== -1) {
+      updatedIncome.splice(index, 1);
+      try {
+      } catch (error) {}
+      setUpdatedIncome(
+        [...updatedIncome, fundObject].sort((a, b) =>
+          Object.keys(a)[0].localeCompare(Object.keys(b)[0])
+        )
+      );
+    } else {
+      setUpdatedIncome(
+        [...updatedIncome, fundObject].sort((a, b) =>
+          Object.keys(a)[0].localeCompare(Object.keys(b)[0])
+        )
+      );
+    }
+
+    toggleAddFunds(null, true);
   };
   const handleAddIncome = async (incomesObj, index) => {
     const config = {
@@ -173,7 +290,11 @@ const Incomes = ({
           setValueIncome(0.0);
           notify(
             `You have successfully updated the income for ${format(
-              parse(dateEl, 'yyyy-MM', new Date()),
+              parse(
+                dateEl,
+                countChars('-', dateEl) > 1 ? 'yyyy-MM-dd' : 'yyyy-MM',
+                new Date()
+              ),
               'MMM/yyyy',
               { locale: ptBR }
             )}`
@@ -183,7 +304,11 @@ const Incomes = ({
           setValueIncome(0.0);
           notify(
             `You have successfully added the income for ${format(
-              parse(dateEl, 'yyyy-MM', new Date()),
+              parse(
+                dateEl,
+                countChars('-', dateEl) > 1 ? 'yyyy-MM-dd' : 'yyyy-MM',
+                new Date()
+              ),
               'MMM/yyyy',
               { locale: ptBR }
             )}`
@@ -192,12 +317,26 @@ const Incomes = ({
 
         if (index === -1) {
           incomes.push([
-            format(parse(dateEl, 'yyyy-MM', new Date()), 'dd/MM/yyyy'),
+            format(
+              parse(
+                dateEl,
+                countChars('-', dateEl) > 1 ? 'yyyy-MM-dd' : 'yyyy-MM',
+                new Date()
+              ),
+              'dd/MM/yyyy'
+            ),
             reverseFormatNumber(valueEl),
           ]);
         } else {
           incomes[index] = [
-            format(parse(dateEl, 'yyyy-MM', new Date()), 'dd/MM/yyyy'),
+            format(
+              parse(
+                dateEl.replace('income', '').replace('fund', ''),
+                countChars('-', dateEl) > 1 ? 'yyyy-MM-dd' : 'yyyy-MM',
+                new Date()
+              ),
+              'dd/MM/yyyy'
+            ),
             reverseFormatNumber(valueEl),
           ];
         }
@@ -226,23 +365,27 @@ const Incomes = ({
           Number(
             updatedIncome
               .map((key) => Object.values(key)[0])
-              .reduce((acc, curr) => acc + curr, 0)
+              .reduce((acc, curr) => acc + curr.value, 0)
               .toFixed(2)
           )
         );
       })
       .catch((err) => {
         setIsLoading(false);
-        notify(err.response.data, 'danger');
+        console.error(err);
+        notify(err.response?.data, 'danger');
       });
     if (index === -1) {
     }
   };
 
-  const handleRemoveIncome = async (input, removido) => {
+  const handleRemoveIncome = async (input, removido, formerValues) => {
+    console.log(Object.values(removido[0])[0].value < 0);
+    if (Object.values(removido[0])[0].value < 0) {
+      console.log('Hello world');
+      handleDeleteMoney(formerValues);
+    }
     setIsLoading(true);
-    // console.log(setIsLoading(true));
-
     let incomesObj = { incomes: input };
     const config = {
       headers: {
@@ -261,7 +404,14 @@ const Incomes = ({
         setIsLoading(false);
         notify(
           `Você removeu com sucesso a receita do período de ${format(
-            addDays(new Date(Object.keys(removido[0])[0]), 1),
+            addDays(
+              new Date(
+                Object.keys(removido[0])[0]
+                  .replace('income', '')
+                  .replace('fund', '')
+              ),
+              1
+            ),
             'MMM/yyyy',
             {
               locale: ptBR,
@@ -271,6 +421,7 @@ const Incomes = ({
       })
       .catch((err) => {
         setIsLoading(false);
+        console.error(err);
         notify(err.response.data, 'danger');
       });
     const dates = updatedIncome
@@ -297,7 +448,7 @@ const Incomes = ({
       Number(
         updatedIncome
           .map((key) => Object.values(key)[0])
-          .reduce((acc, curr) => acc + curr, 0)
+          .reduce((acc, curr) => acc + curr.value, 0)
           .toFixed(2)
       )
     );
@@ -312,6 +463,16 @@ const Incomes = ({
       <span style={{ color: 'white' }}>×</span>
     </button>
   );
+
+  const closeBtnForFunds = (
+    <button
+      color='danger'
+      className='close'
+      onClick={() => toggleAddFunds(null, 'voltar')}
+    >
+      <span style={{ color: 'white' }}>×</span>
+    </button>
+  );
   const closeBtnForIncomesPerPage = (
     <button color='danger' className='close' onClick={toggle}>
       <span style={{ color: 'white' }}>×</span>
@@ -319,7 +480,7 @@ const Incomes = ({
   );
   return (
     // eslint-disable
-    <div>
+    <>
       <div className='react-notification-alert-container'>
         <NotificationAlert ref={notificationAlertRef} />
       </div>
@@ -341,7 +502,9 @@ const Incomes = ({
           <FormGroup>
             <Row className='align-items-center'>
               <Col md='6'>
-                <Label style={{ marginBottom: '0' }}>Income date</Label>
+                <Label htmlFor='IncomeDate' style={{ marginBottom: '0' }}>
+                  Income date
+                </Label>
               </Col>
               <Col md='6'>
                 <Input
@@ -363,7 +526,9 @@ const Incomes = ({
             </Row>
             <Row className='align-items-center' style={{ marginTop: '6px' }}>
               <Col md='6'>
-                <Label style={{ marginBottom: '0' }}>Value</Label>
+                <Label htmlFor='IncomeValue' style={{ marginBottom: '0' }}>
+                  Value
+                </Label>
               </Col>
               <Col md='6'>
                 <NumberFormat
@@ -375,17 +540,99 @@ const Incomes = ({
                     background: '#2b3553',
                   }}
                   type='text'
-                  placeholder='R$0.00'
+                  placeholder={`${
+                    currencies[login.currency].symbol_native
+                  }0,00`}
                   thousandSeparator={'.'}
                   decimalSeparator={','}
-                  prefix={'R$'}
+                  prefix={`${currencies[login.currency].symbol_native}`}
                   customInput={Input}
                   onChange={(e) => {
                     if (isEdit) {
                       setDateEl(document.querySelector('#IncomeDate').value);
                     }
-                    setValueIncome(e.target.value);
                     setValueEl(e.target.value);
+                    setValueIncome(reverseFormatNumber(e.target.value));
+                  }}
+                />
+              </Col>
+            </Row>
+            <Row className='align-items-center' style={{ marginTop: '6px' }}>
+              <Col md='2'>
+                <Label style={{ marginBottom: '0' }}>Tax</Label>
+              </Col>
+              <Col md='3'>
+                <FormGroup check style={{ marginTop: '0' }}>
+                  <Label check>
+                    <h6
+                      style={{
+                        fontSize: '10px',
+                        lineHeight: '18px',
+                        marginBottom: '0',
+                      }}
+                    >
+                      Tax exempt
+                    </h6>
+                    <Input
+                      id='taxExempt'
+                      checked={checkbox}
+                      onChange={(e) => {
+                        setCheckbox(e.target.checked);
+                        if (e.target.checked) {
+                          setTaxRate(0);
+                          setTax(0);
+                        }
+                      }}
+                      type='checkbox'
+                    />
+                    <span className='form-check-sign'>
+                      <span className='check' />
+                    </span>
+                  </Label>
+                </FormGroup>
+              </Col>
+              <Col md='3'>
+                <NumberFormat
+                  value={taxRate}
+                  disabled={checkbox}
+                  thousandSeparator={'.'}
+                  decimalSeparator={','}
+                  customInput={Input}
+                  onChange={(e) => {
+                    setTaxRate(reverseFormatNumber(e.target.value));
+                    setTax(
+                      (reverseFormatNumber(e.target.value) / 100) * valueIncome
+                    );
+                  }}
+                  style={{
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    background: '#2b3553',
+                  }}
+                  suffix={' %'}
+                />
+              </Col>
+              <Col md='4'>
+                <NumberFormat
+                  prefix='R$'
+                  value={tax}
+                  onChange={(e) => {
+                    setTax(reverseFormatNumber(e.target.value));
+                    setTaxRate(
+                      Number(
+                        (
+                          (reverseFormatNumber(e.target.value) / valueIncome) *
+                          100
+                        ).toFixed(2)
+                      )
+                    );
+                  }}
+                  disabled={checkbox}
+                  thousandSeparator={'.'}
+                  decimalSeparator={','}
+                  customInput={Input}
+                  style={{
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    background: '#2b3553',
                   }}
                 />
               </Col>
@@ -406,6 +653,95 @@ const Incomes = ({
           <Button
             color='secondary'
             onClick={() => toggleAddIncome(null, 'voltar')}
+            style={{ margin: '0 20px 20px' }}
+          >
+            Back
+          </Button>
+        </ModalFooter>
+      </Modal>
+      <Modal
+        isOpen={modalAddFunds}
+        toggle={() => toggleAddFunds(null, 'voltar')}
+        keyboard={true}
+        modalClassName='modal-black'
+      >
+        <ModalHeader
+          close={closeBtnForFunds}
+          toggle={() => toggleAddFunds(null, 'voltar')}
+        >
+          <span style={{ color: 'rgba(255, 255, 255, 0.8)' }}>
+            {isEdit ? 'Edit fund' : 'Add fund'}
+          </span>
+        </ModalHeader>
+        <ModalBody>
+          <FormGroup>
+            <Row className='align-items-center'>
+              <Col md='6'>
+                <Label style={{ marginBottom: '0' }}>Fund date</Label>
+              </Col>
+              <Col md='6'>
+                <Input
+                  className='borderColor'
+                  style={{
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    background: '#2b3553',
+                  }}
+                  readOnly={isEdit}
+                  id='FundDate'
+                  type='date'
+                  value={dateIncome}
+                  onChange={(e) => {
+                    setDateIncome(e.target.value);
+                    setDateEl(e.target.value);
+                  }}
+                />
+              </Col>
+            </Row>
+            <Row className='align-items-center' style={{ marginTop: '6px' }}>
+              <Col md='6'>
+                <Label style={{ marginBottom: '0' }}>Value</Label>
+              </Col>
+              <Col md='6'>
+                <NumberFormat
+                  className='borderColor'
+                  id='FundValue'
+                  value={valueIncome}
+                  style={{
+                    color: 'rgba(255, 255, 255, 0.8)',
+                    background: '#2b3553',
+                  }}
+                  type='text'
+                  placeholder='R$0.00'
+                  thousandSeparator={'.'}
+                  decimalSeparator={','}
+                  prefix={'R$'}
+                  customInput={Input}
+                  onChange={(e) => {
+                    if (isEdit) {
+                      setDateEl(document.querySelector('#FundDate').value);
+                    }
+                    setValueIncome(e.target.value);
+                    setValueEl(e.target.value);
+                  }}
+                />
+              </Col>
+            </Row>
+          </FormGroup>
+        </ModalBody>
+        <ModalFooter>
+          <Button
+            color='primary'
+            onClick={() => {
+              setIsAdding(true);
+              handleFunds();
+            }}
+            style={{ margin: '0 20px 20px' }}
+          >
+            Define
+          </Button>
+          <Button
+            color='secondary'
+            onClick={() => toggleAddFunds(null, 'voltar')}
             style={{ margin: '0 20px 20px' }}
           >
             Back
@@ -500,8 +836,16 @@ const Incomes = ({
           <Link to='#' onClick={toggleAddIncome}>
             {/* <span style={{ float: 'right', fontSize: '1.5em' }}>+</span> */}
             <i
-              title='Cadastrar uma nova receita de juros'
+              title='Register a new interest income'
               className='tim-icons icon-simple-add'
+              style={{ float: 'right', marginLeft: '20px', fontSize: '1.5em' }}
+            />
+          </Link>
+          <Link to='#' onClick={toggleAddFunds}>
+            {/* <span style={{ float: 'right', fontSize: '1.5em' }}>+</span> */}
+            <i
+              title='Register a funds Receipt'
+              className='fas fa-hand-holding-usd'
               style={{ float: 'right', fontSize: '1.5em' }}
             />
           </Link>
@@ -510,27 +854,57 @@ const Incomes = ({
           <Table className='tablesorter'>
             <tbody className='text-primary'>
               <tr>
-                {incomes.map((data) => (
-                  <td key={data[0]}>{data[0]}</td>
+                {incomes.map((data, index) => (
+                  <td key={index}>
+                    {data[0].replace('income', '').replace('fund', '')}
+                  </td>
                 ))}
               </tr>
 
               <tr>
                 {incomes.map((key, index) => (
-                  <td key={key[0]}>
+                  <td key={index}>
                     <span
-                      id={key[0]}
+                      tax-value={key[1]?.tax}
+                      id={
+                        key[1]?.value < 0
+                          ? `${key[0]
+                              .replace('income', '')
+                              .replace('fund', '')}$`
+                          : key[0].replace('income', '').replace('fund', '')
+                      }
                       className='incomes'
                       onClick={(e) => {
+                        setFormerValue(reverseFormatNumber(e.target.innerHTML));
+
                         if (e.target.offsetWidth + 6 < e.nativeEvent.offsetX) {
                           if (
                             e.pageY - 10 <
                             e.target.getBoundingClientRect().top
                           ) {
                             setIsEdit(true);
+                            //prettier-ignore
+                            setTax(Number(e.target.getAttribute('tax-value')))
+                            setTaxRate(
+                              Number(
+                                (
+                                  (e.target.getAttribute('tax-value') /
+                                    reverseFormatNumber(e.target.innerHTML)) *
+                                  100
+                                ).toFixed(2)
+                              )
+                            );
                             const date = format(
-                              parse(e.target.id, 'dd/MM/yyyy', new Date()),
-                              'yyyy-MM'
+                              parse(
+                                e.target.id,
+                                e.target.id.includes('$')
+                                  ? 'dd/MM/yyyy$'
+                                  : 'dd/MM/yyyy',
+                                new Date()
+                              ),
+                              e.target.innerHTML.includes('-')
+                                ? 'yyyy-MM-dd'
+                                : 'yyyy-MM'
                             );
                             setDateIncome(date);
                             const value = reverseFormatNumber(
@@ -538,59 +912,90 @@ const Incomes = ({
                             );
                             setValueIncome(value);
                             const newObj = {};
-                            newObj[
-                              format(
-                                parse(e.target.id, 'dd/MM/yyyy', new Date()),
-                                'yyyy-MM-dd'
-                              )
-                            ] = value;
-                            const newarray = updatedIncome;
-                            newarray.splice(
-                              updatedIncome
-                                .map((el) => Object.keys(el)[0])
-                                .indexOf(
-                                  format(
-                                    parse(
-                                      e.target.id,
-                                      'dd/MM/yyyy',
-                                      new Date()
-                                    ),
-                                    'yyyy-MM-dd'
-                                  )
-                                ),
-                              1,
-                              newObj
-                            );
-                            toggleAddIncome();
+                            //prettier-ignore
+                            newObj[`${format(parse( e.target.id, e.target.id.includes('$') ? 'dd/MM/yyyy$' : 'dd/MM/yyyy', new Date()),'yyyy-MM-dd')}${e.target.innerHTML.includes('-')? 'fund':'income'}`
+                            ] = {value, type:e.target.innerHTML.includes('-')? 'fund':'income'};
+                            // const newarray = updatedIncome;
+                            // newarray.splice(
+                            //   updatedIncome
+                            //     .map((el) => Object.keys(el)[0])
+                            //     .indexOf(
+                            //       format(
+                            //         parse(
+                            //           e.target.id,
+                            //           e.target.id.includes('$')
+                            //             ? 'dd/MM/yyyy$'
+                            //             : 'dd/MM/yyyy',
+                            //           new Date()
+                            //         ),
+                            //         'yyyy-MM-dd'
+                            //       )
+                            //     ),
+                            //   1,
+                            //   newObj
+                            // );
+                            if (e.target.innerHTML.includes('-')) {
+                              toggleAddFunds();
+                            } else {
+                              toggleAddIncome();
+                            }
                           } else {
                             if (
                               window.confirm(
                                 'Você tem certeza de que deseja apagar essa receita?'
                               )
                             ) {
+                              // console.log(
+                              //   `${
+                              //     e.target.innerHTML.includes('-')
+                              //       ? 'fund'
+                              //       : 'income'
+                              //   }${format(
+                              //     parse(
+                              //       e.target.id,
+                              //       e.target.id.includes('$')
+                              //         ? 'dd/MM/yyyy$'
+                              //         : 'dd/MM/yyyy',
+                              //       new Date()
+                              //     ),
+                              //     'yyyy-MM-dd'
+                              //   )}`
+                              // );
                               const index = updatedIncome
                                 .map((key) => Object.keys(key)[0])
                                 .indexOf(
-                                  format(
+                                  `${format(
                                     parse(
                                       e.target.id,
-                                      'dd/MM/yyyy',
+                                      e.target.id.includes('$')
+                                        ? 'dd/MM/yyyy$'
+                                        : 'dd/MM/yyyy',
                                       new Date()
                                     ),
                                     'yyyy-MM-dd'
-                                  )
+                                  )}${
+                                    e.target.innerHTML.includes('-')
+                                      ? 'fund'
+                                      : 'income'
+                                  }`
                                 );
+
                               try {
                                 if (index !== -1) {
                                   const removido = updatedIncome.splice(
                                     index,
                                     1
                                   );
-                                  handleRemoveIncome(updatedIncome, removido);
+                                  handleRemoveIncome(
+                                    updatedIncome,
+                                    removido,
+                                    reverseFormatNumber(e.target.innerHTML)
+                                  );
                                 } else {
                                   throw new Error('Erro');
                                 }
                               } catch (error) {
+                                console.error(error);
                                 notify(error.message, 'danger');
                               }
                             }
@@ -598,9 +1003,9 @@ const Incomes = ({
                         }
                       }}
                     >
-                      {key[1].toLocaleString('pt-BR', {
+                      {key[1].value.toLocaleString('pt-BR', {
                         style: 'currency',
-                        currency: 'BRL',
+                        currency: `${login.currency}`,
                         minimumFractionDigits: 2,
                       })}
                     </span>
@@ -611,7 +1016,7 @@ const Incomes = ({
           </Table>
         </CardBody>
       </Card>
-    </div>
+    </>
   );
 };
 

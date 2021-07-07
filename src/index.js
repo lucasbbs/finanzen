@@ -29,6 +29,7 @@ import 'react-notification-alert/dist/animate.css';
 import 'assets/scss/black-dashboard-pro-react.scss?v=1.2.0';
 import 'assets/demo/demo.css';
 import { isAuthenticated, isFirtAccess } from './services/auth';
+import { GlobalProvider } from './context/GlobalState';
 
 const PrivateRoute = ({ component: Component, ...rest }) => (
   <Route
@@ -55,21 +56,23 @@ const PrivateRoute = ({ component: Component, ...rest }) => (
 );
 
 ReactDOM.render(
-  <BrowserRouter>
-    <Switch>
-      <PrivateRoute
-        path='/admin'
-        component={(props) => <AdminLayout {...props} />}
-      />
-      <Route path='/auth' render={(props) => <AuthLayout {...props} />} />
-      <Route
-        path='/verify/users/:token'
-        render={(props) => <VerifyLayout {...props} />}
-      />
-      {/* <Route path='/admin' render={(props) => <AdminLayout {...props} />} /> */}
-      <Route path='/rtl' render={(props) => <RTLLayout {...props} />} />
-      <Redirect from='/' to='/admin/dashboard' />
-    </Switch>
-  </BrowserRouter>,
+  <GlobalProvider>
+    <BrowserRouter>
+      <Switch>
+        <PrivateRoute
+          path='/admin'
+          component={(props) => <AdminLayout {...props} />}
+        />
+        <Route path='/auth' render={(props) => <AuthLayout {...props} />} />
+        <Route
+          path='/verify/users/:token'
+          render={(props) => <VerifyLayout {...props} />}
+        />
+        {/* <Route path='/admin' render={(props) => <AdminLayout {...props} />} /> */}
+        <Route path='/rtl' render={(props) => <RTLLayout {...props} />} />
+        <Redirect from='/' to='/admin/dashboard' />
+      </Switch>
+    </BrowserRouter>
+  </GlobalProvider>,
   document.getElementById('root')
 );

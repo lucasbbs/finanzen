@@ -191,13 +191,12 @@ const Uploader = () => {
                 name='customFile'
                 onChange={(e) => setFile(e.target.files[0])}
               />
-              <div className='text-center mt-5'>{uploadPercentage}%</div>
-
-              <Progressbar
-                style={{ height: ' !important' }}
-                className='mt-5'
-                percentage={uploadPercentage}
-              />
+              <div className='mt-5'>
+                <Progressbar
+                  style={{ height: ' !important' }}
+                  percentage={uploadPercentage}
+                />
+              </div>
 
               <Input
                 type='submit'

@@ -1,7 +1,7 @@
 import { addDays } from 'date-fns';
 import format from 'date-fns/format';
 import ptBR from 'date-fns/locale/pt-BR';
-// import { startOfMonth } from 'date-fns';
+import { object } from 'prop-types';
 
 export function reverseFormatNumber(val, locale) {
   var group = new Intl.NumberFormat(locale).format(1111).replace(/1/g, '');
@@ -18,65 +18,172 @@ export function reverseFormatNumber(val, locale) {
   return Number.isNaN(reversedVal) ? 0 : Number(reversedVal);
 }
 
-export function currencyFormat(label) {
+export function currencyFormat(label, currency = 'BRL') {
   let formatCurrency = new Intl.NumberFormat('pt-BR', {
     style: 'currency',
-    currency: 'BRL',
+    currency: currency,
     minimumFractionDigits: 2,
   });
   return formatCurrency.format(Number(label));
 }
 
-export var fullyloaded = false;
+export function percentageFormat(label) {
+  let formatPercentage = new Intl.NumberFormat('pt-BR', {
+    style: 'percent',
+    // maximumFractionDigits: 2,
+    minimumFractionDigits: 10,
+  });
+  return formatPercentage.format(label);
+}
+
+export const getDataForTotalTaxes = (income) => {
+  let dates = [];
+  const incomesarray = [];
+  income.forEach((data) => {
+    dates = dates.concat([
+      ...data.incomes
+        .filter((key) => Object.values(key)[0].type === 'income')
+        .map((key) => Object.keys(key)[0]),
+    ]);
+    incomesarray.push(...data.incomes.map((value) => Object.entries(value)[0]));
+  });
+
+  let datesSet = new Set(dates);
+  datesSet = [...datesSet].sort();
+  datesSet = datesSet.map((date) =>
+    incomesarray.filter((e) => e[0].includes(date))
+  );
+  const labels = [];
+  const taxes = [];
+  datesSet.forEach((el) => {
+    labels.push(
+      ...new Set(
+        el.map((date) => date[0].replace('income', '').replace('fund', ''))
+      )
+    );
+    taxes.push(
+      el.map((value) => value[1].tax).reduce((acc, curr) => acc + curr, 0)
+    );
+  });
+  return [labels, taxes];
+};
+
+export const getGlobalAverageReturn = (investments, dateInput) => {
+  const currentAmounts = investments
+    .map((investment) => {
+      return {
+        ...investment,
+        incomes: investment.incomes.filter(
+          (income) => Object.values(income)[0].type === 'income'
+        ),
+      };
+    })
+    .filter(
+      (investment) =>
+        new Date(investment.investment_date).getTime() <=
+        new Date(dateInput).getTime()
+    )
+    .map(
+      (investment) =>
+        investment.initial_amount +
+        investment.incomes
+          .filter((income) => {
+            return (
+              new Date(Object.keys(income)[0].replace('income', '')) <=
+              dateInput
+            );
+          })
+          .map((income) => Object.values(income)[0].value)
+          .reduce((acc, curr) => acc + curr, 0)
+    );
+  const incomes = investments
+    .filter(
+      (investment) =>
+        new Date(investment.investment_date).getTime() <=
+        new Date(dateInput).getTime()
+    )
+    .map((investment) =>
+      investment.incomes.find((income) => {
+        return Object.keys(income)[0].replace('income', '') === dateInput;
+      })
+    )
+    .filter((value) => value !== undefined)
+    .map((value) => Object.values(value)[0].value);
+
+  return currentAmounts.length !== 0
+    ? incomes.reduce((acc, curr) => acc + curr, 0) /
+        currentAmounts.reduce((acc, curr) => acc + curr, 0)
+    : 0;
+};
+//prettier-ignore
+export const getHowMuchMoneyToFinancialFreedom = (value, investments) => value - (investments.length !== 0 ? investments.map((investment) => investment.initial_amount + investment.accrued_income).reduce((acc, curr) => acc + curr, 0):0);
 
 export const getDataForTheFirstChart = (
   income,
   firstPeriod = undefined,
   lastPeriod = undefined
 ) => {
-  var isInitialUndefined = false;
+  // var isInitialUndefined = false;
   let dates = [];
   const incomesarray = [];
 
   income.forEach((data) => {
-    dates = dates.concat([...data.incomes.map((key) => Object.keys(key)[0])]);
+    dates = dates.concat([
+      ...data.incomes
+        .filter((key) => Object.values(key)[0].type === 'income')
+        .map((key) => Object.keys(key)[0]),
+    ]);
     incomesarray.push(...data.incomes.map((value) => Object.entries(value)[0]));
   });
+
   let datesSet = new Set(dates);
   datesSet = [...datesSet].sort();
   if (firstPeriod === undefined) {
-    isInitialUndefined = true;
+    // isInitialUndefined = true;
     firstPeriod = datesSet[0];
   }
   if (lastPeriod === undefined) {
     lastPeriod = datesSet[datesSet.length - 1];
   }
 
-  const initialSlice = isInitialUndefined
-    ? datesSet.indexOf(firstPeriod)
-    : datesSet.indexOf(firstPeriod);
-  const finalSlice = datesSet.sort().indexOf(lastPeriod) + 1;
+  // const initialSlice = // isInitialUndefined
+  //   // ?
+  //   datesSet.indexOf(firstPeriod);
+  // //  : datesSet.indexOf(firstPeriod);
+  // const finalSlice =
+  //   datesSet //.sort()
+  //     .indexOf(lastPeriod) + 1;
 
   datesSet = datesSet.map((date) =>
     incomesarray.filter((e) => e[0].includes(date))
   );
   let labels = [];
   let values = [];
+
   datesSet.forEach((el) => {
     labels.push(
       ...new Set(
         el.map((date) =>
-          format(addDays(new Date(date[0]), 1), 'MMM/yyyy', { locale: ptBR })
+          format(
+            addDays(
+              new Date(date[0].replace('income', '').replace('fund', '')),
+              1
+            ),
+            'MMM/yyyy',
+            { locale: ptBR }
+          )
         )
       )
     );
     values.push(
-      el.map((value) => value[1]).reduce((acc, curr) => acc + curr, 0)
+      el
+        .map((value) => value[1].value - value[1].tax)
+        .reduce((acc, curr) => acc + curr, 0)
     );
   });
-  fullyloaded = true;
-  labels = labels.slice(initialSlice, finalSlice);
-  values = values.slice(initialSlice, finalSlice);
+
+  // labels = labels.slice(initialSlice, finalSlice);
+  // values = values.slice(initialSlice, finalSlice);
 
   return [values, labels];
 };
@@ -120,18 +227,26 @@ export const getDataForTheInflationChart = (
   }
 
   let inflations = inflation.slice(
+    Math.max(inflation.map((e) => e.data).indexOf(firstPeriod) - 11, 0),
+    inflation.map((e) => e.data).indexOf(lastPeriod) + 1
+  );
+  inflations = getSimpleMovingAverage(
+    inflations,
     inflation.map((e) => e.data).indexOf(firstPeriod),
     inflation.map((e) => e.data).indexOf(lastPeriod) + 1
   );
-  const cumulativeProduct = ((product) => (value) => (product *= value))(1);
+  inflations = inflations.slice(
+    Math.min(inflation.map((e) => e.data).indexOf(firstPeriod), 11)
+  );
+  // const cumulativeProduct = ((product) => (value) => (product *= value))(1);
 
-  inflations = inflations.map((inf) => {
-    return {
-      data: inf.data,
-      valor: (cumulativeProduct(inf.valor) - 1) * 100,
-    };
-  });
-
+  // inflations = inflations.map((inf) => {
+  //   return {
+  //     data: inf.data,
+  //     valor: (cumulativeProduct(inf.valor) - 1) * 100,
+  //   };
+  // });
+  // console.log(inflations);
   const labels = [];
   const values = [];
   inflations.forEach((e) => {
@@ -141,6 +256,15 @@ export const getDataForTheInflationChart = (
     values.push(e.valor);
   });
   return [values, labels];
+};
+//prettier-ignore
+export const getSimpleMovingAverage = (inflations, firstPeriod, lastPeriod) => {
+  inflations = inflations.map((inf) => {
+    return { valor: inf.valor, data: inf.data };
+  });
+  return inflations
+    .map((inf, index, array) => 
+       ({ data: inf.data, valor: array.slice(index - 12 + 1, index + 1).reduce((acc, curr) => acc * curr.valor, 1)})).map((infl) => ({ data: infl.data, valor: (infl.valor - 1) * 100 }));
 };
 
 export const getDataForTheTopInvestmentsTable = (investments) => {

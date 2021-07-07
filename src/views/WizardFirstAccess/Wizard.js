@@ -83,8 +83,11 @@ const WizardFirstAccess = () => {
       .then((res) => {
         let userInfo = JSON.parse(localStorage.getItem('userInfo'));
         userInfo['isFirstAccess'] = false;
+        userInfo['equityObjective'] = states.Equity.equityobjective;
+        userInfo['monthlySalary'] = states.Equity.monthlysalary;
+        userInfo['country'] = states.About.country;
+        userInfo['currency'] = states.About.currency;
         localStorage.setItem('userInfo', JSON.stringify(userInfo));
-        console.log('testando 1,2,3..');
         history.push('/admin/dashboard');
       });
   };

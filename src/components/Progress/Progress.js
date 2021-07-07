@@ -1,13 +1,23 @@
 import React from 'react';
-import PropTypes from 'prop-types';
 import { Progress } from 'reactstrap';
 
 const Progressbar = ({ percentage }) => {
-  return <Progress striped color='green' value={`${percentage}`}></Progress>;
+  return (
+    <div className='progress-container' style={{ height: '20px' }}>
+      <Progress
+        striped
+        color='green'
+        style={{ height: '20px' }}
+        value={`${percentage}`}
+      >
+        <span style={{ fontSize: '16px' }}>{`${percentage}%`}</span>
+      </Progress>
+    </div>
+  );
 };
 
-Progress.propTypes = {
-  percentage: PropTypes.number.isRequired,
-};
+// Progress.propTypes = {
+//   percentage: PropTypes.number.isRequired,
+// };
 
 export default Progressbar;

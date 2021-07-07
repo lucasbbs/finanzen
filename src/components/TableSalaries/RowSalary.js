@@ -6,14 +6,30 @@ import {
   Label,
   UncontrolledTooltip,
 } from 'reactstrap';
+import moment from 'moment';
+import { currencyFormat } from 'helpers/functions';
 
-const RowSalary = ({ salary }) => {
+const RowSalary = ({
+  salary,
+  setUpdatedSalaries,
+  currency,
+  toggleModal,
+  setSalaryFromRow,
+  setId,
+}) => {
   return (
     <tr className='rows'>
       <td>
         <FormGroup check>
           <Label check>
-            <Input defaultValue='' type='checkbox' />
+            <Input
+              id={salary._id}
+              defaultValue=''
+              type='checkbox'
+              onChange={(e) => {
+                setUpdatedSalaries(salary, e.target.id);
+              }}
+            />
             <span className='form-check-sign'>
               <span className='check' />
             </span>
@@ -21,16 +37,22 @@ const RowSalary = ({ salary }) => {
         </FormGroup>
       </td>
       <td>
-        <p className='title py-0 my-0'>Salary from june/2021</p>
-        {/* <p className='text-muted'>
-    The GDPR is a regulation that requires
-    businesses to protect the personal data and
-    privacy of Europe citizens for transactions that
-    occur within EU member states.
-  </p> */}
+        <p className='title py-0 my-0'>{`Salary of ${currencyFormat(
+          salary.salary,
+          currency
+        )} from ${moment(salary.month).format('MMMM/yyyy')}`}</p>
       </td>
       <td className='td-actions text-right'>
-        <Button color='link' id='tooltip155151810' title='' type='button'>
+        <Button
+          color='link'
+          id='tooltip155151810'
+          title=''
+          type='button'
+          onClick={(e) => {
+            setSalaryFromRow(salary);
+            toggleModal();
+          }}
+        >
           <i className='tim-icons icon-pencil' />
         </Button>
         <UncontrolledTooltip
@@ -38,7 +60,7 @@ const RowSalary = ({ salary }) => {
           placement='left'
           target='tooltip155151810'
         >
-          Edit Task
+          Edit Salary
         </UncontrolledTooltip>
       </td>
     </tr>

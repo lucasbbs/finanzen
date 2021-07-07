@@ -17,6 +17,7 @@
     "nouislider": "14.6.3",
     "perfect-scrollbar": "1.4.0",
     "prop-types": "15.7.2",
+    "pythonic": "^2.0.3",
     "react": "17.0.1",
     "react-avatar": "^3.10.0",
     "react-big-calendar": "0.30.0",

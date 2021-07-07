@@ -2,7 +2,7 @@ export const currencies = {
   USD: {
     symbol: '$',
     name: 'US Dollar',
-    symbol_native: '$',
+    symbol_native: 'US$',
     decimal_digits: 2,
     rounding: 0,
     code: 'USD',
