@@ -177,7 +177,7 @@ export const countries = {
   PT: 'Portugal',
   PR: 'Porto Rico',
   QA: 'Catar',
-  MK: 'República da Macedônia do Norte',
+  MK: 'Macedônia',
   RO: 'Romênia',
   RU: 'Rússia',
   RW: 'Ruanda',

@@ -9,28 +9,9 @@ import { Line, Bar, Pie } from 'react-chartjs-2';
 // react plugin for creating vector maps
 import { VectorMap } from 'react-jvectormap';
 // reactstrap components
-import {
-  Button,
-  ButtonGroup,
-  Card,
-  CardHeader,
-  CardBody,
-  CardFooter,
-  CardTitle,
-  DropdownToggle,
-  DropdownMenu,
-  DropdownItem,
-  UncontrolledDropdown,
-  Label,
-  FormGroup,
-  Input,
-  Progress,
-  Table,
-  Row,
-  Col,
-  UncontrolledTooltip,
-  Form,
-} from 'reactstrap';
+//prettier-ignore
+import {Button,ButtonGroup,Card,CardHeader,CardBody,CardFooter,CardTitle,DropdownToggle,DropdownMenu,DropdownItem,UncontrolledDropdown,Label,FormGroup,Input,Progress,Table,Row,Col,UncontrolledTooltip,Form,} from 'reactstrap';
+import { countries } from './pages/countries';
 
 // core components
 import {
@@ -43,6 +24,7 @@ import {
 import {
   currencyFormat,
   percentageFormat,
+  decimalFormat,
   reverseFormatNumber,
 } from '../helpers/functions';
 // eslint-disable-next-line
@@ -56,7 +38,8 @@ import {
   getDataForTotalTaxes,
   getGlobalAverageReturn,
   getHowMuchMoneyToFinancialFreedom,
-  getSimpleMovingAverage,
+  getDataForTheInflationChartTotalPeriod,
+  getTopInvestmentsByLocation,
 } from '../helpers/functions';
 import {
   // fetchInflation,
@@ -68,19 +51,19 @@ import Config from '../config.json';
 // import { Link } from 'react-router-dom';
 // import { locale } from 'moment';
 
-var mapData = {
-  AU: 760,
-  BR: 550,
-  CA: 120,
-  DE: 1300,
-  FR: 540,
-  GB: 690,
-  GE: 200,
-  IN: 200,
-  RO: 600,
-  RU: 300,
-  US: 2920,
-};
+// var mapData = {
+//   AU: 760,
+//   BR: 550,
+//   CA: 120,
+//   DE: 1300,
+//   FR: 540,
+//   GB: 690,
+//   GE: 200,
+//   IN: 200,
+//   RO: 600,
+//   RU: 300,
+//   US: 2920,
+// };
 /*eslint-disable*/
 Array.prototype.max = function () {
   return Math.max.apply(null, this);
@@ -91,6 +74,17 @@ Array.prototype.min = function () {
 };
 
 const Dashboard = () => {
+  const [currencyExhangeRates, setCurrencyExhangeRates] = useState({});
+  const [mapData, setMapData] = useState({});
+  const [
+    dataForInvestmentsTopLocation,
+    setdataForInvestmentsTopLocation,
+  ] = useState([]);
+  const [kindOfInflation, setKindOfInflation] = useState('movingAverage');
+  const [
+    inflationsForTheTotalPeriod,
+    setInflationsForTheTotalPeriod,
+  ] = useState([]);
   const [globalAverageReturn, setGlobalAverageReturn] = useState(
     '0,0000000000%'
   );
@@ -114,6 +108,7 @@ const Dashboard = () => {
   );
   const [inflations, setInflations] = useState([]);
   const [inflationsToBeDisplayed, setInflationsToBeDisplayed] = useState([]);
+  const [inflation12Months, setInflation12Months] = useState([]);
   const [
     dataChartInvetmentsPerBrokers,
     setDataChartInvetmentsPerartBrokers,
@@ -135,6 +130,45 @@ const Dashboard = () => {
         inf.data = `${dataPartes[2]}-${dataPartes[1]}-${dataPartes[0]}`;
         inf.valor = Number(inf.valor) / 100 + 1;
       });
+
+      if (dataForInvestmentsTopLocation.length === 0) {
+        const topLocations = getTopInvestmentsByLocation(investment);
+        const config = {
+          headers: { Authorization: `Bearer ${login.token}` },
+        };
+
+        for (const location of topLocations) {
+          if (
+            location[1] !== login.currency &&
+            !(`${location[1]}_${login.currency}` in currencyExhangeRates)
+          ) {
+            const res = await axios.get(
+              `${Config.SERVER_ADDRESS}/api/exchanges/${location[1]}_${login.currency}`,
+              config
+            );
+            currencyExhangeRates[
+              `${location[1]}_${login.currency}`
+            ] = Object.values(res.data)[0];
+            // mapdata[location[0]] = mapdata[location[0]] || 0;
+            // mapdata[location[0]] += location[2] * Object.values(res.data)[0];
+          } else {
+            if (!(`${location[1]}_${login.currency}` in currencyExhangeRates)) {
+              currencyExhangeRates[`${location[1]}_${login.currency}`] = 1;
+            }
+          }
+        }
+        topLocations.sort((a, b) => b[2] - a[2]);
+        setdataForInvestmentsTopLocation(topLocations);
+        const mapdata = {};
+        topLocations.forEach((location) => {
+          mapdata[location[0]] = mapdata[location[0]] || 0;
+          mapdata[location[0]] +=
+            currencyExhangeRates[`${location[1]}_${login.currency}`] *
+            location[2];
+        });
+        setMapData(mapdata);
+      }
+
       setIncomes(getDataForTheFirstChart(investment));
       setInvestmentsToBeDisplayed(getDataForTheFirstChart(investment));
       setTaxes(getDataForTotalTaxes(investment));
@@ -143,12 +177,15 @@ const Dashboard = () => {
         getDataForTotalTaxes(investment)[1].reduce((acc, curr) => acc + curr, 0)
       );
       setInflations(inflation);
+      setInflation12Months(getDataForTheInflationChart(inflation));
       setInflationsToBeDisplayed(getDataForTheInflationChart(inflation));
-      console.log(getSimpleMovingAverage(inflation));
+      setInflationsForTheTotalPeriod(
+        getDataForTheInflationChartTotalPeriod(inflation)
+      );
+
       const inflationsFromLocalStorate = await fetchInflationsFromLocalAPI(
         login.country
       );
-      console.log(inflationsFromLocalStorate);
       const brokers = [
         ...new Set(
           currentInvestments.investments.map((invest) => invest.broker.name)
@@ -381,13 +418,23 @@ const Dashboard = () => {
   function handleFilter() {
     const initialDate = document.querySelector('#InitialDate').value;
     const finalDate = document.querySelector('#FinalDate').value;
-    setInflationsToBeDisplayed(
-      getDataForTheInflationChart(
-        inflations,
-        initialDate + '-01',
-        finalDate + '-01'
-      )
-    );
+    if (kindOfInflation === 'movingAverage') {
+      setInflationsToBeDisplayed(
+        getDataForTheInflationChart(
+          inflations,
+          initialDate + '-01',
+          finalDate + '-01'
+        )
+      );
+    } else {
+      setInflationsToBeDisplayed(
+        getDataForTheInflationChartTotalPeriod(
+          inflations,
+          initialDate + '-01',
+          finalDate + '-01'
+        )
+      );
+    }
 
     setInvestmentsToBeDisplayed(
       handleSlicesOfInvestments(Incomes, initialDate + '-02', finalDate + '-02')
@@ -442,7 +489,7 @@ const Dashboard = () => {
                                   min={format(
                                     addDays(
                                       new Date(inflations[0]['data']),
-                                      31
+                                      28
                                     ),
                                     'yyyy-MM',
                                     { locale: ptBR }
@@ -466,7 +513,7 @@ const Dashboard = () => {
                                   min={format(
                                     addDays(
                                       new Date(inflations[0]['data']),
-                                      31
+                                      28
                                     ),
                                     'yyyy-MM',
                                     { locale: ptBR }
@@ -496,6 +543,69 @@ const Dashboard = () => {
                         <CardTitle tag='h2'>Performance</CardTitle>
                       </Col>
                       <Col sm='6'>
+                        {bigChartData === 'data2' ? (
+                          <ButtonGroup
+                            className='btn-group-toggle'
+                            data-toggle='buttons'
+                          >
+                            <Button
+                              color='warning'
+                              id='0'
+                              size='sm'
+                              tag='label'
+                              className={classNames('btn-simple', {
+                                active: kindOfInflation === 'movingAverage',
+                              })}
+                              onClick={() => {
+                                setKindOfInflation('movingAverage');
+                                setInflationsToBeDisplayed(
+                                  getDataForTheInflationChart(
+                                    inflations,
+                                    document.querySelector('#InitialDate')
+                                      .value + '-01',
+                                    document.querySelector('#FinalDate').value +
+                                      '-01'
+                                  )
+                                );
+                              }}
+                            >
+                              <span className='d-none d-sm-block d-md-block d-lg-block d-xl-block'>
+                                12 months
+                              </span>
+                              <span className='d-block d-sm-none'>
+                                <i className='tim-icons icon-single-02' />
+                              </span>
+                            </Button>
+                            <Button
+                              color='warning'
+                              id='1'
+                              size='sm'
+                              tag='label'
+                              className={classNames('btn-simple', {
+                                active: kindOfInflation === 'totalPeriod',
+                              })}
+                              onClick={() => {
+                                setKindOfInflation('totalPeriod');
+                                setInflationsToBeDisplayed(
+                                  getDataForTheInflationChartTotalPeriod(
+                                    inflations,
+                                    document.querySelector('#InitialDate')
+                                      .value + '-01',
+                                    document.querySelector('#FinalDate').value +
+                                      '-01'
+                                  )
+                                );
+                              }}
+                            >
+                              <span className='d-none d-sm-block d-md-block d-lg-block d-xl-block'>
+                                Total period
+                              </span>
+                              <span className='d-block d-sm-none'>
+                                <i className='tim-icons icon-gift-2' />
+                              </span>
+                            </Button>
+                          </ButtonGroup>
+                        ) : null}
                         <ButtonGroup
                           className='btn-group-toggle float-right'
                           data-toggle='buttons'
@@ -1284,10 +1394,10 @@ const Dashboard = () => {
                 <Card>
                   <CardHeader>
                     <CardTitle tag='h4'>
-                      Global Sales by Top Locations
+                      Global Investments by Top Locations
                     </CardTitle>
                     <p className='card-category'>
-                      All products that were shipped
+                      All investments that were made
                     </p>
                   </CardHeader>
                   <CardBody>
@@ -1295,84 +1405,64 @@ const Dashboard = () => {
                       <Col md='6'>
                         <Table>
                           <tbody>
-                            <tr>
-                              <td>
-                                <div className='flag'>
-                                  <img
-                                    alt='...'
-                                    src={require('assets/img/US.png').default}
-                                  />
-                                </div>
-                              </td>
-                              <td>USA</td>
-                              <td className='text-right'>2.920</td>
-                              <td className='text-right'>53.23%</td>
-                            </tr>
-                            <tr>
-                              <td>
-                                <div className='flag'>
-                                  <img
-                                    alt='...'
-                                    src={require('assets/img/DE.png').default}
-                                  />
-                                </div>
-                              </td>
-                              <td>Germany</td>
-                              <td className='text-right'>1.300</td>
-                              <td className='text-right'>20.43%</td>
-                            </tr>
-                            <tr>
-                              <td>
-                                <div className='flag'>
-                                  <img
-                                    alt='...'
-                                    src={require('assets/img/AU.png').default}
-                                  />
-                                </div>
-                              </td>
-                              <td>Australia</td>
-                              <td className='text-right'>760</td>
-                              <td className='text-right'>10.35%</td>
-                            </tr>
-                            <tr>
-                              <td>
-                                <div className='flag'>
-                                  <img
-                                    alt='...'
-                                    src={require('assets/img/GB.png').default}
-                                  />
-                                </div>
-                              </td>
-                              <td>United Kingdom</td>
-                              <td className='text-right'>690</td>
-                              <td className='text-right'>7.87%</td>
-                            </tr>
-                            <tr>
-                              <td>
-                                <div className='flag'>
-                                  <img
-                                    alt='...'
-                                    src={require('assets/img/RO.png').default}
-                                  />
-                                </div>
-                              </td>
-                              <td>Romania</td>
-                              <td className='text-right'>600</td>
-                              <td className='text-right'>5.94%</td>
-                            </tr>
-                            <tr>
-                              <td>
-                                <div className='flag'>
-                                  <img
-                                    alt='...'
-                                    src={require('assets/img/BR.png').default}
-                                  />
-                                </div>
-                              </td>
-                              <td>Brasil</td>
-                              <td className='text-right'>550</td>
-                              <td className='text-right'>4.34%</td>
-                            </tr>
+                            {dataForInvestmentsTopLocation.map(
+                              (data, index) => (
+                                <tr key={index}>
+                                  <td>
+                                    <div className='flag'>
+                                      <img
+                                        alt='...'
+                                        src={
+                                          require(`assets/img/flags/${data[0]}.png`)
+                                            .default
+                                        }
+                                      />
+                                    </div>
+                                  </td>
+                                  <td>{countries[data[0]]}</td>
+                                  <td className='text-right'>
+                                    {`${data[1]}_${
+                                      login.currency
+                                    } ${decimalFormat(
+                                      currencyExhangeRates[
+                                        `${data[1]}_${login.currency}`
+                                      ],
+                                      4
+                                    )}`}
+                                  </td>
+                                  <td className='text-right'>
+                                    {currencyFormat(data[2], data[1])}
+                                  </td>
+                                  <td className='text-right'>
+                                    {currencyFormat(
+                                      data[2] *
+                                        currencyExhangeRates[
+                                          `${data[1]}_${login.currency}`
+                                        ],
+                                      login.currency
+                                    )}
+                                  </td>
+                                  <td className='text-right'>
+                                    {percentageFormat(
+                                      (data[2] *
+                                        currencyExhangeRates[
+                                          `${data[1]}_${login.currency}`
+                                        ]) /
+                                        dataForInvestmentsTopLocation.reduce(
+                                          (acc, curr) =>
+                                            acc +
+                                            curr[2] *
+                                              currencyExhangeRates[
+                                                `${curr[1]}_${login.currency}`
+                                              ],
+                                          0
+                                        ),
+                                      2
+                                    )}
+                                  </td>
+                                </tr>
+                              )
+                            )}
                           </tbody>
                         </Table>
                       </Col>

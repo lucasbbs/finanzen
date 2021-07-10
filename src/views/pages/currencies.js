@@ -810,9 +810,9 @@ export const currencies = {
     name_plural: 'Qatari rials',
   },
   RON: {
-    symbol: 'RON',
+    symbol: 'L',
     name: 'Romanian Leu',
-    symbol_native: 'RON',
+    symbol_native: 'L',
     decimal_digits: 2,
     rounding: 0,
     code: 'RON',

@@ -27,15 +27,23 @@ export function currencyFormat(label, currency = 'BRL') {
   return formatCurrency.format(Number(label));
 }
 
-export function percentageFormat(label) {
+export function percentageFormat(label, digits = 10) {
   let formatPercentage = new Intl.NumberFormat('pt-BR', {
     style: 'percent',
     // maximumFractionDigits: 2,
-    minimumFractionDigits: 10,
+    minimumFractionDigits: digits,
   });
   return formatPercentage.format(label);
 }
 
+export function decimalFormat(label) {
+  let formatPercentage = new Intl.NumberFormat('pt-BR', {
+    style: 'decimal',
+    maximumFractionDigits: 4,
+    minimumFractionDigits: 4,
+  });
+  return formatPercentage.format(label);
+}
 export const getDataForTotalTaxes = (income) => {
   let dates = [];
   const incomesarray = [];
@@ -238,15 +246,6 @@ export const getDataForTheInflationChart = (
   inflations = inflations.slice(
     Math.min(inflation.map((e) => e.data).indexOf(firstPeriod), 11)
   );
-  // const cumulativeProduct = ((product) => (value) => (product *= value))(1);
-
-  // inflations = inflations.map((inf) => {
-  //   return {
-  //     data: inf.data,
-  //     valor: (cumulativeProduct(inf.valor) - 1) * 100,
-  //   };
-  // });
-  // console.log(inflations);
   const labels = [];
   const values = [];
   inflations.forEach((e) => {
@@ -257,6 +256,73 @@ export const getDataForTheInflationChart = (
   });
   return [values, labels];
 };
+export const getDataForTheInflationChartTotalPeriod = (
+  inflation,
+  firstPeriod = undefined,
+  lastPeriod = undefined
+) => {
+  if (firstPeriod === undefined || firstPeriod === '-01') {
+    firstPeriod = inflation[0].data;
+  }
+  if (lastPeriod === undefined || lastPeriod === '-01') {
+    lastPeriod = inflation[inflation.length - 1].data;
+  }
+
+  let inflations = inflation.slice(
+    inflation.map((e) => e.data).indexOf(firstPeriod),
+    inflation.map((e) => e.data).indexOf(lastPeriod) + 1
+  );
+  const cumulativeProduct = ((product) => (value) => (product *= value))(1);
+
+  inflations = inflations.map((inf) => {
+    return {
+      data: inf.data,
+      valor: (cumulativeProduct(inf.valor) - 1) * 100,
+    };
+  });
+
+  const labels = [];
+  const values = [];
+  inflations.forEach((e) => {
+    labels.push(
+      format(addDays(new Date(e.data), 1), 'MMM/yyyy', { locale: ptBR })
+    );
+    values.push(e.valor);
+  });
+  return [values, labels];
+};
+
+export const getTopInvestmentsByLocation = (investments) => {
+  const countries = [
+    ...new Set(investments.map((investment) => investment.broker.country)),
+  ];
+  const currenciesperCountries = [];
+  for (const country of countries) {
+    const currenciesPerCountry = [
+      ...new Set(
+        investments
+          .filter((investment) => investment.broker.country === country)
+          .map((investment) => investment.broker.currency)
+      ),
+    ];
+    currenciesperCountries.push([country, currenciesPerCountry]);
+  }
+  const result = [];
+  for (const country of currenciesperCountries) {
+    for (const currency of country[1]) {
+      const globalTopInvestments = investments
+        .filter((investment) => investment.broker.currency === currency)
+        .reduce(
+          (acc, curr) => acc + curr.initial_amount + curr.accrued_income,
+          0
+        );
+      result.push([country[0], currency, globalTopInvestments]);
+    }
+  }
+
+  return result;
+};
+
 //prettier-ignore
 export const getSimpleMovingAverage = (inflations, firstPeriod, lastPeriod) => {
   inflations = inflations.map((inf) => {

@@ -11,6 +11,7 @@ import axios from 'axios';
 import NotificationAlert from 'react-notification-alert';
 import Spinner from '../components/Spinner/Spinner';
 import Config from '../config.json';
+import { currencies } from './pages/currencies';
 
 const InvestmentDetails = () => {
   const notificationAlertRef = useRef(null);
@@ -36,7 +37,7 @@ const InvestmentDetails = () => {
       ? JSON.parse(localStorage.getItem('incomesPerPage'))
       : 8
   );
-
+  const [currency, setCurrency] = useState('');
   const [name, setName] = useState('');
   const [broker, setBroker] = useState('');
   const [brokers, setBrokers] = useState([]);
@@ -74,7 +75,8 @@ const InvestmentDetails = () => {
         const investment = await fetchInvestments(id, login);
         setInvestment(investment);
         setName(investment['invest'].name);
-        setBroker(investment['invest'].broker);
+        setBroker(investment['invest'].broker._id);
+        setCurrency(investment['invest'].broker.currency);
         setType(investment['invest'].type);
         setRate(investment['invest'].rate);
         setIndexer(investment['invest'].indexer);
@@ -203,7 +205,15 @@ const InvestmentDetails = () => {
                       style={{ backgroundColor: '#2b3553' }}
                       type='select'
                       value={broker}
-                      onChange={(e) => setBroker(e.target.value)}
+                      onChange={(e) => {
+                        setBroker(e.target.value);
+                        setCurrency(
+                          e.target[e.target.selectedIndex].getAttribute(
+                            'currency'
+                          )
+                        );
+                        console.log();
+                      }}
                     >
                       <option value='' disabled={true}>
                         Select an option
@@ -212,6 +222,8 @@ const InvestmentDetails = () => {
                         <option
                           key={broker._id}
                           id={broker._id}
+                          country={broker.country}
+                          currency={broker.currency}
                           value={broker._id}
                         >
                           {broker.name}
@@ -291,10 +303,10 @@ const InvestmentDetails = () => {
                       onChange={(e) => setInitialAmount(e.target.value)}
                       type='text'
                       value={initialAmount}
-                      placeholder='R$0.00'
+                      placeholder={`${currencies[currency]?.symbol_native}0,00`}
                       thousandSeparator={'.'}
                       decimalSeparator={','}
-                      prefix={'R$'}
+                      prefix={currencies[currency]?.symbol_native}
                       customInput={Input}
                     />
                   </Col>
@@ -308,10 +320,10 @@ const InvestmentDetails = () => {
                       }}
                       type='text'
                       value={accruedIncome}
-                      // placeholder="R$0.00"
+                      placeholder={`${currencies[currency]?.symbol_native}0,00`}
                       thousandSeparator={'.'}
                       decimalSeparator={','}
-                      prefix={'R$'}
+                      prefix={currencies[currency]?.symbol_native}
                       customInput={Input}
                     />
                   </Col>
@@ -330,6 +342,7 @@ const InvestmentDetails = () => {
                   setNewIncomes={setNewIncomes}
                   setAccruedIncome={setAccruedIncome}
                   setIsLoading={setIsLoading}
+                  currency={currency}
                 />
                 <PaginationUI
                   incomesPerPage={investmentsPerPage}

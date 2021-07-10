@@ -22,7 +22,7 @@ import {
   Row,
   Table,
 } from 'reactstrap';
-import { reverseFormatNumber } from '../../helpers/functions';
+import { currencyFormat, reverseFormatNumber } from '../../helpers/functions';
 import { ptBR } from 'date-fns/locale';
 import { currencies } from '../../views/pages/currencies';
 import Config from '../../config.json';
@@ -36,6 +36,7 @@ const Incomes = ({
   setAccruedIncome,
   id,
   setIsLoading,
+  currency,
 }) => {
   const notificationAlertRef = useRef(null);
   const notify = (message, type = 'success', place = 'tc') => {
@@ -1003,11 +1004,7 @@ const Incomes = ({
                         }
                       }}
                     >
-                      {key[1].value.toLocaleString('pt-BR', {
-                        style: 'currency',
-                        currency: `${login.currency}`,
-                        minimumFractionDigits: 2,
-                      })}
+                      {currencyFormat(key[1].value, currency)}
                     </span>
                   </td>
                 ))}

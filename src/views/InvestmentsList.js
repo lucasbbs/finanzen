@@ -443,156 +443,167 @@ const InvestmentsList = () => {
                     </Link>
                   </CardHeader>
                   <CardBody>
-                    <Table
-                      className='tablesorter'
-                      // responsive
-                      style={{ overflowX: 'auto', position: 'relative' }}
+                    <div
+                      className='table-responsive'
+                      style={{ overflowY: 'hidden', overflowX: 'auto' }}
                     >
-                      <thead className='text-primary'>
-                        <tr>
-                          <th>Name</th>
-                          <th>Broker</th>
-                          <th>Type</th>
-                          <th>Rate</th>
-                          <th>Indexer</th>
-                          <th>investment date</th>
-                          <th>due date</th>
-                          <th className='text-center'>initial amount</th>
-                          <th className='text-center'>accrued income</th>
-                          <th>Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {investment.map((inves) => (
-                          <tr id={inves._id} key={inves._id}>
-                            <td>
-                              <Link to={`/admin/investment/${inves._id}`}>
-                                {inves.name}
-                              </Link>
-                            </td>
-                            <td>{inves.broker.name}</td>
-                            <td>{inves.type}</td>
-                            <td>{inves.rate}</td>
-                            <td>{inves.indexer}</td>
-                            <td>
-                              {moment(inves.investment_date).format(
-                                'DD/MM/YYYY'
-                              )}
-                            </td>
-                            <td>
-                              {moment(inves.due_date).format('DD/MM/YYYY')}
-                            </td>
-                            <td className='text-center'>
-                              {inves.initial_amount.toLocaleString('pt-BR', {
-                                style: 'currency',
-                                currency: 'BRL',
-                              })}
-                            </td>
-                            <td className='text-center'>
-                              {inves.accrued_income.toLocaleString('pt-BR', {
-                                style: 'currency',
-                                currency: 'BRL',
-                              })}
-                            </td>
-                            <td style={{ textAlign: 'center' }}>
-                              <MyTooltip
-                                placement='top'
-                                target={`archive-${inves._id}`}
-                              >
-                                Arquivar
-                              </MyTooltip>
-                              <Button
-                                style={{ cursor: 'default' }}
-                                id={`archive-${inves._id}`}
-                                color='info'
-                                size='sm'
-                                className={classNames('btn-icon btn-link like')}
-                              >
-                                <i
-                                  style={{ cursor: 'pointer' }}
-                                  id={inves._id}
-                                  className='fas fa-archive'
-                                  onClick={(e) => {
-                                    handleArchive(e.target.id);
-                                  }}
-                                ></i>
-                              </Button>
-                              <MyTooltip
-                                placement='top'
-                                target={`Tooltip-${inves._id}`}
-                              >
-                                Editar
-                              </MyTooltip>
-                              <Button
-                                id={`Tooltip-${inves._id}`}
-                                color='warning'
-                                size='sm'
-                                className={classNames('btn-icon btn-link like')}
-                                style={{ cursor: 'default' }}
-                              >
-                                <i
-                                  onClick={(e) => {
-                                    const filtered = investment.find(
-                                      (invest) =>
-                                        invest._id ===
-                                        e.target.parentElement.parentElement
-                                          .parentElement.id
-                                    );
-                                    setBroker(filtered.broker._id);
-                                    setId(filtered._id);
-                                    setName(filtered.name);
-                                    setType(filtered.type);
-                                    setRate(filtered.rate);
-                                    setIndexer(filtered.indexer);
-                                    setDueDate(filtered.due_date);
-                                    setInvestmentDate(filtered.investment_date);
-                                    setInitialAmount(filtered.initial_amount);
-                                    setAccruedIncome(filtered.accrued_income);
-                                    toggle();
-                                  }}
-                                  className='tim-icons icon-pencil'
-                                  style={{ cursor: 'pointer' }}
-                                />
-                              </Button>
-                              <MyTooltip
-                                placement='top'
-                                target={`Delete-${inves._id}`}
-                              >
-                                Excluir
-                              </MyTooltip>
-                              <Button
-                                id={`Delete-${inves._id}`}
-                                size='sm'
-                                className={classNames('btn-icon btn-link')}
-                                color='danger'
-                                style={{
-                                  backgroundColor: 'transparent',
-                                  outline: 'none',
-                                  borderColor: 'transparent',
-                                  cursor: 'default',
-                                }}
-                              >
-                                <i
-                                  id={inves._id}
-                                  style={{
-                                    // display: 'inline-block !important',
-                                    cursor: 'pointer',
-                                  }}
-                                  className='tim-icons icon-trash-simple classVisible'
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    console.log(e.target.id);
-                                    warningWithConfirmAndCancelMessage(
-                                      e.target.id
-                                    );
-                                  }}
-                                ></i>
-                              </Button>
-                            </td>
+                      <Table
+                        className='tablesorter'
+                        // responsive
+                        style={{ overflowX: 'auto', position: 'relative' }}
+                      >
+                        <thead className='text-primary'>
+                          <tr>
+                            <th>Name</th>
+                            <th>Broker</th>
+                            <th>Type</th>
+                            <th>Rate</th>
+                            <th>Indexer</th>
+                            <th>investment date</th>
+                            <th>due date</th>
+                            <th className='text-center'>initial amount</th>
+                            <th className='text-center'>accrued income</th>
+                            <th>Actions</th>
                           </tr>
-                        ))}
-                      </tbody>
-                    </Table>
+                        </thead>
+                        <tbody>
+                          {investment.map((inves) => (
+                            <tr id={inves._id} key={inves._id}>
+                              <td>
+                                <Link to={`/admin/investment/${inves._id}`}>
+                                  {inves.name}
+                                </Link>
+                              </td>
+                              <td>{inves.broker.name}</td>
+                              <td>{inves.type}</td>
+                              <td>{inves.rate}</td>
+                              <td>{inves.indexer}</td>
+                              <td>
+                                {moment(inves.investment_date).format(
+                                  'DD/MM/YYYY'
+                                )}
+                              </td>
+                              <td>
+                                {moment(inves.due_date).format('DD/MM/YYYY')}
+                              </td>
+                              <td className='text-center'>
+                                {inves.initial_amount.toLocaleString('pt-BR', {
+                                  style: 'currency',
+                                  currency: 'BRL',
+                                })}
+                              </td>
+                              <td className='text-center'>
+                                {inves.accrued_income.toLocaleString('pt-BR', {
+                                  style: 'currency',
+                                  currency: 'BRL',
+                                })}
+                              </td>
+                              <td style={{ textAlign: 'center' }}>
+                                <MyTooltip
+                                  placement='top'
+                                  target={`archive-${inves._id}`}
+                                >
+                                  Arquivar
+                                </MyTooltip>
+                                <Button
+                                  style={{ cursor: 'default' }}
+                                  id={`archive-${inves._id}`}
+                                  color='info'
+                                  size='sm'
+                                  className={classNames(
+                                    'btn-icon btn-link like'
+                                  )}
+                                >
+                                  <i
+                                    style={{ cursor: 'pointer' }}
+                                    id={inves._id}
+                                    className='fas fa-archive'
+                                    onClick={(e) => {
+                                      handleArchive(e.target.id);
+                                    }}
+                                  ></i>
+                                </Button>
+                                <MyTooltip
+                                  placement='top'
+                                  target={`Tooltip-${inves._id}`}
+                                >
+                                  Editar
+                                </MyTooltip>
+                                <Button
+                                  id={`Tooltip-${inves._id}`}
+                                  color='warning'
+                                  size='sm'
+                                  className={classNames(
+                                    'btn-icon btn-link like'
+                                  )}
+                                  style={{ cursor: 'default' }}
+                                >
+                                  <i
+                                    onClick={(e) => {
+                                      const filtered = investment.find(
+                                        (invest) =>
+                                          invest._id ===
+                                          e.target.parentElement.parentElement
+                                            .parentElement.id
+                                      );
+                                      setBroker(filtered.broker._id);
+                                      setId(filtered._id);
+                                      setName(filtered.name);
+                                      setType(filtered.type);
+                                      setRate(filtered.rate);
+                                      setIndexer(filtered.indexer);
+                                      setDueDate(filtered.due_date);
+                                      setInvestmentDate(
+                                        filtered.investment_date
+                                      );
+                                      setInitialAmount(filtered.initial_amount);
+                                      setAccruedIncome(filtered.accrued_income);
+                                      toggle();
+                                    }}
+                                    className='tim-icons icon-pencil'
+                                    style={{ cursor: 'pointer' }}
+                                  />
+                                </Button>
+                                <MyTooltip
+                                  placement='top'
+                                  target={`Delete-${inves._id}`}
+                                >
+                                  Excluir
+                                </MyTooltip>
+                                <Button
+                                  id={`Delete-${inves._id}`}
+                                  size='sm'
+                                  className={classNames('btn-icon btn-link')}
+                                  color='danger'
+                                  style={{
+                                    backgroundColor: 'transparent',
+                                    outline: 'none',
+                                    borderColor: 'transparent',
+                                    cursor: 'default',
+                                  }}
+                                >
+                                  <i
+                                    id={inves._id}
+                                    style={{
+                                      // display: 'inline-block !important',
+                                      cursor: 'pointer',
+                                    }}
+                                    className='tim-icons icon-trash-simple classVisible'
+                                    onClick={(e) => {
+                                      e.preventDefault();
+                                      console.log(e.target.id);
+                                      warningWithConfirmAndCancelMessage(
+                                        e.target.id
+                                      );
+                                    }}
+                                  ></i>
+                                </Button>
+                              </td>
+                            </tr>
+                          ))}
+                        </tbody>
+                      </Table>
+                    </div>
                   </CardBody>
                 </Card>
               </Col>
