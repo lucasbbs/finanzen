@@ -14,19 +14,10 @@ import {Button,ButtonGroup,Card,CardHeader,CardBody,CardFooter,CardTitle,Dropdow
 import { countries } from './pages/countries';
 
 // core components
-import {
-  // chartExample1,
-  chartExample2,
-  chartExample3,
-  chartExample4,
-  chartDefault,
-} from 'variables/charts.js';
-import {
-  currencyFormat,
-  percentageFormat,
-  decimalFormat,
-  reverseFormatNumber,
-} from '../helpers/functions';
+//prettier-ignore
+import {chartExample2,chartExample3,chartExample4,chartDefault} from 'variables/charts.js';
+//prettier-ignore
+import { currencyFormat, percentageFormat, decimalFormat, reverseFormatNumber } from '../helpers/functions';
 // eslint-disable-next-line
 import TableTopInvestments from '../components/TableTopInvestments/TableTopInvestments';
 import TableSalaries from '../components/TableSalaries/TableSalaries';
@@ -41,29 +32,13 @@ import {
   getDataForTheInflationChartTotalPeriod,
   getTopInvestmentsByLocation,
 } from '../helpers/functions';
-import {
-  // fetchInflation,
-  fetchInflationsFromLocalAPI,
-} from '../services/Inflation';
+import { fetchInflationsFromLocalAPI } from '../services/Inflation';
 import Spinner from '../components/Spinner/Spinner';
 import axios from 'axios';
 import Config from '../config.json';
 // import { Link } from 'react-router-dom';
 // import { locale } from 'moment';
 
-// var mapData = {
-//   AU: 760,
-//   BR: 550,
-//   CA: 120,
-//   DE: 1300,
-//   FR: 540,
-//   GB: 690,
-//   GE: 200,
-//   IN: 200,
-//   RO: 600,
-//   RU: 300,
-//   US: 2920,
-// };
 /*eslint-disable*/
 Array.prototype.max = function () {
   return Math.max.apply(null, this);
@@ -132,7 +107,9 @@ const Dashboard = () => {
       });
 
       if (dataForInvestmentsTopLocation.length === 0) {
-        const topLocations = getTopInvestmentsByLocation(investment);
+        const topLocations = getTopInvestmentsByLocation(
+          currentInvestments.investments
+        );
         const config = {
           headers: { Authorization: `Bearer ${login.token}` },
         };
@@ -142,6 +119,17 @@ const Dashboard = () => {
             location[1] !== login.currency &&
             !(`${location[1]}_${login.currency}` in currencyExhangeRates)
           ) {
+            try {
+              const res = await axios.get(
+                `${Config.SERVER_ADDRESS}/api/exchanges/${location[1]}_${login.currency}`,
+                config
+              );
+              currencyExhangeRates[
+                `${location[1]}_${login.currency}`
+              ] = Object.values(res.data)[0];
+            } catch (error) {
+              currencyExhangeRates[`${location[1]}_${login.currency}`] = 1;
+            }
             const res = await axios.get(
               `${Config.SERVER_ADDRESS}/api/exchanges/${location[1]}_${login.currency}`,
               config
@@ -183,9 +171,6 @@ const Dashboard = () => {
         getDataForTheInflationChartTotalPeriod(inflation)
       );
 
-      const inflationsFromLocalStorate = await fetchInflationsFromLocalAPI(
-        login.country
-      );
       const brokers = [
         ...new Set(
           currentInvestments.investments.map((invest) => invest.broker.name)
@@ -1041,353 +1026,9 @@ const Dashboard = () => {
                     </div>
                     <CardTitle tag='h5'>Management Table</CardTitle>
                   </CardHeader>
-                  <CardBody>
-                    <Table>
-                      <thead className='text-primary'>
-                        <tr>
-                          <th className='text-center'>#</th>
-                          <th>Name</th>
-                          <th>Job Position</th>
-                          <th>Milestone</th>
-                          <th className='text-right'>Salary</th>
-                          <th className='text-right'>Actions</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr>
-                          <td className='text-center'>
-                            <div className='photo'>
-                              <img
-                                alt='...'
-                                src={require('assets/img/tania.jpg').default}
-                              />
-                            </div>
-                          </td>
-
-                          <td id={'sel'}>Tania Mike</td>
-                          <td>Develop</td>
-                          <td className='text-center'>
-                            <div className='progress-container progress-sm'>
-                              <Progress multi>
-                                <span className='progress-value'>25%</span>
-                                <Progress bar max='100' value='25' />
-                              </Progress>
-                            </div>
-                          </td>
-                          <td className='text-right'>€ 99,225</td>
-                          <td className='text-right'>
-                            <Button
-                              className='btn-link btn-icon btn-neutral'
-                              color='success'
-                              id='tooltip618296632'
-                              size='sm'
-                              title='Refresh'
-                              type='button'
-                            >
-                              <i className='tim-icons icon-refresh-01' />
-                            </Button>
-                            <UncontrolledTooltip
-                              delay={0}
-                              target='tooltip618296632'
-                            >
-                              Tooltip on top
-                            </UncontrolledTooltip>
-                            <Button
-                              className='btn-link btn-icon btn-neutral'
-                              color='danger'
-                              id='tooltip707467505'
-                              size='sm'
-                              title='Delete'
-                              type='button'
-                            >
-                              <i className='tim-icons icon-simple-remove' />
-                            </Button>
-                            <UncontrolledTooltip
-                              delay={0}
-                              target='tooltip707467505'
-                            >
-                              Tooltip on top
-                            </UncontrolledTooltip>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className='text-center'>
-                            <div className='photo'>
-                              <img
-                                alt='...'
-                                src={require('assets/img/robi.jpg').default}
-                              />
-                            </div>
-                          </td>
-                          <td>John Doe</td>
-                          <td>CEO</td>
-                          <td className='text-center'>
-                            <div className='progress-container progress-sm'>
-                              <Progress multi>
-                                <span className='progress-value'>77%</span>
-                                <Progress bar max='100' value='77' />
-                              </Progress>
-                            </div>
-                          </td>
-                          <td className='text-right'>€ 89,241</td>
-                          <td className='text-right'>
-                            <Button
-                              className='btn-link btn-icon btn-neutral'
-                              color='success'
-                              id='tooltip216846074'
-                              size='sm'
-                              title='Refresh'
-                              type='button'
-                            >
-                              <i className='tim-icons icon-refresh-01' />
-                            </Button>
-                            <UncontrolledTooltip
-                              delay={0}
-                              target='tooltip216846074'
-                            >
-                              Tooltip on top
-                            </UncontrolledTooltip>
-                            <Button
-                              className='btn-link btn-icon btn-neutral'
-                              color='danger'
-                              id='tooltip391990405'
-                              size='sm'
-                              title='Delete'
-                              type='button'
-                            >
-                              <i className='tim-icons icon-simple-remove' />
-                            </Button>
-                            <UncontrolledTooltip
-                              delay={0}
-                              target='tooltip391990405'
-                            >
-                              Tooltip on top
-                            </UncontrolledTooltip>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className='text-center'>
-                            <div className='photo'>
-                              <img
-                                alt='...'
-                                src={require('assets/img/lora.jpg').default}
-                              />
-                            </div>
-                          </td>
-                          <td>Alexa Mike</td>
-                          <td>Design</td>
-                          <td className='text-center'>
-                            <div className='progress-container progress-sm'>
-                              <Progress multi>
-                                <span className='progress-value'>41%</span>
-                                <Progress bar max='100' value='41' />
-                              </Progress>
-                            </div>
-                          </td>
-                          <td className='text-right'>€ 92,144</td>
-                          <td className='text-right'>
-                            <Button
-                              className='btn-link btn-icon btn-neutral'
-                              color='success'
-                              id='tooltip191500186'
-                              size='sm'
-                              title='Refresh'
-                              type='button'
-                            >
-                              <i className='tim-icons icon-refresh-01' />
-                            </Button>
-                            <UncontrolledTooltip
-                              delay={0}
-                              target='tooltip191500186'
-                            >
-                              Tooltip on top
-                            </UncontrolledTooltip>
-                            <Button
-                              className='btn-link btn-icon btn-neutral'
-                              color='danger'
-                              id='tooltip320351170'
-                              size='sm'
-                              title='Delete'
-                              type='button'
-                            >
-                              <i className='tim-icons icon-simple-remove' />
-                            </Button>
-                            <UncontrolledTooltip
-                              delay={0}
-                              target='tooltip320351170'
-                            >
-                              Tooltip on top
-                            </UncontrolledTooltip>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className='text-center'>
-                            <div className='photo'>
-                              <img
-                                alt='...'
-                                src={require('assets/img/jana.jpg').default}
-                              />
-                            </div>
-                          </td>
-                          <td>Jana Monday</td>
-                          <td>Marketing</td>
-                          <td className='text-center'>
-                            <div className='progress-container progress-sm'>
-                              <Progress multi>
-                                <span className='progress-value'>50%</span>
-                                <Progress bar max='100' value='50' />
-                              </Progress>
-                            </div>
-                          </td>
-                          <td className='text-right'>€ 49,990</td>
-                          <td className='text-right'>
-                            <Button
-                              className='btn-link btn-icon'
-                              color='success'
-                              id='tooltip345411997'
-                              size='sm'
-                              title='Refresh'
-                              type='button'
-                            >
-                              <i className='tim-icons icon-refresh-01' />
-                            </Button>
-                            <UncontrolledTooltip
-                              delay={0}
-                              target='tooltip345411997'
-                            >
-                              Tooltip on top
-                            </UncontrolledTooltip>
-                            <Button
-                              className='btn-link btn-icon'
-                              color='danger'
-                              id='tooltip601343171'
-                              size='sm'
-                              title='Delete'
-                              type='button'
-                            >
-                              <i className='tim-icons icon-simple-remove' />
-                            </Button>
-                            <UncontrolledTooltip
-                              delay={0}
-                              target='tooltip601343171'
-                            >
-                              Tooltip on top
-                            </UncontrolledTooltip>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className='text-center'>
-                            <div className='photo'>
-                              <img
-                                alt='...'
-                                src={require('assets/img/mike.jpg').default}
-                              />
-                            </div>
-                          </td>
-                          <td>Paul Dickens</td>
-                          <td>Develop</td>
-                          <td className='text-center'>
-                            <div className='progress-container progress-sm'>
-                              <Progress multi>
-                                <span className='progress-value'>100%</span>
-                                <Progress bar max='100' value='100' />
-                              </Progress>
-                            </div>
-                          </td>
-                          <td className='text-right'>€ 69,201</td>
-                          <td className='text-right'>
-                            <Button
-                              className='btn-link btn-icon'
-                              color='success'
-                              id='tooltip774891382'
-                              size='sm'
-                              title='Refresh'
-                              type='button'
-                            >
-                              <i className='tim-icons icon-refresh-01' />
-                            </Button>
-                            <UncontrolledTooltip
-                              delay={0}
-                              target='tooltip774891382'
-                            >
-                              Tooltip on top
-                            </UncontrolledTooltip>
-                            <Button
-                              className='btn-link btn-icon'
-                              color='danger'
-                              id='tooltip949929353'
-                              size='sm'
-                              title='Delete'
-                              type='button'
-                            >
-                              <i className='tim-icons icon-simple-remove' />
-                            </Button>
-                            <UncontrolledTooltip
-                              delay={0}
-                              target='tooltip949929353'
-                            >
-                              Tooltip on top
-                            </UncontrolledTooltip>
-                          </td>
-                        </tr>
-                        <tr>
-                          <td className='text-center'>
-                            <div className='photo'>
-                              <img
-                                alt='...'
-                                src={require('assets/img/emilyz.jpg').default}
-                              />
-                            </div>
-                          </td>
-                          <td>Manuela Rico</td>
-                          <td>Manager</td>
-                          <td className='text-center'>
-                            <div className='progress-container progress-sm'>
-                              <Progress multi>
-                                <span className='progress-value'>15%</span>
-                                <Progress bar max='100' value='15' />
-                              </Progress>
-                            </div>
-                          </td>
-                          <td className='text-right'>€ 99,201</td>
-                          <td className='text-right'>
-                            <Button
-                              className='btn-link btn-icon'
-                              color='success'
-                              id='tooltip30547133'
-                              size='sm'
-                              title='Refresh'
-                              type='button'
-                            >
-                              <i className='tim-icons icon-refresh-01' />
-                            </Button>
-                            <UncontrolledTooltip
-                              delay={0}
-                              target='tooltip30547133'
-                            >
-                              Tooltip on top
-                            </UncontrolledTooltip>
-                            <Button
-                              className='btn-link btn-icon'
-                              color='danger'
-                              id='tooltip156899243'
-                              size='sm'
-                              title='Delete'
-                              type='button'
-                            >
-                              <i className='tim-icons icon-simple-remove' />
-                            </Button>
-                            <UncontrolledTooltip
-                              delay={0}
-                              target='tooltip156899243'
-                            >
-                              Tooltip on top
-                            </UncontrolledTooltip>
-                          </td>
-                        </tr>
-                      </tbody>
-                    </Table>
-                  </CardBody>
+                  <>
+                    <TableTopInvestments investments={investments} />
+                  </>
                 </Card>
               </Col>
               <Col lg='12'>

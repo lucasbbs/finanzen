@@ -11,8 +11,9 @@ const TableTopInvestments = ({ investments }) => {
     setTableTopInvestmentsMonth(getDataForTheTopInvestmentsTable(investments));
   }, [investments]);
 
+  console.log(tableTopInvestmentsMonth);
   return (
-    <Col lg='6' md='12'>
+    <Col lg='12' md='12'>
       <Card>
         <CardHeader>
           <CardTitle tag='h4'>Top Investments</CardTitle>
@@ -77,7 +78,7 @@ const TableTopInvestments = ({ investments }) => {
                     <span id={`Tooltip-${invest[0]}`}>
                       {invest[1]}
                       <MyTooltip
-                        placement='top'
+                        placement='left'
                         target={`Tooltip-${invest[0]}`}
                       >
                         {invest[1]}
@@ -112,7 +113,7 @@ const TableTopInvestments = ({ investments }) => {
                       textAlign: 'right',
                     }}
                   >
-                    {currencyFormat(invest[3])}
+                    {currencyFormat(invest[3], invest[4])}
                   </td>
                 </tr>
               ))}

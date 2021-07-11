@@ -1,7 +1,6 @@
 import { addDays } from 'date-fns';
 import format from 'date-fns/format';
 import ptBR from 'date-fns/locale/pt-BR';
-import { object } from 'prop-types';
 
 export function reverseFormatNumber(val, locale) {
   var group = new Intl.NumberFormat(locale).format(1111).replace(/1/g, '');
@@ -238,11 +237,7 @@ export const getDataForTheInflationChart = (
     Math.max(inflation.map((e) => e.data).indexOf(firstPeriod) - 11, 0),
     inflation.map((e) => e.data).indexOf(lastPeriod) + 1
   );
-  inflations = getSimpleMovingAverage(
-    inflations,
-    inflation.map((e) => e.data).indexOf(firstPeriod),
-    inflation.map((e) => e.data).indexOf(lastPeriod) + 1
-  );
+  inflations = getSimpleMovingAverage(inflations);
   inflations = inflations.slice(
     Math.min(inflation.map((e) => e.data).indexOf(firstPeriod), 11)
   );
@@ -324,39 +319,50 @@ export const getTopInvestmentsByLocation = (investments) => {
 };
 
 //prettier-ignore
-export const getSimpleMovingAverage = (inflations, firstPeriod, lastPeriod) => {
-  inflations = inflations.map((inf) => {
-    return { valor: inf.valor, data: inf.data };
-  });
-  return inflations
+export const getSimpleMovingAverage = (inflations) => {
+
+  const initialPeriodInflations = inflations.slice(0, 11).map((infl, index, array)=> 
+  ({data: infl.data, valor: array.slice(0, index +1).reduce((acc, curr) => acc * curr.valor, 1)})).map((infl) => ({ data: infl.data, valor: (infl.valor - 1) * 100 }));
+  const remainingInflations =  inflations
     .map((inf, index, array) => 
        ({ data: inf.data, valor: array.slice(index - 12 + 1, index + 1).reduce((acc, curr) => acc * curr.valor, 1)})).map((infl) => ({ data: infl.data, valor: (infl.valor - 1) * 100 }));
+
+  return [...initialPeriodInflations, ...remainingInflations.slice(11)]
 };
 
 export const getDataForTheTopInvestmentsTable = (investments) => {
-  const currentMonth = '2021-03-01';
-  let incomes = investments.map((investment) =>
+  const currentMonth = '2021-05-01';
+
+  let incomes = investments.map((investment) => [
+    investment.name,
     investment.incomes.filter(
       (date) =>
-        [investment.name, Object.entries(date)[0]][1][0] === currentMonth
-    )
-  );
+        Object.entries(date)[0][0].replace('income', '').replace('fund', '') ===
+        currentMonth
+    ),
+  ]);
+
   const indexes = [];
   for (let i = 0; i < incomes.length; i++) {
-    incomes[i].length === 0 && indexes.push(i);
+    incomes[i][1].length !== 0 && indexes.push(i);
   }
 
-  incomes = incomes.filter((e) => e.length !== 0);
-  investments = investments.filter((e, index) => !(index in indexes));
+  incomes = incomes.filter((e) => e[1].length !== 0);
 
+  const filteredInvestments = (investments = investments.filter((e, index) =>
+    indexes.includes(index)
+  ));
   const returns = [];
-  for (let i = 0; i < investments.length; i++) {
+  for (let i = 0; i < filteredInvestments.length; i++) {
     returns.push([
-      investments[i]._id,
-      investments[i].name,
-      Object.values(incomes[i][0])[0] /
-        (investments[i].initial_amount + investments[i].accrued_income),
-      investments[i].initial_amount + investments[i].accrued_income,
+      filteredInvestments[i]._id,
+      filteredInvestments[i].name,
+      Object.values(incomes[i][1][0])[0].value /
+        (filteredInvestments[i].initial_amount +
+          filteredInvestments[i].accrued_income),
+      filteredInvestments[i].initial_amount +
+        filteredInvestments[i].accrued_income,
+      filteredInvestments[i].broker.currency,
     ]);
   }
   return returns.sort((a, b) => b[2] - a[2]).slice(0, 7);
