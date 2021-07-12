@@ -34,7 +34,7 @@ const ArchiveBrokers = () => {
       ? JSON.parse(localStorage.getItem('userInfo'))
       : null
   );
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [alert, setAlert] = useState(null);
   const [name, setName] = useState('');
   const [id, setId] = useState('');
@@ -136,6 +136,7 @@ const ArchiveBrokers = () => {
         config
       );
       setBrokers(brokersFromTheAPI.data);
+      setIsLoading(false);
     };
     handleAsyncFunction();
     // eslint-disable-next-line

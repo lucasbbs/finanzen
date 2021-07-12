@@ -1,24 +1,51 @@
 import React, { useEffect, useState } from 'react';
-import { Card, CardBody, CardHeader, CardTitle, Col, Table } from 'reactstrap';
+import {
+  Card,
+  CardBody,
+  CardHeader,
+  CardTitle,
+  Col,
+  Input,
+  Label,
+  Table,
+} from 'reactstrap';
 import { getDataForTheTopInvestmentsTable } from '../../helpers/functions.js';
 import { currencyFormat } from '../../helpers/functions';
 import MyTooltip from '../../components/Tooltip/MyTooltip';
+import { setDate } from 'date-fns';
 
-const TableTopInvestments = ({ investments }) => {
+const TableTopInvestments = ({ investments, date, setDate }) => {
   const [tableTopInvestmentsMonth, setTableTopInvestmentsMonth] = useState([]);
-
   useEffect(() => {
-    setTableTopInvestmentsMonth(getDataForTheTopInvestmentsTable(investments));
-  }, [investments]);
+    // prettier-ignore
+    setTableTopInvestmentsMonth(getDataForTheTopInvestmentsTable(investments, date));
+  }, [investments, date]);
 
-  console.log(tableTopInvestmentsMonth);
   return (
     <Col lg='12' md='12'>
       <Card>
-        <CardHeader>
-          <CardTitle tag='h4'>Top Investments</CardTitle>
+        <CardHeader className='row'>
+          <Col md='6'>
+            <CardTitle tag='h4'>Top Investments</CardTitle>
+          </Col>
+          <Col md='6' className='row align-items-center'>
+            <Col md='3'>
+              <span style={{ fontSize: '12.5px' }}>Select a date</span>
+            </Col>
+            <Col md='9'>
+              <Input
+                type='month'
+                value={date.slice(0, 7)}
+                onChange={(e) => setDate(e.target.value)}
+              />
+            </Col>
+          </Col>
         </CardHeader>
         <CardBody style={{ overflow: 'hidden' }}>
+          {/* <div
+            className='table-responsive'
+            style={{ overflowY: 'hidden', overflowX: 'auto' }}
+          > */}
           <Table className='tablesorter'>
             <thead className='text-primary'>
               <tr>
@@ -41,7 +68,7 @@ const TableTopInvestments = ({ investments }) => {
                     overflow: 'hidden',
                     display: 'inline-block',
                     textOverflow: 'ellipsis',
-                    minWidth: '280px',
+                    minWidth: '140px',
                     textAlign: 'center',
                   }}
                 >
@@ -93,7 +120,7 @@ const TableTopInvestments = ({ investments }) => {
                       overflow: 'hidden',
                       display: 'inline-block',
                       textOverflow: 'ellipsis',
-                      minWidth: '280px',
+                      minWidth: '140px',
                       textAlign: 'center',
                     }}
                   >

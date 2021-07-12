@@ -100,7 +100,6 @@ const Step3 = React.forwardRef((props, ref) => {
               })}
             >
               <NumberFormat
-                id='testeId'
                 required
                 className='classToAvoidBug borderColor'
                 value={monthlysalary}
@@ -136,7 +135,6 @@ const Step3 = React.forwardRef((props, ref) => {
               })}
             >
               <NumberFormat
-                id='testeId'
                 className='classToAvoidBug borderColor'
                 value={equityobjective}
                 style={{

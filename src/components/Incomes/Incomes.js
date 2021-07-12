@@ -54,8 +54,8 @@ const Incomes = ({
     };
     notificationAlertRef.current.notificationAlert(options);
   };
-  const [tax, setTax] = useState('');
-  const [taxRate, setTaxRate] = useState('');
+  const [tax, setTax] = useState(0);
+  const [taxRate, setTaxRate] = useState(0);
   const [checkbox, setCheckbox] = useState(true);
   const [formerValue, setFormerValue] = useState(0);
   const [valueIncome, setValueIncome] = useState(0);
@@ -146,6 +146,7 @@ const Incomes = ({
   const handleIncome = () => {
     setIsLoading(true);
     if (isEdit) {
+      console.log('hello world');
       setDateEl(document.querySelector('#IncomeDate').value);
       setDateIncome('');
       setValueIncome(0.0);
@@ -541,12 +542,10 @@ const Incomes = ({
                     background: '#2b3553',
                   }}
                   type='text'
-                  placeholder={`${
-                    currencies[login.currency].symbol_native
-                  }0,00`}
+                  placeholder={`${currencies[currency]?.symbol_native}0,00`}
                   thousandSeparator={'.'}
                   decimalSeparator={','}
-                  prefix={`${currencies[login.currency].symbol_native}`}
+                  prefix={`${currencies[currency]?.symbol_native}`}
                   customInput={Input}
                   onChange={(e) => {
                     if (isEdit) {
@@ -554,6 +553,9 @@ const Incomes = ({
                     }
                     setValueEl(e.target.value);
                     setValueIncome(reverseFormatNumber(e.target.value));
+                    setTax(
+                      (reverseFormatNumber(e.target.value) * taxRate) / 100
+                    );
                   }}
                 />
               </Col>
@@ -614,7 +616,8 @@ const Incomes = ({
               </Col>
               <Col md='4'>
                 <NumberFormat
-                  prefix='R$'
+                  placeholder={`${currencies[currency]?.symbol_native}0,00`}
+                  prefix={`${currencies[currency]?.symbol_native}`}
                   value={tax}
                   onChange={(e) => {
                     setTax(reverseFormatNumber(e.target.value));
@@ -712,16 +715,16 @@ const Incomes = ({
                     background: '#2b3553',
                   }}
                   type='text'
-                  placeholder='R$0.00'
+                  placeholder={`${currencies[currency]?.symbol_native}0,00`}
+                  prefix={`${currencies[currency]?.symbol_native}`}
                   thousandSeparator={'.'}
                   decimalSeparator={','}
-                  prefix={'R$'}
                   customInput={Input}
                   onChange={(e) => {
                     if (isEdit) {
                       setDateEl(document.querySelector('#FundDate').value);
                     }
-                    setValueIncome(e.target.value);
+                    setValueIncome(reverseFormatNumber(e.target.value));
                     setValueEl(e.target.value);
                   }}
                 />
@@ -907,10 +910,12 @@ const Incomes = ({
                                 ? 'yyyy-MM-dd'
                                 : 'yyyy-MM'
                             );
+                            setDateEl(date);
                             setDateIncome(date);
                             const value = reverseFormatNumber(
                               e.target.innerHTML
                             );
+                            setValueEl(value);
                             setValueIncome(value);
                             const newObj = {};
                             //prettier-ignore

@@ -49,6 +49,12 @@ Array.prototype.min = function () {
 };
 
 const Dashboard = () => {
+  const [equivalentAnnualRate, setEquivalentAnnualRate] = useState(
+    '0,0000000000%'
+  );
+  const [dateForTopInvestments, setDateForTopInvestments] = useState(
+    `${new Date().toISOString().slice(0, 8)}01`
+  );
   const [currencyExhangeRates, setCurrencyExhangeRates] = useState({});
   const [mapData, setMapData] = useState({});
   const [
@@ -128,7 +134,7 @@ const Dashboard = () => {
                 `${location[1]}_${login.currency}`
               ] = Object.values(res.data)[0];
             } catch (error) {
-              currencyExhangeRates[`${location[1]}_${login.currency}`] = 1;
+              currencyExhangeRates[`${location[1]}_${login.currency}`] = 1.5;
             }
             const res = await axios.get(
               `${Config.SERVER_ADDRESS}/api/exchanges/${location[1]}_${login.currency}`,
@@ -182,8 +188,15 @@ const Dashboard = () => {
         for (let j = 0; j < currentInvestments.investments.length; j++) {
           if (currentInvestments.investments[j].broker.name === brokers[i]) {
             soma +=
-              currentInvestments.investments[j].initial_amount +
-              currentInvestments.investments[j].accrued_income;
+              currentInvestments.investments[j].broker.currency !==
+              login.currency
+                ? (currentInvestments.investments[j].initial_amount +
+                    currentInvestments.investments[j].accrued_income) *
+                  currencyExhangeRates[
+                    `${currentInvestments.investments[j].broker.currency}_${login.currency}`
+                  ]
+                : currentInvestments.investments[j].initial_amount +
+                  currentInvestments.investments[j].accrued_income;
           }
         }
         somas.push(soma);
@@ -208,7 +221,16 @@ const Dashboard = () => {
           getGlobalAverageReturn(investments, format(date, 'yyyy-MM-dd'))
         )
       );
-
+      setEquivalentAnnualRate(
+        percentageFormat(
+          ((getGlobalAverageReturn(investments, format(date, 'yyyy-MM-dd')) /
+            100 +
+            1) **
+            12 -
+            1) *
+            100
+        )
+      );
       setFilterForGlobalAverage(format(date, 'yyyy-MM'));
     }
   }, [investments, Incomes]);
@@ -221,6 +243,13 @@ const Dashboard = () => {
   const handleFilterForGlobalAverage = (input) => {
     setGlobalAverageReturn(
       percentageFormat(getGlobalAverageReturn(investments, `${input}-01`))
+    );
+    setEquivalentAnnualRate(
+      percentageFormat(
+        ((getGlobalAverageReturn(investments, `${input}-01`) / 100 + 1) ** 12 -
+          1) *
+          100
+      )
     );
   };
 
@@ -789,7 +818,9 @@ const Dashboard = () => {
                             {currencyFormat(
                               getHowMuchMoneyToFinancialFreedom(
                                 login.equityObjective,
-                                investments
+                                investments,
+                                login.currency,
+                                currencyExhangeRates
                               ),
                               login.currency
                             )}
@@ -826,12 +857,10 @@ const Dashboard = () => {
                             {globalAverageReturn}
                           </CardTitle>
                           <h6 style={{ marginBottom: 0 }}>
-                            {`Equivalent annual rate of ${percentageFormat(
-                              (reverseFormatNumber(globalAverageReturn) / 100 +
-                                1) **
-                                12 -
-                                1
-                            )}`}
+                            {`Equivalent annual rate of ${
+                              //prettier-ignore
+                              equivalentAnnualRate //reverseFormatNumber(globalAverageReturn) / 10000
+                            }`}
                           </h6>
                         </div>
                       </Col>
@@ -982,54 +1011,11 @@ const Dashboard = () => {
                 </Card>
               </Col>
               <Col lg='7'>
-                <Card>
-                  <CardHeader>
-                    <div className='tools float-right'>
-                      <UncontrolledDropdown>
-                        <DropdownToggle
-                          caret
-                          className='btn-icon'
-                          color='link'
-                          data-toggle='dropdown'
-                          type='button'
-                        >
-                          <i className='tim-icons icon-settings-gear-63' />
-                        </DropdownToggle>
-                        <DropdownMenu right>
-                          <DropdownItem
-                            href='#pablo'
-                            onClick={(e) => e.preventDefault()}
-                          >
-                            Action
-                          </DropdownItem>
-                          <DropdownItem
-                            href='#pablo'
-                            onClick={(e) => e.preventDefault()}
-                          >
-                            Another action
-                          </DropdownItem>
-                          <DropdownItem
-                            href='#pablo'
-                            onClick={(e) => e.preventDefault()}
-                          >
-                            Something else
-                          </DropdownItem>
-                          <DropdownItem
-                            className='text-danger'
-                            href='#pablo'
-                            onClick={(e) => e.preventDefault()}
-                          >
-                            Remove Data
-                          </DropdownItem>
-                        </DropdownMenu>
-                      </UncontrolledDropdown>
-                    </div>
-                    <CardTitle tag='h5'>Management Table</CardTitle>
-                  </CardHeader>
-                  <>
-                    <TableTopInvestments investments={investments} />
-                  </>
-                </Card>
+                <TableTopInvestments
+                  investments={investments}
+                  date={dateForTopInvestments}
+                  setDate={setDateForTopInvestments}
+                />
               </Col>
               <Col lg='12'>
                 <Card>

@@ -50,7 +50,7 @@ const InvestmentDetails = () => {
   const [accruedIncome, setAccruedIncome] = useState(0);
   const [investment, setInvestment] = useState([]);
   const [incomes, setIncomes] = useState([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
   const [login] = useState(
     localStorage.getItem('userInfo')
       ? JSON.parse(localStorage.getItem('userInfo'))

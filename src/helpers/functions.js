@@ -2,7 +2,9 @@ import { addDays } from 'date-fns';
 import format from 'date-fns/format';
 import ptBR from 'date-fns/locale/pt-BR';
 
-export function reverseFormatNumber(val, locale) {
+export function reverseFormatNumber(val, locale = 'pt-BR') {
+  if (!isNaN(val)) return val;
+
   var group = new Intl.NumberFormat(locale).format(1111).replace(/1/g, '');
   var decimal = new Intl.NumberFormat(locale).format(1.1).replace(/1/g, '');
   // try {
@@ -123,7 +125,13 @@ export const getGlobalAverageReturn = (investments, dateInput) => {
     : 0;
 };
 //prettier-ignore
-export const getHowMuchMoneyToFinancialFreedom = (value, investments) => value - (investments.length !== 0 ? investments.map((investment) => investment.initial_amount + investment.accrued_income).reduce((acc, curr) => acc + curr, 0):0);
+export const getHowMuchMoneyToFinancialFreedom = (value, investments,currency,  exchangeRates) => {
+
+  return value - (investments.length !== 0 ? investments.filter(inv=> {
+    return inv.isArchived === false}).map((investment) =>  (investment.initial_amount + investment.accrued_income)*exchangeRates[`${investment.broker.currency}_${currency}`])
+    .reduce((acc, curr) => acc + curr, 0):
+    0)
+};
 
 export const getDataForTheFirstChart = (
   income,
@@ -330,8 +338,11 @@ export const getSimpleMovingAverage = (inflations) => {
   return [...initialPeriodInflations, ...remainingInflations.slice(11)]
 };
 
-export const getDataForTheTopInvestmentsTable = (investments) => {
-  const currentMonth = '2021-05-01';
+export const getDataForTheTopInvestmentsTable = (
+  investments,
+  currentMonth = '2021-07-01'
+) => {
+  currentMonth = currentMonth.length < 10 ? currentMonth + '-01' : currentMonth;
 
   let incomes = investments.map((investment) => [
     investment.name,
@@ -354,14 +365,25 @@ export const getDataForTheTopInvestmentsTable = (investments) => {
   ));
   const returns = [];
   for (let i = 0; i < filteredInvestments.length; i++) {
+    const accrued_income = filteredInvestments.map((inv) =>
+      inv.incomes
+        .map((income) => {
+          let object = {};
+          //prettier-ignore
+          object[Object.keys(income)[0].replace('income', '').replace('fund', '')] = Object.values(income)[0];
+          return object;
+        })
+        .filter(
+          (date) => new Date(Object.keys(date)[0]) <= new Date(currentMonth)
+        )
+        .reduce((acc, curr) => acc + Object.values(curr)[0].value, 0)
+    );
     returns.push([
       filteredInvestments[i]._id,
       filteredInvestments[i].name,
       Object.values(incomes[i][1][0])[0].value /
-        (filteredInvestments[i].initial_amount +
-          filteredInvestments[i].accrued_income),
-      filteredInvestments[i].initial_amount +
-        filteredInvestments[i].accrued_income,
+        (filteredInvestments[i].initial_amount + accrued_income[i]),
+      filteredInvestments[i].initial_amount + accrued_income[i],
       filteredInvestments[i].broker.currency,
     ]);
   }

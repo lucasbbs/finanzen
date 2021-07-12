@@ -12,7 +12,6 @@ export async function fetchInflationsFromLocalAPI(alpha2Code) {
   const inflations = await axios.get(
     `${Config.SERVER_ADDRESS}/api/inflations/${alpha2Code}`
   );
-  console.log(inflations);
   return inflations.data.values.map((inflation) => {
     const dateParts = Object.entries(inflation)[0][0].split('-');
     return {
