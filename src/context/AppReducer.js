@@ -19,12 +19,10 @@ const AppReducer = (state, action) => {
         ...state,
         investments: [...state.investments, action.payload],
       };
-    case 'EDIT_INVESTMENT':
+    case 'UPDATE_ACCOUNTS':
       return {
         ...state,
-        investments: state.investments.map((investment) =>
-          investment._id === action.payload._id ? action.payload : investment
-        ),
+        accounts: { ...state.accounts, ...action.payload },
       };
     case 'ARCHIVE_INVESTMENT':
       return {

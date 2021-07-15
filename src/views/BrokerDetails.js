@@ -114,10 +114,23 @@ const BrokerDetails = () => {
               .then((res) => {
                 notify('Corretora cadastrada com sucesso');
               })
-              .catch((err) => notify(err.response.data, 'danger'));
+              .catch((error) =>
+                notify(
+                  error.response && error.response.data.message
+                    ? error.response.data.message
+                    : error.message,
+                  'danger'
+                )
+              );
           });
       } catch (error) {
         console.error(error);
+        notify(
+          error.response && error.response.data.message
+            ? error.response.data.message
+            : error.message,
+          'danger'
+        );
       }
     } else {
       const config = {
@@ -139,7 +152,14 @@ const BrokerDetails = () => {
         .then((res) => {
           notify('Corretora cadastrada com sucesso');
         })
-        .catch((err) => notify(err.response.data, 'danger'));
+        .catch((error) =>
+          notify(
+            error.response && error.response.data.message
+              ? error.response.data.message
+              : error.message,
+            'danger'
+          )
+        );
     }
   };
   const imageRef = useRef(null);

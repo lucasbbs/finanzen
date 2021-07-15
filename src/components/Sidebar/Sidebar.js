@@ -15,18 +15,21 @@
 
 */
 /*eslint-disable*/
-import React from "react";
-import { NavLink, useLocation } from "react-router-dom";
-import PropTypes from "prop-types";
+import React from 'react';
+import { NavLink, useLocation } from 'react-router-dom';
+import PropTypes from 'prop-types';
 // javascript plugin used to create scrollbars on windows
-import PerfectScrollbar from "perfect-scrollbar";
+import PerfectScrollbar from 'perfect-scrollbar';
 
 // reactstrap components
-import { Nav, Collapse } from "reactstrap";
+import { Nav, Collapse } from 'reactstrap';
 
 var ps;
 
 const Sidebar = (props) => {
+  const [isAdmin] = React.useState(
+    JSON.parse(localStorage.getItem('userInfo')).isAdmin
+  );
   const [state, setState] = React.useState({});
   const sidebarRef = React.useRef(null);
   const location = useLocation();
@@ -35,7 +38,7 @@ const Sidebar = (props) => {
   }, []);
   React.useEffect(() => {
     // if you are using a Windows Machine, the scrollbars will have a Mac look
-    if (navigator.platform.indexOf("Win") > -1) {
+    if (navigator.platform.indexOf('Win') > -1) {
       ps = new PerfectScrollbar(sidebarRef.current, {
         suppressScrollX: true,
         suppressScrollY: false,
@@ -44,7 +47,7 @@ const Sidebar = (props) => {
     return function cleanup() {
       // we need to destroy the false scrollbar when we navigate
       // to a page that doesn't have this component rendered
-      if (navigator.platform.indexOf("Win") > -1) {
+      if (navigator.platform.indexOf('Win') > -1) {
         ps.destroy();
       }
     };
@@ -82,20 +85,22 @@ const Sidebar = (props) => {
   const createLinks = (routes) => {
     const { rtlActive } = props;
     return routes.map((prop, key) => {
+      if (!isAdmin && prop.isAdmin) return null;
+      if (prop.isVisible === false) return null;
       if (prop.redirect) {
         return null;
       }
       if (prop.collapse) {
         var st = {};
-        st[prop["state"]] = !state[prop.state];
+        st[prop['state']] = !state[prop.state];
         return (
           <li
-            className={getCollapseInitialState(prop.views) ? "active" : ""}
+            className={getCollapseInitialState(prop.views) ? 'active' : ''}
             key={key}
           >
             <a
-              href="#pablo"
-              data-toggle="collapse"
+              href='#pablo'
+              data-toggle='collapse'
               aria-expanded={state[prop.state]}
               onClick={(e) => {
                 e.preventDefault();
@@ -107,23 +112,23 @@ const Sidebar = (props) => {
                   <i className={prop.icon} />
                   <p>
                     {rtlActive ? prop.rtlName : prop.name}
-                    <b className="caret" />
+                    <b className='caret' />
                   </p>
                 </>
               ) : (
                 <>
-                  <span className="sidebar-mini-icon">
+                  <span className='sidebar-mini-icon'>
                     {rtlActive ? prop.rtlMini : prop.mini}
                   </span>
-                  <span className="sidebar-normal">
+                  <span className='sidebar-normal'>
                     {rtlActive ? prop.rtlName : prop.name}
-                    <b className="caret" />
+                    <b className='caret' />
                   </span>
                 </>
               )}
             </a>
             <Collapse isOpen={state[prop.state]}>
-              <ul className="nav">{createLinks(prop.views)}</ul>
+              <ul className='nav'>{createLinks(prop.views)}</ul>
             </Collapse>
           </li>
         );
@@ -132,7 +137,7 @@ const Sidebar = (props) => {
         <li className={activeRoute(prop.layout + prop.path)} key={key}>
           <NavLink
             to={prop.layout + prop.path}
-            activeClassName=""
+            activeClassName=''
             onClick={props.closeSidebar}
           >
             {prop.icon !== undefined ? (
@@ -142,10 +147,10 @@ const Sidebar = (props) => {
               </>
             ) : (
               <>
-                <span className="sidebar-mini-icon">
+                <span className='sidebar-mini-icon'>
                   {rtlActive ? prop.rtlMini : prop.mini}
                 </span>
-                <span className="sidebar-normal">
+                <span className='sidebar-normal'>
                   {rtlActive ? prop.rtlName : prop.name}
                 </span>
               </>
@@ -157,7 +162,7 @@ const Sidebar = (props) => {
   };
   // verifies if routeName is the one active (in browser input)
   const activeRoute = (routeName) => {
-    return location.pathname === routeName ? "active" : "";
+    return location.pathname === routeName ? 'active' : '';
   };
 
   const { activeColor, logo } = props;
@@ -168,20 +173,20 @@ const Sidebar = (props) => {
       logoImg = (
         <a
           href={logo.outterLink}
-          className="simple-text logo-mini"
-          target="_blank"
+          className='simple-text logo-mini'
+          target='_blank'
           onClick={props.closeSidebar}
         >
-          <div className="logo-img">
-            <img src={logo.imgSrc} alt="react-logo" />
+          <div className='logo-img'>
+            <img src={logo.imgSrc} alt='react-logo' />
           </div>
         </a>
       );
       logoText = (
         <a
           href={logo.outterLink}
-          className="simple-text logo-normal"
-          target="_blank"
+          className='simple-text logo-normal'
+          target='_blank'
           onClick={props.closeSidebar}
         >
           {logo.text}
@@ -191,18 +196,18 @@ const Sidebar = (props) => {
       logoImg = (
         <NavLink
           to={logo.innerLink}
-          className="simple-text logo-mini"
+          className='simple-text logo-mini'
           onClick={props.closeSidebar}
         >
-          <div className="logo-img">
-            <img src={logo.imgSrc} alt="react-logo" />
+          <div className='logo-img'>
+            <img src={logo.imgSrc} alt='react-logo' />
           </div>
         </NavLink>
       );
       logoText = (
         <NavLink
           to={logo.innerLink}
-          className="simple-text logo-normal"
+          className='simple-text logo-normal'
           onClick={props.closeSidebar}
         >
           {logo.text}
@@ -211,10 +216,10 @@ const Sidebar = (props) => {
     }
   }
   return (
-    <div className="sidebar" data={activeColor}>
-      <div className="sidebar-wrapper" ref={sidebarRef}>
+    <div className='sidebar' data={activeColor}>
+      <div className='sidebar-wrapper' ref={sidebarRef}>
         {logoImg !== null || logoText !== null ? (
-          <div className="logo">
+          <div className='logo'>
             {logoImg}
             {logoText}
           </div>
@@ -226,7 +231,7 @@ const Sidebar = (props) => {
 };
 
 Sidebar.propTypes = {
-  activeColor: PropTypes.oneOf(["primary", "blue", "green", "orange", "red"]),
+  activeColor: PropTypes.oneOf(['primary', 'blue', 'green', 'orange', 'red']),
   rtlActive: PropTypes.bool,
   routes: PropTypes.array.isRequired,
   logo: PropTypes.oneOfType([

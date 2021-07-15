@@ -14,7 +14,7 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useContext } from 'react';
 import moment from 'moment';
 // nodejs library that concatenates classes
 import classNames from 'classnames';
@@ -45,11 +45,18 @@ import { Link, useHistory } from 'react-router-dom';
 import { currencyFormat } from '../../helpers/functions';
 import { fetchAllInvestments } from '../../services/Investments';
 import MyTooltip from 'components/Tooltip/MyTooltip';
+import { GlobalContext } from 'context/GlobalState';
 const AdminNavbar = (props) => {
+  const { accounts } = useContext(GlobalContext);
   const [name] = useState(JSON.parse(localStorage.getItem('userInfo')).name);
   // const getName = (input) => {
   //   return input.split(' ').slice(0, -1).join(' ');
   // };
+  // const [fundsToInvest, setFundsToInvest] = useState(
+  //   localStorage.getItem('userInfo')
+  //     ? JSON.parse(localStorage.getItem('userInfo')).fundsToInvest
+  //     : null
+  // );
   const [filter, setFilter] = useState('');
   const [investments, setInvestments] = useState([]);
   const [investmentsFiltered, setInvestmentsFiltered] = useState([]);
@@ -330,12 +337,19 @@ const AdminNavbar = (props) => {
               </button>
             </div>
             <NavbarBrand
-              style={{ fontSize: '200%' }}
-              href='#pablo'
+              style={{ fontSize: '200%', whiteSpace: 'nowrap' }}
+              href='#'
               onClick={(e) => e.preventDefault()}
             >
               {props.brandText}
             </NavbarBrand>
+          </div>
+          <div className='account-class'>
+            {Object.entries(accounts).map((fund) => (
+              <div id={fund[0]} key={fund[0]}>
+                {currencyFormat(fund[1], fund[0])}
+              </div>
+            ))}
           </div>
           <button
             className='navbar-toggler'

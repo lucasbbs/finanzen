@@ -14,7 +14,7 @@ import Config from '../../config.json';
 import NumberFormat from 'react-number-format';
 import { reverseFormatNumber } from 'helpers/functions';
 
-const TableSalaries = ({ handleCurrentMoney, currentMoney }) => {
+const TableSalaries = ({ handleCurrentMoney }) => {
   const [id, setId] = useState('');
   const [salaries, setSalaries] = useState([]);
   const [modal, setModal] = useState(false);

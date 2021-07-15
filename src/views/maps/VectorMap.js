@@ -1,3 +1,4 @@
+import { currencyFormat } from 'helpers/functions';
 /*!
 
 =========================================================
@@ -254,7 +255,7 @@ const VectorMapView = () => {
                         countries[code] +
                           '<br> (GDP - ' +
                           (mapData[code]
-                            ? mapData[code]
+                            ? currencyFormat(mapData[code])
                             : 'sem dados disponíveis') +
                           ')'
                       );

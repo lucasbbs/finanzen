@@ -11,7 +11,7 @@ export const currencies = {
   CAD: {
     symbol: 'CA$',
     name: 'Canadian Dollar',
-    symbol_native: '$',
+    symbol_native: 'CA$',
     decimal_digits: 2,
     rounding: 0,
     code: 'CAD',

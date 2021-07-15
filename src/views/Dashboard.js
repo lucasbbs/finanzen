@@ -1,7 +1,7 @@
 // eslint-disable
 import { addDays, format, parse } from 'date-fns';
 import ptBR from 'date-fns/locale/pt-BR';
-import React, { useEffect, useState } from 'react';
+import React, { useContext, useEffect, useState } from 'react';
 // nodejs library that concatenates classes
 import classNames from 'classnames';
 // react plugin used to create charts
@@ -36,6 +36,7 @@ import { fetchInflationsFromLocalAPI } from '../services/Inflation';
 import Spinner from '../components/Spinner/Spinner';
 import axios from 'axios';
 import Config from '../config.json';
+import { GlobalContext } from 'context/GlobalState';
 // import { Link } from 'react-router-dom';
 // import { locale } from 'moment';
 
@@ -49,6 +50,7 @@ Array.prototype.min = function () {
 };
 
 const Dashboard = () => {
+  const { accounts, updateAccounts } = useContext(GlobalContext);
   const [equivalentAnnualRate, setEquivalentAnnualRate] = useState(
     '0,0000000000%'
   );
@@ -116,38 +118,46 @@ const Dashboard = () => {
         const topLocations = getTopInvestmentsByLocation(
           currentInvestments.investments
         );
+
         const config = {
           headers: { Authorization: `Bearer ${login.token}` },
         };
 
-        for (const location of topLocations) {
+        const locationsForLoop = new Set();
+        topLocations.forEach((location) => locationsForLoop.add(location[1]));
+
+        Object.keys(accounts).forEach((location) =>
+          locationsForLoop.add(location)
+        );
+
+        for (const location of locationsForLoop) {
           if (
-            location[1] !== login.currency &&
-            !(`${location[1]}_${login.currency}` in currencyExhangeRates)
+            location !== login.currency &&
+            !(`${location}_${login.currency}` in currencyExhangeRates)
           ) {
             try {
               const res = await axios.get(
-                `${Config.SERVER_ADDRESS}/api/exchanges/${location[1]}_${login.currency}`,
+                `${Config.SERVER_ADDRESS}/api/exchanges/${location}_${login.currency}`,
                 config
               );
               currencyExhangeRates[
-                `${location[1]}_${login.currency}`
+                `${location}_${login.currency}`
               ] = Object.values(res.data)[0];
             } catch (error) {
-              currencyExhangeRates[`${location[1]}_${login.currency}`] = 1.5;
+              currencyExhangeRates[`${location}_${login.currency}`] = 1.5;
             }
             const res = await axios.get(
-              `${Config.SERVER_ADDRESS}/api/exchanges/${location[1]}_${login.currency}`,
+              `${Config.SERVER_ADDRESS}/api/exchanges/${location}_${login.currency}`,
               config
             );
             currencyExhangeRates[
-              `${location[1]}_${login.currency}`
+              `${location}_${login.currency}`
             ] = Object.values(res.data)[0];
             // mapdata[location[0]] = mapdata[location[0]] || 0;
             // mapdata[location[0]] += location[2] * Object.values(res.data)[0];
           } else {
-            if (!(`${location[1]}_${login.currency}` in currencyExhangeRates)) {
-              currencyExhangeRates[`${location[1]}_${login.currency}`] = 1;
+            if (!(`${location}_${login.currency}` in currencyExhangeRates)) {
+              currencyExhangeRates[`${location}_${login.currency}`] = 1;
             }
           }
         }
@@ -457,17 +467,30 @@ const Dashboard = () => {
 
   const handleCurrentMoney = async (salary) => {
     const config = { headers: { Authorization: `Bearer ${login.token}` } };
+    accounts[login.currency] += salary;
+
     await axios
       .put(
         `${Config.SERVER_ADDRESS}/api/users/${login._id}`,
-        { fundsToInvest: currentMoney + salary },
+        { fundsToInvest: accounts },
         config
       )
       .then((res) => {
-        login['fundsToInvest'] = currentMoney + salary;
-        setCurrentMoney(currentMoney + salary);
+        login['fundsToInvest'] = accounts;
+        setCurrentMoney(accounts);
+        // setFundsToBeInvested;
         localStorage.setItem('userInfo', JSON.stringify(login));
+        updateAccounts(accounts);
       });
+  };
+
+  const handleTotalMoney = (object) => {
+    let total = 0;
+    for (const currency of Object.entries(object)) {
+      total +=
+        currency[1] * currencyExhangeRates[`${currency[0]}_${login.currency}`];
+    }
+    return total;
   };
   return (
     <>
@@ -704,7 +727,10 @@ const Dashboard = () => {
                             Your current funds to invest
                           </p>
                           <CardTitle tag='h3'>
-                            {currencyFormat(currentMoney, login.currency)}
+                            {currencyFormat(
+                              handleTotalMoney(accounts),
+                              login.currency
+                            )}
                           </CardTitle>
                         </div>
                       </Col>
@@ -722,8 +748,9 @@ const Dashboard = () => {
                       className='stats table-full-width table-responsive'
                     >
                       <TableSalaries
+                        accounts={accounts}
                         handleCurrentMoney={handleCurrentMoney}
-                        currentMoney={currentMoney}
+                        currentMoney={accounts}
                       />
                     </div>
                   </CardFooter>
@@ -845,22 +872,19 @@ const Dashboard = () => {
                 <Card className='card-stats'>
                   <CardBody>
                     <Row>
-                      <Col xs='3'>
+                      <Col xs='2'>
                         <div className='info-icon text-center icon-danger'>
                           <i className='fas fa-percent'></i>
                         </div>
                       </Col>
-                      <Col xs='9'>
+                      <Col xs='10'>
                         <div className='numbers'>
                           <p className='card-category'>Global Average Return</p>
                           <CardTitle tag='h3' style={{ marginBottom: 0 }}>
                             {globalAverageReturn}
                           </CardTitle>
                           <h6 style={{ marginBottom: 0 }}>
-                            {`Equivalent annual rate of ${
-                              //prettier-ignore
-                              equivalentAnnualRate //reverseFormatNumber(globalAverageReturn) / 10000
-                            }`}
+                            {`Equivalent annual rate of ${equivalentAnnualRate}`}
                           </h6>
                         </div>
                       </Col>
@@ -1003,9 +1027,16 @@ const Dashboard = () => {
                     <Pie
                       data={chartDefault(
                         dataChartInvetmentsPerBrokers[0],
-                        dataChartInvetmentsPerBrokers[1]
+                        dataChartInvetmentsPerBrokers[1],
+                        login.currency
                       )}
-                      options={chartDefault().options}
+                      options={
+                        chartDefault(
+                          dataChartInvetmentsPerBrokers[0],
+                          dataChartInvetmentsPerBrokers[1],
+                          login.currency
+                        ).options
+                      }
                     />
                   </CardBody>
                 </Card>

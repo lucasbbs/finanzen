@@ -1,5 +1,5 @@
 import '@fortawesome/fontawesome-free/css/all.min.css';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import classNames from 'classnames';
 import {
   Button,
@@ -21,16 +21,21 @@ import { Link } from 'react-router-dom';
 import moment from 'moment';
 import Spinner from '../components/Spinner/Spinner';
 import { fetchInvestments } from '../services/Investments';
-import { reverseFormatNumber } from '../helpers/functions';
+import { currencyFormat, reverseFormatNumber } from '../helpers/functions';
 import axios from 'axios';
 import NotificationAlert from 'react-notification-alert';
 import Config from '../config.json';
 import ReactBSAlert from 'react-bootstrap-sweetalert';
 import NumberFormat from 'react-number-format';
 import MyTooltip from 'components/Tooltip/MyTooltip';
+import { currencies } from './pages/currencies';
+import { GlobalContext } from 'context/GlobalState';
 
 /*eslint-disable*/
 const InvestmentsList = () => {
+  const { accounts, updateAccounts } = useContext(GlobalContext);
+
+  const [currency, setCurrency] = useState('');
   const [id, setId] = useState('');
   const [name, setName] = useState('');
   const [broker, setBroker] = useState('');
@@ -40,6 +45,7 @@ const InvestmentsList = () => {
   const [dueDate, setDueDate] = useState('');
   const [investmentDate, setInvestmentDate] = useState('');
   const [initialAmount, setInitialAmount] = useState(0);
+  const [initialAmount2, setInitialAmount2] = useState(0);
   const [accruedIncome, setAccruedIncome] = useState(0);
   const [hasChanged, setHasChanged] = useState(false);
   const [brokers, setBrokers] = useState([]);
@@ -69,17 +75,13 @@ const InvestmentsList = () => {
         investmentObj,
         config
       )
-      .then((response) => {
-        // successDelete();
+      .then(async (response) => {
         toggle();
         notify(`Investimento alterado com Sucesso`);
         investmentObj['broker'] = brokers.find(
           (brk) => brk._id === investmentObj['broker']
         );
-        console.log(
-          brokers,
-          brokers.find((broker) => broker._id === id)
-        );
+
         if (!investmentObj['initial_amount']) {
           investmentObj['initial_amount'] = initialAmount;
         }
@@ -90,33 +92,55 @@ const InvestmentsList = () => {
         );
 
         setInvestment([...investment]);
+
+        //------------STUFF RELATED TO THE CURRENT AMOUNT OF MONEY---------------//
+
+        await axios
+          .put(
+            `${Config.SERVER_ADDRESS}/api/users/${login._id}`,
+            { fundsToInvest: login.fundsToInvest },
+            config
+          )
+          .then((res) => {
+            login.fundsToInvest[currency] = login.fundsToInvest[currency] || 0;
+            login.fundsToInvest[currency] += initialAmount2 - initialAmount;
+            localStorage.setItem('userInfo', JSON.stringify(login));
+            updateAccounts(login.fundsToInvest);
+          });
       })
-      .catch((err) => {
-        console.log(err);
-        notify(err.response.data, 'danger');
+      .catch((error) => {
+        notify(
+          error.response && error.response.data.message
+            ? error.response.data.message
+            : error.message,
+          'danger'
+        );
       });
   };
-  const successDelete = () => {
+
+  const success = (type = 'archive') => {
     setAlert(
       <ReactBSAlert
         success
         style={{ display: 'block', marginTop: '-100px' }}
-        title='Deletado!'
+        title={type === 'archive' ? 'Archived!' : 'Deleted!'}
         onConfirm={() => hideAlert()}
         onCancel={() => hideAlert()}
         confirmBtnBsStyle='success'
         btnSize=''
       >
-        Seu investimento foi deletado...
+        {type === 'archive'
+          ? 'Your investment was archived...'
+          : 'Your investment was deleted...'}
       </ReactBSAlert>
     );
   };
-  const cancelDelete = () => {
+  const cancel = () => {
     setAlert(
       <ReactBSAlert
         danger
         style={{ display: 'block', marginTop: '-100px' }}
-        title='Cancelado'
+        title='Cancelled'
         onConfirm={() => hideAlert()}
         onCancel={() => hideAlert()}
         confirmBtnText='Ok'
@@ -125,29 +149,46 @@ const InvestmentsList = () => {
       ></ReactBSAlert>
     );
   };
-  const warningWithConfirmAndCancelMessage = (id) => {
+  const warningWithConfirmAndCancelMessage = (id, type = 'archive') => {
     setAlert(
       <ReactBSAlert
         warning
         style={{ display: 'block', marginTop: '-100px' }}
-        title='Você tem certeza disso?'
+        title='Are you sure?'
         onConfirm={() => {
-          try {
+          if (type === 'archive') {
+            handleArchive(id);
+          } else {
             handleDelete(id);
-          } catch (error) {}
+          }
         }}
-        onCancel={() => cancelDelete()}
+        onCancel={() => cancel()}
         confirmBtnBsStyle='success'
         cancelBtnBsStyle='danger'
-        confirmBtnText='Sim, deletar!'
-        cancelBtnText='Cancelar'
+        confirmBtnText={type === 'archive' ? 'Yes, archive!' : 'Yes, delete!'}
+        cancelBtnText='Cancel'
         showCancel
         btnSize=''
       >
-        Você não poderá recuperar os dados do seu investimentos
+        {type === 'archive'
+          ? 'Do you want to archive this investment?'
+          : 'You will not be able to restore the data for your investment again'}
+        {/* <FormGroup check>
+          <Label check>
+            <Input
+              name='optionCheckboxes'
+              type='checkbox'
+              // checked={hasRegisteredInvest}
+              // onChange={(e) => setHasRegisteredInvest(e.target.checked)}
+            />
+            <span className='form-check-sign' />
+            Have loaded all previous investments
+          </Label>
+        </FormGroup> */}
       </ReactBSAlert>
     );
   };
+
   useEffect(() => {
     const getInvestments = async () => {
       setIsLoading(true);
@@ -163,17 +204,17 @@ const InvestmentsList = () => {
 
       setBrokers(brokersFromTheAPI.data.brokers);
       let investments = await fetchInvestments('', login);
-      const filter = JSON.parse(localStorage.getItem('filter'));
+      // const filter = JSON.parse(localStorage.getItem('filter'));
 
-      if (filter !== null) {
-        investments =
-          filter.trim() === ''
-            ? [...investments]
-            : investments.filter((invest) =>
-                invest.name.toLowerCase().includes(filter)
-              );
-        localStorage.removeItem('filter');
-      }
+      // if (filter !== null) {
+      //   investments =
+      //     filter.trim() === ''
+      //       ? [...investments]
+      //       : investments.filter((invest) =>
+      //           invest.name.toLowerCase().includes(filter)
+      //         );
+      //   localStorage.removeItem('filter');
+      // }
       setInvestment(investments.investments);
       console.log(investments);
       console.log(investment);
@@ -209,15 +250,39 @@ const InvestmentsList = () => {
       },
     };
     console.log(`Bearer ${login.token}`);
-    await axios
+    const answer = await axios
       .delete(`${Config.SERVER_ADDRESS}/api/investments/${id}`, config)
-      .then((response) => {
-        successDelete();
+      .then(async (response) => {
+        success('delete');
         notify(`Investimento excluído com Sucesso`);
         setInvestment(investment.filter((invest) => invest._id !== id));
+
+        //------------STUFF RELATED TO THE CURRENT AMOUNT OF MONEY---------------//
+
+        await axios
+          .put(
+            `${Config.SERVER_ADDRESS}/api/users/${login._id}`,
+            { fundsToInvest: login.fundsToInvest },
+            config
+          )
+          .then((res) => {
+            console.log(response.data.invest.broker.currency);
+            login.fundsToInvest[response.data.invest.broker.currency] =
+              login.fundsToInvest[response.data.invest.broker.currency] || 0;
+            login.fundsToInvest[response.data.invest.broker.currency] +=
+              response.data.invest.accrued_income +
+              response.data.invest.initial_amount;
+            localStorage.setItem('userInfo', JSON.stringify(login));
+            updateAccounts(login.fundsToInvest);
+          });
       })
-      .catch((err) => {
-        notify(err.response.data, 'danger');
+      .catch((error) => {
+        notify(
+          error.response && error.response.data.message
+            ? error.response.data.message
+            : error.message,
+          'danger'
+        );
       });
   };
   const hideAlert = () => {
@@ -239,12 +304,34 @@ const InvestmentsList = () => {
     console.log(`Bearer ${login.token}`);
     await axios
       .get(`${Config.SERVER_ADDRESS}/api/investments/${id}/archive`, config)
-      .then((res) => {
+      .then(async (response) => {
+        success();
         notify(`Você arquivou com sucesso o seu investimento ${name}`);
         setInvestment(investment.filter((invest) => invest._id !== id));
+
+        await axios
+          .put(
+            `${Config.SERVER_ADDRESS}/api/users/${login._id}`,
+            { fundsToInvest: login.fundsToInvest },
+            config
+          )
+          .then((res) => {
+            console.log(response.data);
+            login.fundsToInvest[response.data.broker.currency] =
+              login.fundsToInvest[response.data.broker.currency] || 0;
+            login.fundsToInvest[response.data.broker.currency] +=
+              response.data.accrued_income + response.data.initial_amount;
+            localStorage.setItem('userInfo', JSON.stringify(login));
+            updateAccounts(login.fundsToInvest);
+          });
       })
       .catch((err) => {
-        notify(err.message, 'danger');
+        notify(
+          err.response && err.response.data.message
+            ? err.response.data.message
+            : err.message,
+          'danger'
+        );
       });
   };
   return (
@@ -273,7 +360,7 @@ const InvestmentsList = () => {
                 close={closeBtn}
               >
                 <span style={{ color: 'hsla(0,0%,100%,.9)' }}>
-                  Editar Investimento
+                  Edit investment
                 </span>
               </ModalHeader>
               <ModalBody
@@ -282,7 +369,7 @@ const InvestmentsList = () => {
                     'linear-gradient(180deg,#222a42 0,#1d253b)!important',
                 }}
               >
-                <Label>Nome</Label>
+                <Label>Name</Label>
                 <Input
                   required
                   style={{ backgroundColor: '#2b3553' }}
@@ -294,7 +381,7 @@ const InvestmentsList = () => {
                 />
                 <Row style={{ marginBottom: '10px' }}>
                   <Col md='3' style={{ paddingRight: '0' }}>
-                    <Label>Corretora</Label>
+                    <Label>Broker</Label>
                     <Input
                       required
                       style={{ backgroundColor: '#2b3553' }}
@@ -306,7 +393,7 @@ const InvestmentsList = () => {
                       }}
                     >
                       <option value='default' disabled={true}>
-                        Selecione uma opção
+                        Select an option
                       </option>
                       {brokers.map((brk) => (
                         <option key={brk._id} value={brk._id}>
@@ -316,7 +403,7 @@ const InvestmentsList = () => {
                     </Input>
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
-                    <Label>Tipo</Label>
+                    <Label>Type</Label>
                     <Input
                       style={{ backgroundColor: '#2b3553' }}
                       type='select'
@@ -324,7 +411,7 @@ const InvestmentsList = () => {
                       onChange={(e) => setType(e.target.value)}
                     >
                       <option value='' disabled={true}>
-                        Selecione uma opção
+                        Select an option
                       </option>
                       <option>CDB</option>
                       <option>LCI</option>
@@ -333,7 +420,7 @@ const InvestmentsList = () => {
                     </Input>
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
-                    <Label>Taxa</Label>
+                    <Label>Rate</Label>
                     <Input
                       style={{ backgroundColor: '#2b3553' }}
                       type='text'
@@ -342,7 +429,7 @@ const InvestmentsList = () => {
                     />
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
-                    <Label>Indexador</Label>
+                    <Label>Indexer</Label>
                     <Input
                       required
                       style={{ backgroundColor: '#2b3553' }}
@@ -351,7 +438,7 @@ const InvestmentsList = () => {
                       onChange={(e) => setIndexer(e.target.value)}
                     >
                       <option value='' disabled={true}>
-                        Selecione uma opção
+                        Select an option
                       </option>
                       <option>CDI</option>
                       <option>IPCA</option>
@@ -359,7 +446,7 @@ const InvestmentsList = () => {
                     </Input>
                   </Col>
                   <Col md='3' style={{ paddingRight: '0' }}>
-                    <Label>Data do investimento</Label>
+                    <Label>Investment date</Label>
                     <Input
                       style={{ backgroundColor: '#2b3553' }}
                       type='date'
@@ -370,7 +457,7 @@ const InvestmentsList = () => {
                     />
                   </Col>
                   <Col md='3' style={{ paddingRight: '0' }}>
-                    <Label>Data de vencimento</Label>
+                    <Label>Due date</Label>
                     <Input
                       style={{ backgroundColor: '#2b3553' }}
                       type='date'
@@ -379,20 +466,30 @@ const InvestmentsList = () => {
                     />
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
-                    <Label>Montante Inicial</Label>
+                    <Label>Initial amount</Label>
                     <NumberFormat
                       style={{ backgroundColor: '#2b3553' }}
                       onChange={(e) => {
                         setHasChanged(true);
-                        setInitialAmount(e.target.value);
+                        setInitialAmount(reverseFormatNumber(e.target.value));
+                        console.log(accounts[currency] || 0);
                       }}
                       type='text'
                       value={initialAmount}
-                      placeholder='R$0.00'
+                      placeholder={`${currencies[currency]?.symbol_native}0,00`}
                       thousandSeparator={'.'}
                       decimalSeparator={','}
-                      prefix={'R$'}
+                      prefix={currencies[currency]?.symbol_native}
                       customInput={Input}
+                      isAllowed={(values) => {
+                        const { formattedValue, floatValue } = values;
+                        return login.hasRegisteredInvest
+                          ? formattedValue === '' ||
+                              (floatValue >= 0 &&
+                                floatValue <=
+                                  initialAmount2 + (accounts[currency] || 0))
+                          : true;
+                      }}
                     />
                   </Col>
                 </Row>
@@ -423,10 +520,10 @@ const InvestmentsList = () => {
                     );
                   }}
                 >
-                  Salvar
+                  Save
                 </Button>
                 <Button color='secondary' onClick={toggle}>
-                  Cancelar
+                  Cancel
                 </Button>
               </ModalFooter>
             </Modal>
@@ -487,16 +584,16 @@ const InvestmentsList = () => {
                                 {moment(inves.due_date).format('DD/MM/YYYY')}
                               </td>
                               <td className='text-center'>
-                                {inves.initial_amount.toLocaleString('pt-BR', {
-                                  style: 'currency',
-                                  currency: 'BRL',
-                                })}
+                                {currencyFormat(
+                                  inves.initial_amount,
+                                  inves.broker.currency
+                                )}
                               </td>
                               <td className='text-center'>
-                                {inves.accrued_income.toLocaleString('pt-BR', {
-                                  style: 'currency',
-                                  currency: 'BRL',
-                                })}
+                                {currencyFormat(
+                                  inves.accrued_income,
+                                  inves.broker.currency
+                                )}
                               </td>
                               <td style={{ textAlign: 'center' }}>
                                 <MyTooltip
@@ -519,7 +616,9 @@ const InvestmentsList = () => {
                                     id={inves._id}
                                     className='fas fa-archive'
                                     onClick={(e) => {
-                                      handleArchive(e.target.id);
+                                      warningWithConfirmAndCancelMessage(
+                                        e.target.id
+                                      );
                                     }}
                                   ></i>
                                 </Button>
@@ -546,6 +645,7 @@ const InvestmentsList = () => {
                                           e.target.parentElement.parentElement
                                             .parentElement.id
                                       );
+                                      setCurrency(filtered.broker.currency);
                                       setBroker(filtered.broker._id);
                                       setId(filtered._id);
                                       setName(filtered.name);
@@ -557,6 +657,9 @@ const InvestmentsList = () => {
                                         filtered.investment_date
                                       );
                                       setInitialAmount(filtered.initial_amount);
+                                      setInitialAmount2(
+                                        filtered.initial_amount
+                                      );
                                       setAccruedIncome(filtered.accrued_income);
                                       toggle();
                                     }}
@@ -593,7 +696,8 @@ const InvestmentsList = () => {
                                       e.preventDefault();
                                       console.log(e.target.id);
                                       warningWithConfirmAndCancelMessage(
-                                        e.target.id
+                                        e.target.id,
+                                        'delete'
                                       );
                                     }}
                                   ></i>

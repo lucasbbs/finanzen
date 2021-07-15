@@ -1,5 +1,5 @@
 import '@fortawesome/fontawesome-free/css/all.min.css';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import classNames from 'classnames';
 import {
   Button,
@@ -28,9 +28,11 @@ import Config from '../config.json';
 import ReactBSAlert from 'react-bootstrap-sweetalert';
 import NumberFormat from 'react-number-format';
 import MyTooltip from 'components/Tooltip/MyTooltip';
+import { GlobalContext } from 'context/GlobalState';
 
 /*eslint-disable*/
 const ArchiveInvestments = () => {
+  const { updateAccounts } = useContext(GlobalContext);
   const [id, setId] = useState('');
   const [name, setName] = useState('');
   const [broker, setBroker] = useState('');
@@ -91,9 +93,14 @@ const ArchiveInvestments = () => {
 
         setInvestment([...investment]);
       })
-      .catch((err) => {
+      .catch((error) => {
         console.log(err);
-        notify(err.response.data, 'danger');
+        notify(
+          error.response && error.response.data.message
+            ? error.response.data.message
+            : error.message,
+          'danger'
+        );
       });
   };
   const success = (type = 'archive') => {
@@ -108,8 +115,8 @@ const ArchiveInvestments = () => {
         btnSize=''
       >
         {type === 'archive'
-          ? 'Your broker was unarchived...'
-          : 'Your broker was deleted...'}
+          ? 'Your investment was unarchived...'
+          : 'Your investment was deleted...'}
       </ReactBSAlert>
     );
   };
@@ -278,8 +285,13 @@ const ArchiveInvestments = () => {
         notify(`Investimento excluído com Sucesso`);
         setInvestment(investment.filter((invest) => invest._id !== id));
       })
-      .catch((err) => {
-        notify(err.response.data, 'danger');
+      .catch((error) => {
+        notify(
+          error.response && error.response.data.message
+            ? error.response.data.message
+            : error.message,
+          'danger'
+        );
       });
   };
   const hideAlert = () => {
@@ -301,14 +313,34 @@ const ArchiveInvestments = () => {
     console.log(`Bearer ${login.token}`);
     await axios
       .get(`${Config.SERVER_ADDRESS}/api/investments/${id}/unarchive`, config)
-      .then((res) => {
+      .then(async (response) => {
         success();
         notify(`You have successfully unarchived your investment`);
         setInvestment(investment.filter((invest) => invest._id !== id));
+
+        await axios
+          .put(
+            `${Config.SERVER_ADDRESS}/api/users/${login._id}`,
+            { fundsToInvest: login.fundsToInvest },
+            config
+          )
+          .then((res) => {
+            login.fundsToInvest[response.data.broker.currency] =
+              login.fundsToInvest[response.data.broker.currency] || 0;
+            login.fundsToInvest[response.data.broker.currency] -=
+              response.data.accrued_income + response.data.initial_amount;
+            localStorage.setItem('userInfo', JSON.stringify(login));
+            updateAccounts(login.fundsToInvest);
+          });
       })
-      .catch((err) => {
+      .catch((error) => {
         hideAlert();
-        notify(err.message, 'danger');
+        notify(
+          error.response && error.response.data.message
+            ? error.response.data.message
+            : error.message,
+          'danger'
+        );
       });
   };
   return (

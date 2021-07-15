@@ -78,9 +78,14 @@ const Login = ({ location }) => {
           history.push(`/auth/verify/${res.data._id}`);
         }
       })
-      .catch((err) => {
-        console.error(err);
-        notify(err.response?.data, 'danger');
+      .catch((error) => {
+        console.error(error);
+        notify(
+          error.response && error.response.data.message
+            ? error.response.data.message
+            : error.message,
+          'danger'
+        );
       });
   };
 
@@ -144,7 +149,14 @@ const Login = ({ location }) => {
           console.log('teste de sucesso ao cadastrar um usuario');
           history.push(`/auth/verify/${res.data._id}`);
         })
-        .catch((err) => notify(err.response.data, 'danger'));
+        .catch((error) =>
+          notify(
+            error.response && error.response.data.message
+              ? error.response.data.message
+              : error.message,
+            'danger'
+          )
+        );
     }
   };
 

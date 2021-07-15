@@ -621,3 +621,27 @@ button.react-calendar__navigation__arrow {
 .progress {
   height: 20px !important;
 }
+
+.account-class {
+  margin-left: 15px;
+  color: white;
+  display: grid;
+  grid-column-gap: 50px;
+  grid-template-columns: auto auto auto auto auto auto auto auto auto;
+  @media (max-width: 638px) {
+    display: none;
+  }
+  @media (max-width: 991px) {
+    grid-template-columns: auto;
+  }
+
+  @media (max-width: 1395px) {
+    grid-template-columns: auto auto auto auto auto auto;
+  }
+  @media (max-width: 1245px) {
+    grid-template-columns: auto auto auto auto;
+  }
+  @media (max-width: 1086px) {
+    grid-template-columns: auto auto;
+  }
+}

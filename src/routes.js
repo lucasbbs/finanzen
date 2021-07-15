@@ -53,9 +53,20 @@ import Verify from 'views/Verify';
 import BrokerList from 'views/BrokersList';
 import BrokerDetails from 'views/BrokerDetails';
 import ArchiveBrokers from 'views/ArchiveBrokers';
+import Inflations from 'views/Inflations';
 
 const routes = [
   {
+    isVisible: true,
+    isAdmin: true,
+    path: '/inflations',
+    name: 'Inflations',
+    icon: 'tim-icons icon-chart-pie-36',
+    component: Inflations,
+    layout: '/admin',
+  },
+  {
+    isVisible: false,
     path: '/first-access',
     name: 'First Access',
     icon: 'tim-icons icon-chart-pie-36',
@@ -63,6 +74,7 @@ const routes = [
     layout: '/auth',
   },
   {
+    isVisible: true,
     path: '/dashboard',
     name: 'Dashboard',
     rtlName: 'لوحة القيادة',
@@ -72,11 +84,13 @@ const routes = [
   },
 
   {
+    isVisible: true,
     collapse: true,
     name: 'Investiments',
     icon: 'tim-icons icon-wallet-43',
     views: [
       {
+        isVisible: true,
         path: '/investments',
         name: 'Investiments List',
         icon: 'tim-icons icon-wallet-43',
@@ -84,6 +98,7 @@ const routes = [
         layout: '/admin',
       },
       {
+        isVisible: true,
         path: '/archive-investments',
         name: 'Archive Investments',
         icon: 'fas fa-file-invoice-dollar',
@@ -91,6 +106,7 @@ const routes = [
         layout: '/admin',
       },
       {
+        isVisible: true,
         path: '/investment/:id',
         name: 'New Investiment',
         icon: 'tim-icons icon-money-coins',
@@ -100,6 +116,7 @@ const routes = [
     ],
   },
   {
+    isVisible: true,
     path: '/upload',
     name: 'Upload',
     icon: 'fas fa-cloud-upload-alt',
@@ -107,8 +124,8 @@ const routes = [
     component: Uploader,
     layout: '/admin',
   },
-
   {
+    isVisible: true,
     collapse: true,
     name: 'Brokers',
     icon: 'fas fa-landmark',
@@ -116,6 +133,7 @@ const routes = [
     state: 'brokersCollapse',
     views: [
       {
+        isVisible: true,
         path: '/brokers',
         name: 'Brokers List',
         icon: 'fas fa-landmark',
@@ -123,6 +141,7 @@ const routes = [
         layout: '/admin',
       },
       {
+        isVisible: true,
         path: '/archive-brokers',
         name: 'Archive Brokers',
         icon: 'fas fa-book',
@@ -130,6 +149,7 @@ const routes = [
         layout: '/admin',
       },
       {
+        isVisible: true,
         path: '/broker/:id',
         name: 'New Broker',
         icon: 'far fa-handshake',
@@ -139,6 +159,7 @@ const routes = [
     ],
   },
   {
+    isVisible: true,
     collapse: true,
     name: 'Pages',
     rtlName: 'صفحات',
@@ -146,6 +167,7 @@ const routes = [
     state: 'pagesCollapse',
     views: [
       {
+        isVisible: true,
         path: '/pricing',
         name: 'Pricing',
         rtlName: 'عالتسعير',
@@ -155,6 +177,7 @@ const routes = [
         layout: '/auth',
       },
       {
+        isVisible: true,
         path: '/rtl-support',
         name: 'RTL Support',
         rtlName: 'صودعم رتل',
@@ -164,6 +187,7 @@ const routes = [
         layout: '/rtl',
       },
       {
+        isVisible: true,
         path: '/timeline',
         name: 'Timeline',
         rtlName: 'تيالجدول الزمني',
@@ -173,6 +197,7 @@ const routes = [
         layout: '/admin',
       },
       {
+        isVisible: true,
         path: '/login',
         name: 'Login',
         rtlName: 'هعذاتسجيل الدخول',
@@ -182,6 +207,7 @@ const routes = [
         layout: '/auth',
       },
       {
+        isVisible: true,
         path: '/verify/:id',
         name: 'Verify',
         rtlName: 'هعذاتسجيل الدخول',
@@ -191,6 +217,7 @@ const routes = [
         layout: '/auth',
       },
       {
+        isVisible: true,
         path: '/register',
         name: 'Register',
         rtlName: 'تسجيل',
@@ -200,6 +227,7 @@ const routes = [
         layout: '/auth',
       },
       {
+        isVisible: true,
         path: '/lock-screen',
         name: 'Lock Screen',
         rtlName: 'اقفل الشاشة',
@@ -209,6 +237,7 @@ const routes = [
         layout: '/auth',
       },
       {
+        isVisible: true,
         path: '/user-profile',
         name: 'User Profile',
         rtlName: 'ملف تعريفي للمستخدم',
@@ -220,6 +249,7 @@ const routes = [
     ],
   },
   {
+    isVisible: true,
     collapse: true,
     name: 'Components',
     rtlName: 'المكونات',
@@ -227,6 +257,7 @@ const routes = [
     state: 'componentsCollapse',
     views: [
       {
+        isVisible: true,
         collapse: true,
         name: 'Multi Level Collapse',
         rtlName: 'انهيار متعدد المستويات',
@@ -235,6 +266,7 @@ const routes = [
         state: 'multiCollapse',
         views: [
           {
+            isVisible: true,
             path: '/buttons',
             name: 'Buttons',
             rtlName: 'وصفت',
@@ -246,6 +278,7 @@ const routes = [
         ],
       },
       {
+        isVisible: true,
         path: '/buttons',
         name: 'Buttons',
         rtlName: 'وصفت',
@@ -255,6 +288,7 @@ const routes = [
         layout: '/admin',
       },
       {
+        isVisible: true,
         path: '/grid-system',
         name: 'Grid System',
         rtlName: 'نظام الشبكة',
@@ -264,6 +298,7 @@ const routes = [
         layout: '/admin',
       },
       {
+        isVisible: true,
         path: '/panels',
         name: 'Panels',
         rtlName: 'لوحات',
@@ -273,6 +308,7 @@ const routes = [
         layout: '/admin',
       },
       {
+        isVisible: true,
         path: '/sweet-alert',
         name: 'Sweet Alert',
         rtlName: 'الحلو تنبيه',
@@ -282,6 +318,7 @@ const routes = [
         layout: '/admin',
       },
       {
+        isVisible: true,
         path: '/notifications',
         name: 'Notifications',
         rtlName: 'إخطارات',
@@ -291,6 +328,7 @@ const routes = [
         layout: '/admin',
       },
       {
+        isVisible: true,
         path: '/icons',
         name: 'Icons',
         rtlName: 'الرموز',
@@ -300,6 +338,7 @@ const routes = [
         layout: '/admin',
       },
       {
+        isVisible: true,
         path: '/typography',
         name: 'Typography',
         rtlName: 'طباعة',
@@ -311,6 +350,7 @@ const routes = [
     ],
   },
   {
+    isVisible: true,
     collapse: true,
     name: 'Forms',
     rtlName: 'إستمارات',
@@ -318,6 +358,7 @@ const routes = [
     state: 'formsCollapse',
     views: [
       {
+        isVisible: true,
         path: '/regular-forms',
         name: 'Regular Forms',
         rtlName: 'أشكال عادية',
@@ -327,6 +368,7 @@ const routes = [
         layout: '/admin',
       },
       {
+        isVisible: true,
         path: '/extended-forms',
         name: 'Extended Forms',
         rtlName: 'نماذج موسعة',
@@ -336,6 +378,7 @@ const routes = [
         layout: '/admin',
       },
       {
+        isVisible: true,
         path: '/validation-forms',
         name: 'Validation Forms',
         rtlName: 'نماذج التحقق من الصحة',
@@ -345,6 +388,7 @@ const routes = [
         layout: '/admin',
       },
       {
+        isVisible: true,
         path: '/wizard',
         name: 'Wizard',
         rtlName: 'ساحر',
@@ -356,6 +400,7 @@ const routes = [
     ],
   },
   {
+    isVisible: true,
     collapse: true,
     name: 'Tables',
     rtlName: 'الجداول',
@@ -363,6 +408,7 @@ const routes = [
     state: 'tablesCollapse',
     views: [
       {
+        isVisible: true,
         path: '/regular-tables',
         name: 'Regular Tables',
         rtlName: 'طاولات عادية',
@@ -372,6 +418,7 @@ const routes = [
         layout: '/admin',
       },
       {
+        isVisible: true,
         path: '/extended-tables',
         name: 'Extended Tables',
         rtlName: 'جداول ممتدة',
@@ -381,6 +428,7 @@ const routes = [
         layout: '/admin',
       },
       {
+        isVisible: true,
         path: '/react-tables',
         name: 'React Tables',
         rtlName: 'رد فعل الطاولة',
@@ -392,6 +440,7 @@ const routes = [
     ],
   },
   {
+    isVisible: true,
     collapse: true,
     name: 'Maps',
     rtlName: 'خرائط',
@@ -399,6 +448,7 @@ const routes = [
     state: 'mapsCollapse',
     views: [
       {
+        isVisible: true,
         path: '/google-maps',
         name: 'Google Maps',
         rtlName: 'خرائط جوجل',
@@ -408,6 +458,7 @@ const routes = [
         layout: '/admin',
       },
       {
+        isVisible: true,
         path: '/full-screen-map',
         name: 'Full Screen Map',
         rtlName: 'خريطة كاملة الشاشة',
@@ -417,6 +468,7 @@ const routes = [
         layout: '/admin',
       },
       {
+        isVisible: true,
         path: '/vector-map',
         name: 'Vector Map',
         rtlName: 'خريطة المتجه',
@@ -428,6 +480,7 @@ const routes = [
     ],
   },
   {
+    isVisible: true,
     path: '/widgets',
     name: 'Widgets',
     rtlName: 'الحاجيات',
@@ -436,6 +489,7 @@ const routes = [
     layout: '/admin',
   },
   {
+    isVisible: true,
     path: '/charts',
     name: 'Charts',
     rtlName: 'الرسوم البيانية',
@@ -444,6 +498,7 @@ const routes = [
     layout: '/admin',
   },
   {
+    isVisible: true,
     path: '/calendar',
     name: 'Calendar',
     rtlName: 'التقويم',

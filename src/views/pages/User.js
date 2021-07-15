@@ -35,6 +35,8 @@ import {
 import Config from '../../config.json';
 import ReactBSAlert from 'react-bootstrap-sweetalert';
 import { useHistory } from 'react-router-dom';
+import NumberFormat from 'react-number-format';
+import { reverseFormatNumber } from 'helpers/functions';
 // import DatePicker from 'react-date-picker';
 
 const User = () => {
@@ -42,21 +44,34 @@ const User = () => {
   // const [date, setDate] = useState(new Date());
   const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 
+  const [monthlySalary, setMonthlySalary] = useState(
+    localStorage.getItem('userInfo')
+      ? JSON.parse(localStorage.getItem('userInfo')).monthlySalary
+      : null
+  );
+  const [equityObjective, setEquityObjective] = useState(
+    localStorage.getItem('userInfo')
+      ? JSON.parse(localStorage.getItem('userInfo')).equityObjective
+      : null
+  );
   const [match, setMatch] = useState(true);
   const [password, setPassword] = useState(null);
-  const [email] = React.useState(
+  const [hasRegisteredInvest, setHasRegisteredInvest] = useState(
+    localStorage.getItem('userInfo')
+      ? JSON.parse(localStorage.getItem('userInfo')).hasRegisteredInvest
+      : null
+  );
+  const [email] = useState(
     localStorage.getItem('userInfo')
       ? JSON.parse(localStorage.getItem('userInfo')).email
       : null
   ); // eslint-disable-next-line
-  const [registerConfirmPassword, setregisterConfirmPassword] = React.useState(
-    ''
-  );
+  const [registerConfirmPassword, setregisterConfirmPassword] = useState('');
   const [alert, setAlert] = useState(null);
-  const [source, setsource] = React.useState('');
-  const [destination, setdestination] = React.useState('');
-  const [sourceState, setsourceState] = React.useState('');
-  const [destinationState, setdestinationState] = React.useState('');
+  const [source, setsource] = useState('');
+  const [destination, setdestination] = useState('');
+  const [sourceState, setsourceState] = useState('');
+  const [destinationState, setdestinationState] = useState('');
 
   const [isHidden, setIsHidden] = useState(false);
   const [name, setName] = useState(
@@ -151,6 +166,9 @@ const User = () => {
             userInfo['country'] = country;
             userInfo['currency'] = currency;
             userInfo['name'] = name;
+            userInfo['hasRegisteredInvest'] = hasRegisteredInvest;
+            userInfo['monthlySalary'] = monthlySalary;
+            userInfo['equityObjective'] = equityObjective;
             localStorage.setItem('userInfo', JSON.stringify(userInfo));
             console.log('alterado com sucesso');
           })
@@ -260,7 +278,7 @@ const User = () => {
                     </Col> */}
                     <Col md='3' style={{ paddingRight: '0' }}>
                       <FormGroup>
-                        <label>Nome</label>
+                        <Label>Nome</Label>
                         <Input
                           value={name}
                           style={{ backgroundColor: '#2b3553' }}
@@ -272,7 +290,7 @@ const User = () => {
                     </Col>
                     <Col md='3' style={{ paddingRight: '0' }}>
                       <FormGroup>
-                        <label>Endereço de Email</label>
+                        <Label>Endereço de Email</Label>
                         <Input
                           style={{
                             backgroundColor: '#2b3553',
@@ -281,6 +299,7 @@ const User = () => {
                           disabled
                           placeholder='email@email.com'
                           value={email}
+                          autoComplete='username'
                           className='borderColor'
                           type='email'
                         />
@@ -381,7 +400,7 @@ const User = () => {
                       </Input>
                     </Col>
                     <Col md='3' hidden={isHidden} style={{ paddingRight: '0' }}>
-                      <label>Currency</label>
+                      <Label>Currency</Label>
                       <Input
                         required
                         style={{ backgroundColor: '#2b3553' }}
@@ -399,6 +418,42 @@ const User = () => {
                           </option>
                         ))}
                       </Input>
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col md='3' style={{ paddingRight: '0' }}>
+                      <Label>Monthly Salary</Label>
+                      <NumberFormat
+                        style={{ backgroundColor: '#2b3553' }}
+                        onChange={(e) =>
+                          setMonthlySalary(reverseFormatNumber(e.target.value))
+                        }
+                        type='text'
+                        value={monthlySalary}
+                        placeholder={`${currencies[currency]?.symbol_native}0,00`}
+                        thousandSeparator={'.'}
+                        decimalSeparator={','}
+                        prefix={currencies[currency]?.symbol_native}
+                        customInput={Input}
+                      />
+                    </Col>
+                    <Col md='3' style={{ paddingRight: '0' }}>
+                      <Label>Equity Objective</Label>
+                      <NumberFormat
+                        style={{ backgroundColor: '#2b3553' }}
+                        onChange={(e) =>
+                          setEquityObjective(
+                            reverseFormatNumber(e.target.value)
+                          )
+                        }
+                        type='text'
+                        value={equityObjective}
+                        placeholder={`${currencies[currency]?.symbol_native}0,00`}
+                        thousandSeparator={'.'}
+                        decimalSeparator={','}
+                        prefix={currencies[currency]?.symbol_native}
+                        customInput={Input}
+                      />
                     </Col>
                   </Row>
                   {/* <Row>
@@ -426,6 +481,7 @@ const User = () => {
                           style={{ backgroundColor: '#2b3553' }}
                           className='borderColor'
                           placeholder='password'
+                          autoComplete='new-password'
                           type='password'
                           onChange={(e) => {
                             change(e, 'source', 'password');
@@ -444,6 +500,7 @@ const User = () => {
                           id='idDestination'
                           style={{ backgroundColor: '#2b3553' }}
                           className='borderColor'
+                          autoComplete='new-password'
                           placeholder='confirm password'
                           type='password'
                           onChange={(e) =>
@@ -454,9 +511,9 @@ const User = () => {
                           }
                         />
                         {destinationState === 'has-danger' ? (
-                          <label className='error'>
+                          <Label className='error'>
                             Please enter the same value.
-                          </label>
+                          </Label>
                         ) : null}
                       </FormGroup>
                     </Col>
@@ -464,6 +521,18 @@ const User = () => {
                     </Col> */}
                   </Row>
                 </Form>
+                <FormGroup check>
+                  <Label check>
+                    <Input
+                      name='optionCheckboxes'
+                      type='checkbox'
+                      checked={hasRegisteredInvest}
+                      onChange={(e) => setHasRegisteredInvest(e.target.checked)}
+                    />
+                    <span className='form-check-sign' />
+                    Have loaded all previous investments
+                  </Label>
+                </FormGroup>
               </CardBody>
               <CardFooter>
                 <Button
@@ -471,7 +540,15 @@ const User = () => {
                   color='primary'
                   type='submit'
                   onClick={() => {
-                    handleSave({ name, country, currency, password });
+                    handleSave({
+                      name,
+                      country,
+                      currency,
+                      password,
+                      hasRegisteredInvest,
+                      monthlySalary,
+                      equityObjective,
+                    });
                   }}
                 >
                   Salvar

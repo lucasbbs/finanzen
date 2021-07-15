@@ -3,7 +3,7 @@ import { fetchInvestments } from 'services/Investments';
 import PaginationUI from '../components/Pagination/Pagination';
 import { Button, Col, Input, Label, Row } from 'reactstrap';
 import { useParams, useHistory } from 'react-router-dom';
-import { reverseFormatNumber } from '../helpers/functions';
+import { currencyFormat, reverseFormatNumber } from '../helpers/functions';
 // import InputMask from 'react-input-mask';
 import NumberFormat from 'react-number-format';
 import Incomes from '../components/Incomes/Incomes';
@@ -50,7 +50,7 @@ const InvestmentDetails = () => {
   const [accruedIncome, setAccruedIncome] = useState(0);
   const [investment, setInvestment] = useState([]);
   const [incomes, setIncomes] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [login] = useState(
     localStorage.getItem('userInfo')
       ? JSON.parse(localStorage.getItem('userInfo'))
@@ -142,15 +142,37 @@ const InvestmentDetails = () => {
     };
     await axios
       .post(`${Config.SERVER_ADDRESS}/api/investments`, investmentObj, config)
-      .then((response) => {
-        console.log(investmentObj);
+      .then(async (response) => {
         notify(`${response.data.name} investimento cadastrado com Sucesso`);
+        if (login.hasRegisteredInvest) {
+          login.fundsToInvest[currency] -= response.data.initial_amount;
+          const config = {
+            headers: { Authorization: `Bearer ${login.token}` },
+          };
+          await axios
+            .put(
+              `${Config.SERVER_ADDRESS}/api/users/${login._id}`,
+              {
+                fundsToInvest: login.fundsToInvest,
+                hasRegisteredInvest: login.hasRegisteredInvest,
+              },
+              config
+            )
+            .then((res) => {
+              localStorage.setItem('userInfo', JSON.stringify(login));
+            });
+        }
         history.push(`/admin/investment/${response.data._id}`);
       })
-      .catch((err) => {
-        console.log(err);
+      .catch((error) => {
+        console.log(error);
 
-        notify(err.response.data, 'danger');
+        notify(
+          error.response && error.response.data.message
+            ? error.response.data.message
+            : error.message,
+          'danger'
+        );
       });
   };
   return (
@@ -308,6 +330,14 @@ const InvestmentDetails = () => {
                       decimalSeparator={','}
                       prefix={currencies[currency]?.symbol_native}
                       customInput={Input}
+                      isAllowed={(values) => {
+                        const { formattedValue, floatValue } = values;
+                        return login.hasRegisteredInvest
+                          ? formattedValue === '' ||
+                              (floatValue >= 0 &&
+                                floatValue <= login.fundsToInvest[currency])
+                          : true;
+                      }}
                     />
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
@@ -353,7 +383,10 @@ const InvestmentDetails = () => {
               </>
             ) : (
               <div className='mt-3'>
-                <Row className='justify-content-center align-items-center m-80'>
+                <Row
+                  className='flex-column justify-content-center align-items-center m-80'
+                  // style={{ flexDirection: 'column' }}
+                >
                   <Button
                     className='mt-30'
                     color='success'
@@ -373,8 +406,24 @@ const InvestmentDetails = () => {
                       })
                     }
                   >
-                    Salvar
+                    Save
                   </Button>
+                  {login.hasRegisteredInvest ? (
+                    <>
+                      <h4 className='mt-4'>
+                        Your current funds to invest
+                        <br />
+                      </h4>
+                      <h3 style={{ display: 'block', textAlign: 'center' }}>
+                        {currencyFormat(
+                          (login.fundsToInvest[currency]
+                            ? login.fundsToInvest[currency]
+                            : 0) - reverseFormatNumber(initialAmount),
+                          currency || login.currency
+                        )}
+                      </h3>
+                    </>
+                  ) : null}
                 </Row>
               </div>
             )}

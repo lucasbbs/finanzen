@@ -45,6 +45,33 @@ export function decimalFormat(label) {
   });
   return formatPercentage.format(label);
 }
+
+export function rainbowStop(h) {
+  let f = (n, k = (n + h * 12) % 12) =>
+    0.5 - 0.5 * Math.max(Math.min(k - 3, 9 - k, 1), -1);
+  let rgb2hex = (r, g, b) =>
+    '#' +
+    [r, g, b]
+      .map((x) =>
+        Math.round(x * 255)
+          .toString(16)
+          .padStart(2, 0)
+      )
+      .join('');
+  return rgb2hex(f(0), f(8), f(4));
+}
+
+export function generateRandomColors(n) {
+  const m = 1 / n;
+  let percentage = 0;
+  const returns = [];
+  for (let i = 0; i < n; i++) {
+    percentage += m;
+    returns.push(rainbowStop(percentage));
+  }
+  return returns;
+}
+
 export const getDataForTotalTaxes = (income) => {
   let dates = [];
   const incomesarray = [];
@@ -78,6 +105,11 @@ export const getDataForTotalTaxes = (income) => {
 };
 
 export const getGlobalAverageReturn = (investments, dateInput) => {
+  // if (dateInput === '-01') {
+  //   console.log(dateInput);
+  //   return NaN;
+  // }
+
   const currentAmounts = investments
     .map((investment) => {
       return {
@@ -385,6 +417,7 @@ export const getDataForTheTopInvestmentsTable = (
         (filteredInvestments[i].initial_amount + accrued_income[i]),
       filteredInvestments[i].initial_amount + accrued_income[i],
       filteredInvestments[i].broker.currency,
+      Object.values(incomes[i][1][0])[0].value,
     ]);
   }
   return returns.sort((a, b) => b[2] - a[2]).slice(0, 7);

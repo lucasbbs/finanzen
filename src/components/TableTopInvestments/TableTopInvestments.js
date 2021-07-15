@@ -6,13 +6,13 @@ import {
   CardTitle,
   Col,
   Input,
-  Label,
   Table,
 } from 'reactstrap';
 import { getDataForTheTopInvestmentsTable } from '../../helpers/functions.js';
 import { currencyFormat } from '../../helpers/functions';
 import MyTooltip from '../../components/Tooltip/MyTooltip';
 import { setDate } from 'date-fns';
+import { Link } from 'react-router-dom';
 
 const TableTopInvestments = ({ investments, date, setDate }) => {
   const [tableTopInvestmentsMonth, setTableTopInvestmentsMonth] = useState([]);
@@ -42,10 +42,6 @@ const TableTopInvestments = ({ investments, date, setDate }) => {
           </Col>
         </CardHeader>
         <CardBody style={{ overflow: 'hidden' }}>
-          {/* <div
-            className='table-responsive'
-            style={{ overflowY: 'hidden', overflowX: 'auto' }}
-          > */}
           <Table className='tablesorter'>
             <thead className='text-primary'>
               <tr>
@@ -59,7 +55,7 @@ const TableTopInvestments = ({ investments, date, setDate }) => {
                     minWidth: '300px',
                   }}
                 >
-                  Nome
+                  Name
                 </th>
                 <th
                   style={{
@@ -72,7 +68,20 @@ const TableTopInvestments = ({ investments, date, setDate }) => {
                     textAlign: 'center',
                   }}
                 >
-                  Percentual
+                  Income
+                </th>
+                <th
+                  style={{
+                    maxWidth: '300px',
+                    whiteSpace: 'nowrap',
+                    overflow: 'hidden',
+                    display: 'inline-block',
+                    textOverflow: 'ellipsis',
+                    minWidth: '140px',
+                    textAlign: 'center',
+                  }}
+                >
+                  Rate
                 </th>
                 <th
                   style={{
@@ -85,7 +94,7 @@ const TableTopInvestments = ({ investments, date, setDate }) => {
                     textAlign: 'right',
                   }}
                 >
-                  Montante Acumulado
+                  Accumulated Amount
                 </th>
               </tr>
             </thead>
@@ -102,16 +111,31 @@ const TableTopInvestments = ({ investments, date, setDate }) => {
                       minWidth: '300px',
                     }}
                   >
-                    <span id={`Tooltip-${invest[0]}`}>
-                      {invest[1]}
-                      <MyTooltip
-                        placement='left'
-                        target={`Tooltip-${invest[0]}`}
-                      >
+                    <Link to={`/admin/investment/${invest[0]}`}>
+                      <span id={`Tooltip-${invest[0]}`}>
                         {invest[1]}
-                        <br />
-                      </MyTooltip>
-                    </span>
+                        <MyTooltip
+                          placement='left'
+                          target={`Tooltip-${invest[0]}`}
+                        >
+                          {invest[1]}
+                          <br />
+                        </MyTooltip>
+                      </span>
+                    </Link>
+                  </td>
+                  <td
+                    style={{
+                      maxWidth: '350px',
+                      whiteSpace: 'nowrap',
+                      overflow: 'hidden',
+                      display: 'inline-block',
+                      textOverflow: 'ellipsis',
+                      minWidth: '140px',
+                      textAlign: 'center',
+                    }}
+                  >
+                    {currencyFormat(invest[5], invest[4])}
                   </td>
                   <td
                     style={{

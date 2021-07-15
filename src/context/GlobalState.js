@@ -7,6 +7,7 @@ import Config from '../config.json';
 
 const initialState = {
   investments: [],
+  accounts: JSON.parse(localStorage.getItem('userInfo')).fundsToInvest,
   error: null,
   loading: true,
   hasLoaded: false,
@@ -85,10 +86,19 @@ export const GlobalProvider = ({ children }) => {
         });
     });
   };
+
+  const updateAccounts = (accounts) => {
+    console.log(accounts);
+    dispatch({
+      type: 'UPDATE_ACCOUNTS',
+      payload: accounts,
+    });
+  };
   return (
     <GlobalContext.Provider
       value={{
         investments: state.investments,
+        accounts: state.accounts,
         error: state.error,
         loading: state.loading,
         getInvestments,
@@ -96,6 +106,7 @@ export const GlobalProvider = ({ children }) => {
         addInvestment,
         editInvestment,
         archiveInvestment,
+        updateAccounts,
       }}
     >
       {children}

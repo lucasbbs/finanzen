@@ -63,13 +63,26 @@ const Verify = () => {
               localStorage.setItem('userInfo', JSON.stringify(res.data));
               history.push('/admin/dashboard');
             })
-            .catch((error) => console.log(error));
+            .catch((error) =>
+              notify(
+                error.response && error.response.data.message
+                  ? error.response.data.message
+                  : error.message,
+                'danger'
+              )
+            );
         } else {
           throw new Error("You've typed the wrong code");
         }
       })
-      .catch((err) => {
-        console.error(err);
+      .catch((error) => {
+        console.error(error);
+        notify(
+          error.response && error.response.data.message
+            ? error.response.data.message
+            : error.message,
+          'danger'
+        );
         // notify(err ? err.message : "You've done something wrong", 'danger');
       });
   };

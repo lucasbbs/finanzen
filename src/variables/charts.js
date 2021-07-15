@@ -14,20 +14,23 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
+
+const { currencyFormat } = require('helpers/functions');
+
 // ##############################
 // // // Chart variables
 // #############################
 
 // chartExample1 and chartExample2 options
 
-function format(label) {
-  let formatCurrency = new Intl.NumberFormat('pt-BR', {
-    style: 'currency',
-    currency: 'BRL',
-    minimumFractionDigits: 2,
-  });
-  return formatCurrency.format(Number(label));
-}
+// function format(label) {
+//   let formatCurrency = new Intl.NumberFormat('pt-BR', {
+//     style: 'currency',
+//     currency: 'BRL',
+//     minimumFractionDigits: 2,
+//   });
+//   return formatCurrency.format(Number(label));
+// }
 let chart_1_2_3_options = {
   maintainAspectRatio: false,
   legend: {
@@ -877,7 +880,7 @@ const chartExample10 = {
     },
   },
 };
-const chartDefault = (dataList, labels) => {
+const chartDefault = (dataList, labels, currency) => {
   let gradientStroke = {};
   const data = (canvas) => {
     let ctx = canvas.getContext('2d');
@@ -908,8 +911,10 @@ const chartDefault = (dataList, labels) => {
       callbacks: {
         label: function (tooltipItem, data) {
           var indice = tooltipItem.index;
-          return `${data.labels[indice]}:  ${format(
-            data.datasets[0].data[indice]
+          console.log(currency);
+          return `${data.labels[indice]}:  ${currencyFormat(
+            data.datasets[0].data[indice],
+            currency
           )}`;
         },
       },

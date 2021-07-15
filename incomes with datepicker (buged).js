@@ -235,9 +235,14 @@ const Incomes = ({
           )
         );
       })
-      .catch((err) => {
+      .catch((error) => {
         setIsLoading(false);
-        notify(err.response, 'danger');
+        notify(
+          error.response && error.response.data.message
+            ? error.response.data.message
+            : error.message,
+          'danger'
+        );
       });
     if (index === -1) {
     }
@@ -271,9 +276,14 @@ const Incomes = ({
           )}`
         );
       })
-      .catch((err) => {
+      .catch((error) => {
         setIsLoading(false);
-        notify(err.response.data, 'danger');
+        notify(
+          error.response && error.response.data.message
+            ? error.response.data.message
+            : error.message,
+          'danger'
+        );
       });
     const dates = updatedIncome
       .filter((invest) => Object.values(invest)[0] !== null)
@@ -610,7 +620,12 @@ const Incomes = ({
                                   throw new Error('Erro');
                                 }
                               } catch (error) {
-                                notify(error.message, 'danger');
+                                notify(
+                                  error.response && error.response.data.message
+                                    ? error.response.data.message
+                                    : error.message,
+                                  'danger'
+                                );
                               }
                             }
                           }

@@ -129,8 +129,13 @@ const Admin = (props) => {
     //   }
     // }
     return (
-      <Row className='justify-content-center align-items-center flex-row'>
-        <span className='mb-0'>Finanzen</span>
+      <Row
+        className='justify-content-center align-items-center flex-row text-nowrap'
+        style={{ whiteSpace: 'nowrap' }}
+      >
+        <span className='mb-0' style={{ whiteSpace: 'normal' }}>
+          Finanzen
+        </span>
         <img
           alt='Finanzen'
           style={{

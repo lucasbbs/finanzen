@@ -189,45 +189,37 @@ const Incomes = ({
     toggleAddIncome(null, true);
   };
   const handleCurrentMoney = async (fundsReturn = 0) => {
-    console.log(
-      formerValue,
-      'isEdit',
-      isEdit,
-      'isRemove',
-      isEdit
-        ? login.fundsToInvest + fundsReturn - formerValue
-        : login.fundsToInvest + fundsReturn
-    );
     const config = { headers: { Authorization: `Bearer ${login.token}` } };
+
+    if (isEdit) {
+      login.fundsToInvest[currency] += fundsReturn - formerValue;
+    } else {
+      login.fundsToInvest[currency] += fundsReturn;
+    }
     await axios
       .put(
         `${Config.SERVER_ADDRESS}/api/users/${login._id}`,
         {
-          fundsToInvest: isEdit
-            ? login.fundsToInvest + fundsReturn - formerValue
-            : login.fundsToInvest + fundsReturn,
+          fundsToInvest: login.fundsToInvest,
         },
         config
       )
       .then((res) => {
-        login['fundsToInvest'] = isEdit
-          ? login.fundsToInvest + fundsReturn - formerValue
-          : login.fundsToInvest + fundsReturn;
         localStorage.setItem('userInfo', JSON.stringify(login));
       });
   };
   const handleDeleteMoney = async (formerValue) => {
     const config = { headers: { Authorization: `Bearer ${login.token}` } };
+    login.fundsToInvest[currency] -= formerValue;
     await axios
       .put(
         `${Config.SERVER_ADDRESS}/api/users/${login._id}`,
         {
-          fundsToInvest: login.fundsToInvest - formerValue,
+          fundsToInvest: login.fundsToInvest,
         },
         config
       )
       .then((res) => {
-        login['fundsToInvest'] = login.fundsToInvest - formerValue;
         localStorage.setItem('userInfo', JSON.stringify(login));
       });
   };
@@ -372,10 +364,15 @@ const Incomes = ({
           )
         );
       })
-      .catch((err) => {
+      .catch((error) => {
         setIsLoading(false);
-        console.error(err);
-        notify(err.response?.data, 'danger');
+        console.error(error);
+        notify(
+          error.response && error.response.data.message
+            ? error.response.data.message
+            : error.message,
+          'danger'
+        );
       });
     if (index === -1) {
     }
@@ -421,10 +418,15 @@ const Incomes = ({
           )}`
         );
       })
-      .catch((err) => {
+      .catch((error) => {
         setIsLoading(false);
-        console.error(err);
-        notify(err.response.data, 'danger');
+        console.error(error);
+        notify(
+          error.response && error.response.data.message
+            ? error.response.data.message
+            : error.message,
+          'danger'
+        );
       });
     const dates = updatedIncome
       .filter((invest) => Object.values(invest)[0] !== null)
@@ -1002,7 +1004,12 @@ const Incomes = ({
                                 }
                               } catch (error) {
                                 console.error(error);
-                                notify(error.message, 'danger');
+                                notify(
+                                  error.response && error.response.data.message
+                                    ? error.response.data.message
+                                    : error.message,
+                                  'danger'
+                                );
                               }
                             }
                           }

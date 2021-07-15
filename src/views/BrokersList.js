@@ -232,14 +232,15 @@ const BrokersList = () => {
         notify('Você arquivou com sucesso a corretora');
         setBrokers(brokers.filter((brk) => brk._id !== id));
       })
-      .catch((err) => {
+      .catch((error) => {
         hideAlert();
-        console.log(err, err.response.data.message);
+        console.log(error, error.response.data.message);
         notify(
-          'Não é possível arquivar uma corretora com investimentos ativos',
+          error.response && error.response.data.message
+            ? error.response.data.message
+            : error.message,
           'danger'
         );
-        // notify(err.response.data.message, 'danger');
       });
   };
 
@@ -256,14 +257,19 @@ const BrokersList = () => {
         notify('Você deletou com sucesso a corretora');
         setBrokers(brokers.filter((brk) => brk._id !== id));
       })
-      .catch((err) => {
+      .catch((error) => {
         hideAlert();
-        console.log(err, err.response.data.message);
+        console.log(error, error.response.data.message);
+        // notify(
+        //   'Não é possível deletar uma corretora com investimentos ativos',
+        //   'danger'
+        // );
         notify(
-          'Não é possível deletar uma corretora com investimentos ativos',
+          error.response && error.response.data.message
+            ? error.response.data.message
+            : error.message,
           'danger'
         );
-        // notify(err.response.data.message, 'danger');
       });
   };
   const notificationAlertRef = useRef(null);
