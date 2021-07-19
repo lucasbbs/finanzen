@@ -1,3 +1,13 @@
+.inflation:hover:after {
+  content: 'edit';
+  cursor: pointer;
+  margin-left: 10px;
+  color: var(--primary);
+}
+.inflation {
+  pointer-events: all;
+}
+
 @font-face {
   font-family: 'Nucleo';
   src: url('../../../fonts/nucleo.eot');
@@ -17,8 +27,6 @@
 
 .incomes {
   position: relative;
-}
-.incomes {
   pointer-events: all;
 }
 .incomes:hover:after {
@@ -83,6 +91,7 @@
 input:-webkit-autofill {
   -webkit-text-fill-color: white !important;
   -webkit-box-shadow: 0 0 0 30px #1e1e2f inset !important;
+  box-shadow: 0 0 0 30px #1e1e2f inset !important;
   background-image: none !important;
   border: 1px solid #1e1e2f !important;
 }
@@ -644,4 +653,16 @@ button.react-calendar__navigation__arrow {
   @media (max-width: 1086px) {
     grid-template-columns: auto auto;
   }
+}
+
+.customClassForCheckboxes::after {
+  content: '\ea47' !important;
+  opacity: 1 !important;
+}
+.customClassForCheckboxes {
+  background-color: #e14eca !important;
+}
+
+.bg-white > div > div > div {
+  color: #222a42;
 }

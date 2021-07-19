@@ -170,7 +170,6 @@ const User = () => {
             userInfo['monthlySalary'] = monthlySalary;
             userInfo['equityObjective'] = equityObjective;
             localStorage.setItem('userInfo', JSON.stringify(userInfo));
-            console.log('alterado com sucesso');
           })
           .catch((error) => console.log(error));
       }

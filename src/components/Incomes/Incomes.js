@@ -402,7 +402,7 @@ const Incomes = ({
       .then((response) => {
         setIsLoading(false);
         notify(
-          `Você removeu com sucesso a receita do período de ${format(
+          `You have successfully deleted the income for the period ${format(
             addDays(
               new Date(
                 Object.keys(removido[0])[0]
@@ -843,7 +843,8 @@ const Incomes = ({
             {/* <span style={{ float: 'right', fontSize: '1.5em' }}>+</span> */}
             <i
               title='Register a new interest income'
-              className='tim-icons icon-simple-add'
+              // className='tim-icons icon-simple-add'
+              className='fas fa-plus'
               style={{ float: 'right', marginLeft: '20px', fontSize: '1.5em' }}
             />
           </Link>

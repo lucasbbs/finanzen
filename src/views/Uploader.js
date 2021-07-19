@@ -44,11 +44,14 @@ const Uploader = () => {
 
         let incomeObject = {};
         incomeObject[
-          format(parse(date, 'yyyy-MM', new Date()), 'yyyy-MM-dd')
-        ] = reverseFormatNumber(
-          // prettier-ignore
-          document.querySelector(`#selector${income.id}`).value
-        );
+          `${format(parse(date, 'yyyy-MM', new Date()), 'yyyy-MM-dd')}income`
+        ] = {
+          type: 'income',
+          tax: 0,
+          value: reverseFormatNumber(
+            document.querySelector(`#selector${income.id}`).value
+          ),
+        };
         const index = investment.invest.incomes
           .map((key) => Object.keys(key)[0])
           .indexOf(Object.keys(incomeObject)[0]);
@@ -76,7 +79,7 @@ const Uploader = () => {
       investmentsBulkUpdate.length !== 0
     ) {
       notify(
-        `Você efetuou com sucesso a atualização em lote dos seus investimentos para o mê de ${date}`
+        `You have successfully bulk updated your investments for the month of ${date}`
       );
     }
     console.log(investmentsBulkUpdate);
@@ -108,7 +111,15 @@ const Uploader = () => {
         setInvestmentsBulkUpdate(res.data.xlData);
         setFile(res.fileName);
       })
-      .catch((err) => setUploadPercentage(0));
+      .catch((error) => {
+        notify(
+          error.response && error.response.data.message
+            ? error.response.data.message
+            : error.message,
+          'danger'
+        );
+        setUploadPercentage(0);
+      });
   };
   const submitHandler = () => {
     setIsSubmited(true);
@@ -240,11 +251,15 @@ const Uploader = () => {
                           onChange={(e) => {
                             const obj = {};
                             obj[
-                              format(
+                              `${format(
                                 parse(date, 'yyyy-MM', new Date()),
                                 'yyyy-MM-dd'
-                              )
-                            ] = reverseFormatNumber(e.target.value);
+                              )}income`
+                            ] = {
+                              type: 'income',
+                              tax: 0,
+                              value: reverseFormatNumber(e.target.value),
+                            };
                             incomesArray[invest.id].splice(
                               incomesArray[invest.id].indexOf(date + '-01'),
                               1,

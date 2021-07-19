@@ -73,7 +73,7 @@ const ArchiveInvestments = () => {
       )
       .then((response) => {
         toggle();
-        notify(`Investimento alterado com Sucesso`);
+        notify(`Investment updated successfully`);
         investmentObj['broker'] = brokers.find(
           (brk) => brk._id === investmentObj['broker']
         );
@@ -282,7 +282,7 @@ const ArchiveInvestments = () => {
       .delete(`${Config.SERVER_ADDRESS}/api/investments/${id}`, config)
       .then((response) => {
         success('delete');
-        notify(`Investimento excluído com Sucesso`);
+        notify(`Investment deleted successfully`);
         setInvestment(investment.filter((invest) => invest._id !== id));
       })
       .catch((error) => {

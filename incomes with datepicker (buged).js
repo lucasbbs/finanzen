@@ -267,7 +267,7 @@ const Incomes = ({
       .then((response) => {
         setIsLoading(false);
         notify(
-          `Você removeu com sucesso a receita do período de ${format(
+          `You have successfully deleted the income for the period ${format(
             addDays(new Date(Object.keys(removido[0])[0]), 1),
             'MMM/yyyy',
             {

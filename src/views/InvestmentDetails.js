@@ -143,7 +143,7 @@ const InvestmentDetails = () => {
     await axios
       .post(`${Config.SERVER_ADDRESS}/api/investments`, investmentObj, config)
       .then(async (response) => {
-        notify(`${response.data.name} investimento cadastrado com Sucesso`);
+        notify(`${response.data.name} successfully investment registered`);
         if (login.hasRegisteredInvest) {
           login.fundsToInvest[currency] -= response.data.initial_amount;
           const config = {
@@ -181,11 +181,8 @@ const InvestmentDetails = () => {
       <div className='react-notification-alert-container'>
         <NotificationAlert ref={notificationAlertRef} />
       </div>
-      <div
-        className='content'
-        style={{ filter: `blur(${!isLoading ? 0 : 3}px)` }}
-      >
-        <Row>
+      <div className='content'>
+        <Row style={{ filter: `blur(${!isLoading ? 0 : 3}px)` }}>
           <Col md='12'>
             <div
               style={{

@@ -77,7 +77,7 @@ const InvestmentsList = () => {
       )
       .then(async (response) => {
         toggle();
-        notify(`Investimento alterado com Sucesso`);
+        notify(`Investment updated successfully`);
         investmentObj['broker'] = brokers.find(
           (brk) => brk._id === investmentObj['broker']
         );
@@ -249,12 +249,12 @@ const InvestmentsList = () => {
         Authorization: `Bearer ${login.token}`,
       },
     };
-    console.log(`Bearer ${login.token}`);
+    // console.log(`Bearer ${login.token}`);
     const answer = await axios
       .delete(`${Config.SERVER_ADDRESS}/api/investments/${id}`, config)
       .then(async (response) => {
         success('delete');
-        notify(`Investimento excluído com Sucesso`);
+        notify(`Investment deleted successfully`);
         setInvestment(investment.filter((invest) => invest._id !== id));
 
         //------------STUFF RELATED TO THE CURRENT AMOUNT OF MONEY---------------//
@@ -306,7 +306,7 @@ const InvestmentsList = () => {
       .get(`${Config.SERVER_ADDRESS}/api/investments/${id}/archive`, config)
       .then(async (response) => {
         success();
-        notify(`Você arquivou com sucesso o seu investimento ${name}`);
+        notify(`You have successfully archived your investment ${name}`);
         setInvestment(investment.filter((invest) => invest._id !== id));
 
         await axios

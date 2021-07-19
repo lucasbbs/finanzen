@@ -1,5 +1,5 @@
 import axios from 'axios';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { useHistory } from 'react-router-dom';
 import {
   Button,
@@ -16,9 +16,12 @@ import styles from '../assets/scss/black-dashboard-pro-react/MyCustomCSS/login.m
 import Config from '../config.json';
 import NotificationAlert from 'react-notification-alert';
 import classnames from 'classnames';
+import { GlobalContext } from 'context/GlobalState';
 
 /*eslint-disable*/
 const Login = ({ location }) => {
+  const { emptyState } = useContext(GlobalContext);
+
   let history = useHistory();
 
   const [fullnameFocus, setfullnameFocus] = useState('');
@@ -45,6 +48,7 @@ const Login = ({ location }) => {
 
   const redirect = location.search ? location.search.split('=')[1] : '/';
   useEffect(() => {
+    emptyState();
     if (login !== null) {
       history.push(redirect);
     }
@@ -144,9 +148,9 @@ const Login = ({ location }) => {
         .then((res) => {
           // setLogin(JSON.stringify(res.data));
           notify(
-            'Você cadastrou com sucesso o seu usuário, para continuar, verifique o link que encaminhamos para você através do e-mail informado'
+            'You have successfully registered your user, to continue, check the link we forwarded to you via the email you provided'
           );
-          console.log('teste de sucesso ao cadastrar um usuario');
+
           history.push(`/auth/verify/${res.data._id}`);
         })
         .catch((error) =>

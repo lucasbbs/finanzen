@@ -54,16 +54,46 @@ import BrokerList from 'views/BrokersList';
 import BrokerDetails from 'views/BrokerDetails';
 import ArchiveBrokers from 'views/ArchiveBrokers';
 import Inflations from 'views/Inflations';
+import CountriesListInflations from 'views/CountriesListInflations';
+import BulkUpdaterInflations from 'views/BulkUpdaterInflations';
 
 const routes = [
   {
     isVisible: true,
+    collapse: true,
     isAdmin: true,
-    path: '/inflations',
     name: 'Inflations',
-    icon: 'tim-icons icon-chart-pie-36',
-    component: Inflations,
-    layout: '/admin',
+    state: 'inflationsCollapse',
+    icon: 'fas fa-comment-dollar',
+    views: [
+      {
+        isVisible: true,
+        isAdmin: true,
+        path: '/inflations',
+        name: 'Inflations Editor',
+        icon: 'fas fa-comment-dollar',
+        component: Inflations,
+        layout: '/admin',
+      },
+      {
+        isVisible: true,
+        isAdmin: true,
+        path: '/countrieslistinflations',
+        name: 'Countries List Inflations',
+        icon: 'fas fa-flag',
+        component: CountriesListInflations,
+        layout: '/admin',
+      },
+      {
+        isVisible: true,
+        isAdmin: true,
+        path: '/bulkinflations',
+        name: 'Bulk Inflations Editor',
+        icon: 'fas fa-comments-dollar',
+        component: BulkUpdaterInflations,
+        layout: '/admin',
+      },
+    ],
   },
   {
     isVisible: false,
@@ -88,6 +118,7 @@ const routes = [
     collapse: true,
     name: 'Investiments',
     icon: 'tim-icons icon-wallet-43',
+    state: 'investmentsCollapse',
     views: [
       {
         isVisible: true,

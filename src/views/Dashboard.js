@@ -17,7 +17,7 @@ import { countries } from './pages/countries';
 //prettier-ignore
 import {chartExample2,chartExample3,chartExample4,chartDefault} from 'variables/charts.js';
 //prettier-ignore
-import { currencyFormat, percentageFormat, decimalFormat, reverseFormatNumber } from '../helpers/functions';
+import { currencyFormat, percentageFormat, decimalFormat, reverseFormatNumber, geometricMeanReturnInvestments } from '../helpers/functions';
 // eslint-disable-next-line
 import TableTopInvestments from '../components/TableTopInvestments/TableTopInvestments';
 import TableSalaries from '../components/TableSalaries/TableSalaries';
@@ -50,7 +50,8 @@ Array.prototype.min = function () {
 };
 
 const Dashboard = () => {
-  const { accounts, updateAccounts } = useContext(GlobalContext);
+  const [loadedCurrencies, setLoadedCurrencies] = useState(false);
+  const { accounts, updateAccounts, getAccounts } = useContext(GlobalContext);
   const [equivalentAnnualRate, setEquivalentAnnualRate] = useState(
     '0,0000000000%'
   );
@@ -103,16 +104,15 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
+    if (Object.keys(accounts).length === 0) {
+      getAccounts();
+    }
     const getInvestments = async () => {
       const investment = await fetchAllInvestments('', login);
+      geometricMeanReturnInvestments(investment);
       const currentInvestments = await fetchInvestments('', login);
-      const inflation = await fetchInflationsFromLocalAPI(login.country); //fetchInflation();
+
       setInvestments(investment);
-      inflation.forEach((inf) => {
-        const dataPartes = inf.data.split('/');
-        inf.data = `${dataPartes[2]}-${dataPartes[1]}-${dataPartes[0]}`;
-        inf.valor = Number(inf.valor) / 100 + 1;
-      });
 
       if (dataForInvestmentsTopLocation.length === 0) {
         const topLocations = getTopInvestmentsByLocation(
@@ -146,13 +146,13 @@ const Dashboard = () => {
             } catch (error) {
               currencyExhangeRates[`${location}_${login.currency}`] = 1.5;
             }
-            const res = await axios.get(
-              `${Config.SERVER_ADDRESS}/api/exchanges/${location}_${login.currency}`,
-              config
-            );
-            currencyExhangeRates[
-              `${location}_${login.currency}`
-            ] = Object.values(res.data)[0];
+            // const res = await axios.get(
+            //   `${Config.SERVER_ADDRESS}/api/exchanges/${location}_${login.currency}`,
+            //   config
+            // );
+            // currencyExhangeRates[
+            //   `${location}_${login.currency}`
+            // ] = Object.values(res.data)[0];
             // mapdata[location[0]] = mapdata[location[0]] || 0;
             // mapdata[location[0]] += location[2] * Object.values(res.data)[0];
           } else {
@@ -174,18 +174,30 @@ const Dashboard = () => {
       }
 
       setIncomes(getDataForTheFirstChart(investment));
-      setInvestmentsToBeDisplayed(getDataForTheFirstChart(investment));
-      setTaxes(getDataForTotalTaxes(investment));
+      setInvestmentsToBeDisplayed(getDataForTheFirstChart(investments));
+      setTaxes(getDataForTotalTaxes(investments));
 
       setTaxesToBeDisplayed(
-        getDataForTotalTaxes(investment)[1].reduce((acc, curr) => acc + curr, 0)
+        getDataForTotalTaxes(investments)[1].reduce(
+          (acc, curr) => acc + curr,
+          0
+        )
       );
-      setInflations(inflation);
-      setInflation12Months(getDataForTheInflationChart(inflation));
-      setInflationsToBeDisplayed(getDataForTheInflationChart(inflation));
-      setInflationsForTheTotalPeriod(
-        getDataForTheInflationChartTotalPeriod(inflation)
-      );
+      if (inflations.length === 0) {
+        const inflation = await fetchInflationsFromLocalAPI(login.country); //fetchInflation();
+
+        inflation.forEach((inf) => {
+          const dataPartes = inf.data.split('/');
+          inf.data = `${dataPartes[2]}-${dataPartes[1]}-${dataPartes[0]}`;
+          inf.valor = Number(inf.valor) / 100 + 1;
+        });
+        setInflations(inflation);
+        setInflation12Months(getDataForTheInflationChart(inflation));
+        setInflationsToBeDisplayed(getDataForTheInflationChart(inflation));
+        setInflationsForTheTotalPeriod(
+          getDataForTheInflationChartTotalPeriod(inflation)
+        );
+      }
 
       const brokers = [
         ...new Set(
@@ -264,27 +276,33 @@ const Dashboard = () => {
   };
 
   let chart1_2_options = {
-    onClick: function (c, i) {
-      let e = i[0];
-      if (e !== undefined) {
-        console.log(e._index);
-        var x_value = this.data.labels[e._index];
-        var y_value = this.data.datasets[0].data[e._index];
-        console.log(x_value);
-        console.log(y_value);
-      }
-    },
+    onClick:
+      bigChartData === 'data1'
+        ? function (c, i) {
+            let e = i[0];
+            if (e !== undefined) {
+              console.log(e._index);
+              var x_value = this.data.labels[e._index];
+              var y_value = this.data.datasets[0].data[e._index];
+              console.log(x_value);
+              console.log(y_value);
+            }
+          }
+        : null,
     maintainAspectRatio: false,
     legend: {
       display: false,
       onHover: function (e) {
-        e.target.style.cursor = 'pointer';
+        e.target.style.cursor =
+          bigChartData === 'data1' ? 'pointer' : 'default';
       },
     },
     hover: {
       onHover: function (e) {
         var point = this.getElementAtEvent(e);
-        if (point.length) e.target.style.cursor = 'pointer';
+        if (point.length)
+          e.target.style.cursor =
+            bigChartData === 'data1' ? 'pointer' : 'default';
         else e.target.style.cursor = 'default';
       },
     },
@@ -1069,11 +1087,8 @@ const Dashboard = () => {
                                   <td>
                                     <div className='flag'>
                                       <img
-                                        alt='...'
-                                        src={
-                                          require(`assets/img/flags/${data[0]}.png`)
-                                            .default
-                                        }
+                                        alt={`${data[0]}`}
+                                        src={`/flags/${data[0]}.png`}
                                       />
                                     </div>
                                   </td>

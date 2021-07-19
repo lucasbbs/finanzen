@@ -33,6 +33,10 @@ const AppReducer = (state, action) => {
       };
     case 'INVESTMENTS_ERROR':
       return { ...state, error: action.payload };
+    case 'GET_ACCOUNTS':
+      return { ...state, accounts: action.payload };
+    case 'EMPTY_STATE':
+      return { ...state, accounts: action.payload };
     default:
       return state;
   }

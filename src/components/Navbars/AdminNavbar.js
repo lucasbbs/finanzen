@@ -345,11 +345,13 @@ const AdminNavbar = (props) => {
             </NavbarBrand>
           </div>
           <div className='account-class'>
-            {Object.entries(accounts).map((fund) => (
-              <div id={fund[0]} key={fund[0]}>
-                {currencyFormat(fund[1], fund[0])}
-              </div>
-            ))}
+            {accounts !== null
+              ? Object.entries(accounts).map((fund) => (
+                  <div id={fund[0]} key={fund[0]}>
+                    {currencyFormat(fund[1], fund[0])}
+                  </div>
+                ))
+              : null}
           </div>
           <button
             className='navbar-toggler'

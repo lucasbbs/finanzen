@@ -179,7 +179,7 @@ const BrokersList = () => {
               config
             )
             .then((res) => {
-              notify('Alterado com sucesso');
+              notify('Successfully updated');
               brokers.splice(
                 brokers.findIndex((invest) => invest._id === id),
                 1,
@@ -204,7 +204,7 @@ const BrokersList = () => {
       await axios
         .put(`${Config.SERVER_ADDRESS}/api/brokers/${id}`, brokerObj, config)
         .then((res) => {
-          notify('Alterado com sucesso');
+          notify('Successfully updated');
           brokers.splice(
             brokers.findIndex((invest) => invest._id === id),
             1,
@@ -229,7 +229,7 @@ const BrokersList = () => {
       .put(`${Config.SERVER_ADDRESS}/api/brokers/${id}/archive`, null, config)
       .then((res) => {
         success();
-        notify('Você arquivou com sucesso a corretora');
+        notify('You have successfully archived the broker');
         setBrokers(brokers.filter((brk) => brk._id !== id));
       })
       .catch((error) => {
@@ -254,7 +254,7 @@ const BrokersList = () => {
       .delete(`${Config.SERVER_ADDRESS}/api/brokers/${id}`, config)
       .then((res) => {
         success('delete');
-        notify('Você deletou com sucesso a corretora');
+        notify('You have successfully deleted the broker');
         setBrokers(brokers.filter((brk) => brk._id !== id));
       })
       .catch((error) => {

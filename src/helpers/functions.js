@@ -156,6 +156,58 @@ export const getGlobalAverageReturn = (investments, dateInput) => {
         currentAmounts.reduce((acc, curr) => acc + curr, 0)
     : 0;
 };
+
+export const geometricMeanReturnInvestments = (investments) => {
+  let dates = [];
+  const incomesarray = [];
+
+  investments.forEach((data) => {
+    dates = dates.concat([
+      ...data.incomes
+        .filter((key) => Object.values(key)[0].type === 'income')
+        .map((key) =>
+          Object.keys(key)[0].replace('income', '').replace('fund', '')
+        ),
+    ]);
+    incomesarray.push(...data.incomes.map((value) => Object.entries(value)[0]));
+  });
+
+  let datesSet = new Set(dates);
+  datesSet = [...datesSet].sort();
+  const returns = [];
+  for (const i of datesSet.keys()) {
+    const array = investments
+      .map((invest) => ({
+        initial_amount: invest.initial_amount,
+        incomes: invest.incomes.filter(
+          (date) =>
+            new Date(Object.keys(date)[0].replace('income', '')) <=
+            new Date(datesSet[i])
+        ),
+      }))
+      .filter((entry) => Object.entries(entry)[1][1].length !== 0)
+      .map((rate) => ({
+        current_amount:
+          rate.initial_amount +
+          rate.incomes.reduce(
+            (acc, curr) => acc + Object.values(curr)[0].value,
+            0
+          ),
+        rate:
+          Object.values(rate.incomes[rate.incomes.length - 1])[0].value /
+          (rate.initial_amount +
+            rate.incomes.reduce(
+              (acc, curr) => acc + Object.values(curr)[0].value,
+              0
+            )),
+      }));
+
+    returns.push(array);
+  }
+  //prettier-ignore
+  return returns.map((ret) => ret.reduce((acc, curr) => acc + curr.current_amount * curr.rate, 0) / ret.reduce((acc, curr) => acc + curr.current_amount, 0)).map((ret) => ret + 1).reduce((acc, curr) => acc * curr, 1) **(1 / returns.length)
+};
+
 //prettier-ignore
 export const getHowMuchMoneyToFinancialFreedom = (value, investments,currency,  exchangeRates) => {
 
@@ -173,7 +225,6 @@ export const getDataForTheFirstChart = (
   // var isInitialUndefined = false;
   let dates = [];
   const incomesarray = [];
-
   income.forEach((data) => {
     dates = dates.concat([
       ...data.incomes

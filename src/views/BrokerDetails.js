@@ -112,7 +112,7 @@ const BrokerDetails = () => {
                 config
               )
               .then((res) => {
-                notify('Corretora cadastrada com sucesso');
+                notify('Successfully registered broker');
               })
               .catch((error) =>
                 notify(
@@ -150,7 +150,7 @@ const BrokerDetails = () => {
           config
         )
         .then((res) => {
-          notify('Corretora cadastrada com sucesso');
+          notify('Successfully registered broker');
         })
         .catch((error) =>
           notify(

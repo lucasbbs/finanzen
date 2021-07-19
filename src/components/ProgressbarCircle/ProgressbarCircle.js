@@ -61,9 +61,7 @@ const ProgressbarCircle = ({
       )
       .then((response) => {
         if (id === isTheLastOne) {
-          notify(
-            `Você efetuou com sucesso a atualização em lote dos seus investimentos`
-          );
+          notify(`You have successfully bulk updated your investments`);
         }
       })
       .catch((err) => {

@@ -35,7 +35,7 @@ import { Row } from 'reactstrap';
 var ps;
 
 const Admin = (props) => {
-  const [activeColor, setActiveColor] = React.useState('blue');
+  const [activeColor] = React.useState('blue');
   const [sidebarMini, setSidebarMini] = React.useState(true);
   const [opacity, setOpacity] = React.useState(0);
   const [sidebarOpened, setSidebarOpened] = React.useState(false);
@@ -149,9 +149,9 @@ const Admin = (props) => {
       </Row>
     );
   };
-  const handleActiveClick = (color) => {
-    setActiveColor(color);
-  };
+  // const handleActiveClick = (color) => {
+  //   setActiveColor(color);
+  // };
   const handleMiniClick = () => {
     let notifyMessage = 'Sidebar mini ';
     if (document.body.classList.contains('sidebar-mini')) {

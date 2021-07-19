@@ -1,7 +1,8 @@
+import { percentageFormat } from 'helpers/functions';
 import React from 'react';
 import styles from '../../assets/scss/black-dashboard-pro-react/MyCustomCSS/loading.module.scss';
 
-const Spinner = () => {
+const Spinner = ({ percentage }) => {
   return (
     <>
       <main>
@@ -244,6 +245,11 @@ const Spinner = () => {
               ].join(' ')}
             ></div>
           </div>
+          {percentage && (
+            <h1 className='mt-3' style={{ color: 'var(--primary)' }}>
+              {percentageFormat(percentage, 2)}
+            </h1>
+          )}
         </div>
       </main>
     </>
@@ -251,3 +257,7 @@ const Spinner = () => {
 };
 
 export default Spinner;
+
+Spinner.defaultProps = {
+  percentage: undefined,
+};
