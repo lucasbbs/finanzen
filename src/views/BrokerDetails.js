@@ -237,7 +237,7 @@ const BrokerDetails = () => {
                         }}
                       >
                         <option value='' disabled={true}>
-                          Selecione uma opção
+                          Select an option
                         </option>
                         {Object.entries(countries).map((country) => (
                           <option
@@ -259,7 +259,7 @@ const BrokerDetails = () => {
                         onChange={(e) => setCurrency(e.target.value)}
                       >
                         <option value='' disabled={true}>
-                          Selecione uma opção
+                          Select an option
                         </option>
                         {Object.entries(currencies).map((currency) => (
                           <option key={currency[0]} value={currency[0]}>

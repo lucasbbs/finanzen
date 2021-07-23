@@ -113,7 +113,7 @@ const Verify = () => {
         style={{ width: '100vw', height: '95vh' }}
       >
         <div className='container'>
-          <h2 style={{ color: 'black' }}>Verify you account</h2>
+          <h2 style={{ color: 'black' }}>Verify your account</h2>
           <p style={{ color: 'black' }}>
             We emailed you in the mail box which you have informed <br /> Enter
             the code below to confirm your email address.

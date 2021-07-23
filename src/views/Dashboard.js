@@ -523,7 +523,6 @@ const Dashboard = () => {
               <Col xs='12'>
                 <h1>
                   <i className='tim-icons icon-chart-pie-36'></i> Dashboard
-                  <i className='icomoon-100'></i>
                 </h1>
                 <Card className='card-chart'>
                   <CardHeader>

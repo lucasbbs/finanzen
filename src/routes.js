@@ -51,6 +51,8 @@ import ArchiveInvestments from 'views/ArchiveInvestments';
 import Login from 'views/Login';
 import Verify from 'views/Verify';
 import BrokerList from 'views/BrokersList';
+import AccountList from 'views/AccountList';
+import AccountDetails from 'views/AccountDetails';
 import BrokerDetails from 'views/BrokerDetails';
 import ArchiveBrokers from 'views/ArchiveBrokers';
 import Inflations from 'views/Inflations';
@@ -112,7 +114,39 @@ const routes = [
     component: Dashboard,
     layout: '/admin',
   },
-
+  {
+    isVisible: true,
+    collapse: true,
+    name: 'Accounts',
+    icon: 'icomoon-480',
+    state: 'accountsCollapse',
+    views: [
+      {
+        isVisible: true,
+        path: '/accounts',
+        name: 'Accounts List',
+        icon: 'icomoon-480',
+        component: AccountList,
+        layout: '/admin',
+      },
+      {
+        isVisible: true,
+        path: '/archive-investments',
+        name: 'Archive Accounts',
+        icon: 'icomoon-484',
+        component: ArchiveInvestments,
+        layout: '/admin',
+      },
+      {
+        isVisible: true,
+        path: '/account/:id',
+        name: 'New Account',
+        icon: 'fas fa-dollar-sign',
+        component: AccountDetails,
+        layout: '/admin',
+      },
+    ],
+  },
   {
     isVisible: true,
     collapse: true,

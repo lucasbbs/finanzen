@@ -666,3 +666,16 @@ button.react-calendar__navigation__arrow {
 .bg-white > div > div > div {
   color: #222a42;
 }
+.anotherClassNameForButtons {
+  color: var(--primary) !important;
+  background: #000 !important;
+}
+.anotherClassNameForButtons:active {
+  color: var(--primary) !important;
+  background: #000 !important;
+}
+
+.anotherClassNameForButtons:focus {
+  color: var(--primary) !important;
+  background: #000 !important;
+}
