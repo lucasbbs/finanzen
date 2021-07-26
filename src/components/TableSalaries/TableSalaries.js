@@ -49,7 +49,11 @@ const TableSalaries = ({ handleCurrentMoney }) => {
         },
       };
       await axios
-        .put(`${Config.SERVER_ADDRESS}/api/salary/${id}`, null, config)
+        .put(
+          `${Config.SERVER_ADDRESS}/api/salary/${id}`,
+          { salary: removeSalary.salary },
+          config
+        )
         .then(async (res) => {
           setSalaries(filtered);
           handleCurrentMoney(removeSalary.salary);

@@ -10,7 +10,7 @@ import { Line, Bar, Pie } from 'react-chartjs-2';
 import { VectorMap } from 'react-jvectormap';
 // reactstrap components
 //prettier-ignore
-import {Button,ButtonGroup,Card,CardHeader,CardBody,CardFooter,CardTitle,DropdownToggle,DropdownMenu,DropdownItem,UncontrolledDropdown,Label,FormGroup,Input,Progress,Table,Row,Col,UncontrolledTooltip,Form,} from 'reactstrap';
+import {Button,ButtonGroup,Card,CardHeader,CardBody,CardFooter,CardTitle,DropdownToggle,DropdownMenu,DropdownItem,UncontrolledDropdown,Label,FormGroup,Input,Table,Row,Col,Form,Modal, ModalHeader, ModalBody, ModalFooter, Collapse} from 'reactstrap';
 import { countries } from './pages/countries';
 
 // core components
@@ -37,6 +37,7 @@ import Spinner from '../components/Spinner/Spinner';
 import axios from 'axios';
 import Config from '../config.json';
 import { GlobalContext } from 'context/GlobalState';
+import CollapsibleItem from 'components/CollapsibleItem/CollapsibleItem';
 // import { Link } from 'react-router-dom';
 // import { locale } from 'moment';
 
@@ -50,7 +51,7 @@ Array.prototype.min = function () {
 };
 
 const Dashboard = () => {
-  const [loadedCurrencies, setLoadedCurrencies] = useState(false);
+  // const [loadedCurrencies, setLoadedCurrencies] = useState(false);
   const { accounts, updateAccounts, getAccounts } = useContext(GlobalContext);
   const [equivalentAnnualRate, setEquivalentAnnualRate] = useState(
     '0,0000000000%'
@@ -60,6 +61,7 @@ const Dashboard = () => {
   );
   const [currencyExhangeRates, setCurrencyExhangeRates] = useState({});
   const [mapData, setMapData] = useState({});
+  const [transactions, setTransactions] = useState([]);
   const [
     dataForInvestmentsTopLocation,
     setdataForInvestmentsTopLocation,
@@ -104,6 +106,18 @@ const Dashboard = () => {
   };
 
   useEffect(() => {
+    const getTransactions = async () => {
+      const config = { headers: { Authorization: `Bearer ${login.token}` } };
+      const res = await axios.get(
+        `${Config.SERVER_ADDRESS}/api/transactions`,
+        config
+      );
+      setTransactions(res.data.transactions);
+    };
+    getTransactions();
+  }, []);
+  useEffect(() => {
+    console.log(Object.keys(accounts));
     if (Object.keys(accounts).length === 0) {
       getAccounts();
     }
@@ -126,10 +140,10 @@ const Dashboard = () => {
         const locationsForLoop = new Set();
         topLocations.forEach((location) => locationsForLoop.add(location[1]));
 
-        Object.keys(accounts).forEach((location) =>
-          locationsForLoop.add(location)
+        Object.values(accounts).forEach((location) =>
+          locationsForLoop.add(location.currency)
         );
-
+        console.log(locationsForLoop);
         for (const location of locationsForLoop) {
           if (
             location !== login.currency &&
@@ -490,7 +504,7 @@ const Dashboard = () => {
     await axios
       .put(
         `${Config.SERVER_ADDRESS}/api/users/${login._id}`,
-        { fundsToInvest: accounts },
+        { fundsToInvest: accounts, salary: salary },
         config
       )
       .then((res) => {
@@ -502,13 +516,19 @@ const Dashboard = () => {
       });
   };
 
-  const handleTotalMoney = (object) => {
+  const handleTotalMoney = (array) => {
     let total = 0;
-    for (const currency of Object.entries(object)) {
+    console.log(array);
+    for (const account of array) {
       total +=
-        currency[1] * currencyExhangeRates[`${currency[0]}_${login.currency}`];
+        (account['initialAmmount'] + account['balance']) *
+        currencyExhangeRates[`${account['currency']}_${login.currency}`];
     }
     return total;
+  };
+
+  const handleShowAccountStatements = () => {
+    console.log(accounts);
   };
   return (
     <>
@@ -519,6 +539,56 @@ const Dashboard = () => {
           </>
         ) : (
           <>
+            <Modal
+              isOpen={true}
+              modalClassName='modal-black'
+              scrollable={true}
+              style={{
+                position: 'fixed',
+                left: '50%',
+                top: '40%',
+                maxHeight: '600px',
+                minWidth: '500px',
+                background:
+                  'linear-gradient(180deg,#222a42 0,#1d253b)!important',
+                transform: 'translate(-50%, -50%)',
+              }}
+            >
+              <ModalHeader></ModalHeader>
+              <ModalBody>
+                <Card>
+                  <CardHeader>
+                    <h5 className='card-category'>Collpase example</h5>
+                    <CardTitle tag='h3'>Collapsible Accordion</CardTitle>
+                  </CardHeader>
+
+                  <div
+                    aria-multiselectable={true}
+                    className='card-collapse'
+                    id='accordion'
+                    role='tablist'
+                  >
+                    {accounts.map((account) => (
+                      <CollapsibleItem
+                        id={account._id}
+                        transactions={transactions.filter(
+                          (transact) =>
+                            transact.dueToAccount === account._id ||
+                            transact.dueFromAccount?._id === account._id
+                        )}
+                        key={account._id}
+                        name={account.name}
+                        currency={account.currency}
+                        initialAmmount={account.initialAmmount}
+                        balance={account.balance}
+                        icon={account.icon}
+                      />
+                    ))}
+                  </div>
+                </Card>
+              </ModalBody>
+              <ModalFooter></ModalFooter>
+            </Modal>
             <Row>
               <Col xs='12'>
                 <h1>
@@ -732,24 +802,32 @@ const Dashboard = () => {
               </Col>
               <Col lg='3' md='6'>
                 <Card className='card-stats'>
-                  <CardBody>
+                  <CardBody style={{ paddingBottom: '12px' }}>
                     <Row>
-                      <Col xs='5'>
+                      <Col xs='2'>
                         <div className='info-icon text-center icon-success'>
                           <i className='tim-icons icon-money-coins' />
                         </div>
                       </Col>
-                      <Col xs='7'>
+                      <Col xs='10'>
                         <div className='numbers'>
                           <p className='card-category'>
                             Your current funds to invest
                           </p>
-                          <CardTitle tag='h3'>
+                          <CardTitle tag='h3' style={{ marginBottom: 0 }}>
                             {currencyFormat(
                               handleTotalMoney(accounts),
                               login.currency
                             )}
                           </CardTitle>
+                          <Button
+                            className='btn-link'
+                            color='primary'
+                            style={{ float: 'right', padding: 0, margin: 0 }}
+                            onClick={handleShowAccountStatements}
+                          >
+                            Show account statements
+                          </Button>
                         </div>
                       </Col>
                     </Row>

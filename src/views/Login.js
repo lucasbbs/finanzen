@@ -148,7 +148,7 @@ const Login = ({ location }) => {
         .then((res) => {
           // setLogin(JSON.stringify(res.data));
           notify(
-            'You have successfully registered your user, to continue, check the link we forwarded to you via the email you provided'
+            'You have successfully registered your user, to continue, check the link we forwarded to you through the email you provided'
           );
 
           history.push(`/auth/verify/${res.data._id}`);

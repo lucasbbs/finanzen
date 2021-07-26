@@ -7,9 +7,7 @@ import Config from '../config.json';
 
 const initialState = {
   investments: [],
-  accounts: localStorage.getItem('userInfo')
-    ? JSON.parse(localStorage.getItem('userInfo')).fundsToInvest
-    : {},
+  accounts: [],
   error: null,
   loading: true,
   hasLoaded: false,
@@ -89,6 +87,23 @@ export const GlobalProvider = ({ children }) => {
     });
   };
 
+  const getAccounts = async () => {
+    try {
+      const config = {
+        headers: {
+          Authorization: `Bearer ${login.token}`,
+        },
+      };
+
+      const res = await axios.get(
+        `${Config.SERVER_ADDRESS}/api/accounts`,
+        config
+      );
+      dispatch({ type: 'GET_ACCOUNTS', payload: res.data.accounts });
+    } catch (err) {
+      dispatch({ type: 'INVESTMENTS_ERROR', payload: err.response.data.error });
+    }
+  };
   const updateAccounts = (accounts) => {
     dispatch({
       type: 'UPDATE_ACCOUNTS',
@@ -96,12 +111,12 @@ export const GlobalProvider = ({ children }) => {
     });
   };
 
-  const getAccounts = () => {
-    dispatch({
-      type: 'GET_ACCOUNTS',
-      payload: JSON.parse(localStorage.getItem('userInfo')).fundsToInvest,
-    });
-  };
+  // const getAccounts = () => {
+  //   dispatch({
+  //     type: 'GET_ACCOUNTS',
+  //     payload: JSON.parse(localStorage.getItem('userInfo')).fundsToInvest,
+  //   });
+  // };
 
   const emptyState = () => {
     dispatch({

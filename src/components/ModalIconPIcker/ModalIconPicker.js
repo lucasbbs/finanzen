@@ -29,8 +29,8 @@ const ModalIconPicker = ({ modalIcons, setModalIcons, setIcon, setIconId }) => {
   );
   return (
     <Modal
-      scrollable={true}
       modalClassName='modal-black'
+      scrollable={true}
       style={{
         position: 'fixed',
         left: '50%',

@@ -47,7 +47,7 @@ import { fetchAllInvestments } from '../../services/Investments';
 import MyTooltip from 'components/Tooltip/MyTooltip';
 import { GlobalContext } from 'context/GlobalState';
 const AdminNavbar = (props) => {
-  const { accounts } = useContext(GlobalContext);
+  const { accounts, getAccounts } = useContext(GlobalContext);
   const [name] = useState(JSON.parse(localStorage.getItem('userInfo')).name);
   // const getName = (input) => {
   //   return input.split(' ').slice(0, -1).join(' ');
@@ -70,6 +70,7 @@ const AdminNavbar = (props) => {
       ? JSON.parse(localStorage.getItem('userInfo'))
       : null
   );
+  console.log(accounts);
 
   const handleAsyncFunction = async () => {
     const investments = await fetchAllInvestments('', login);
@@ -87,8 +88,12 @@ const AdminNavbar = (props) => {
       setColor('navbar-transparent');
     }
   };
-
+  console.log(accounts);
   useEffect(() => {
+    console.log(Object.keys(accounts));
+    if (Object.keys(accounts).length === 0) {
+      getAccounts();
+    }
     const filteredInvestments =
       filter.trim() === ''
         ? [...investments]
@@ -345,10 +350,20 @@ const AdminNavbar = (props) => {
             </NavbarBrand>
           </div>
           <div className='account-class'>
-            {accounts !== null
-              ? Object.entries(accounts).map((fund) => (
-                  <div id={fund[0]} key={fund[0]}>
-                    {currencyFormat(fund[1], fund[0])}
+            {Object.keys(accounts).length !== 0
+              ? accounts.map((fund) => (
+                  <div
+                    style={{ marginBottom: '5px' }}
+                    id={fund._id}
+                    key={fund._id}
+                  >
+                    <h6 style={{ marginBottom: 0 }}>{fund.name}</h6>
+                    <span>
+                      {currencyFormat(
+                        fund.initialAmmount + fund.balance,
+                        fund.currency
+                      )}
+                    </span>
                   </div>
                 ))
               : null}

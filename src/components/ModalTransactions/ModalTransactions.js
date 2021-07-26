@@ -1,7 +1,6 @@
 import axios from 'axios';
-import { id } from 'date-fns/locale';
 import { reverseFormatNumber } from 'helpers/functions';
-import { useEffect, useRef, useState } from 'react';
+import { useContext, useEffect, useRef, useState } from 'react';
 import NumberFormat from 'react-number-format';
 import {
   Button,
@@ -16,6 +15,7 @@ import {
 import { currencies } from 'views/pages/currencies';
 import Config from '../../config.json';
 import NotificationAlert from 'react-notification-alert';
+import { GlobalContext } from 'context/GlobalState';
 
 const ModalTransactions = ({
   selected,
@@ -27,11 +27,30 @@ const ModalTransactions = ({
   id,
   setTransactions,
   transactions,
+  category,
+  setCategory,
+  categoryId,
+  setCategoryId,
+  account,
+  setAccount,
+  accountId,
+  setAccountId,
+  observation,
+  setObservation,
+  amount,
+  setAmount,
+  setAccountAmount,
+  accountAmount,
+  transactionId,
+  formerAmount,
+  setFormerAmount,
 }) => {
-  const [categoryId, setCategoryId] = useState('');
-  const [observation, setObservation] = useState('');
-  const [amount, setAmount] = useState(0);
-  const [category, setCategory] = useState('');
+  const {
+    // accounts: accountsFromContext,
+    // updateAccounts,
+    getAccounts,
+  } = useContext(GlobalContext);
+  const [accounts, setAccounts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [categoriesToBeDisplayes, setCategoriesToBeDisplayes] = useState([]);
   useEffect(() => {
@@ -41,16 +60,21 @@ const ModalTransactions = ({
   }, [categories, selected]);
 
   useEffect(() => {
-    const getCategories = async () => {
+    const getCategoriesAndAccounts = async () => {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       const categoriesFromTheAPI = await axios.get(
         `${Config.SERVER_ADDRESS}/api/categories`,
         config
       );
       setCategories(categoriesFromTheAPI.data);
+      const accountsFromTheAPI = await axios.get(
+        `${Config.SERVER_ADDRESS}/api/accounts`,
+        config
+      );
+      setAccounts(accountsFromTheAPI.data.accounts);
     };
 
-    getCategories();
+    getCategoriesAndAccounts();
   }, [token]);
   const closeBtn = (
     <button color='danger' className='close' onClick={toggleModalTransactions}>
@@ -58,27 +82,93 @@ const ModalTransactions = ({
     </button>
   );
   const handleAddTransaction = async (objTransaction) => {
-    console.log(objTransaction);
     const config = { headers: { Authorization: `Bearer ${token}` } };
-    await axios
-      .post(`${Config.SERVER_ADDRESS}/api/transactions`, objTransaction, config)
-      .then((res) => {
-        notify('You have successfully registered a new transaction');
-        const objCategory = categories.find((cat) => cat._id === categoryId);
+    if (transactionId === '') {
+      await axios
+        .post(
+          `${Config.SERVER_ADDRESS}/api/transactions`,
+          objTransaction,
+          config
+        )
+        .then((res) => {
+          notify('You have successfully registered a new transaction');
 
-        res.data['category'] = objCategory;
-        setTransactions([...transactions, res.data]);
-        toggleModalTransactions();
-      })
-      .catch((error) => {
-        console.error(error);
-        notify(
-          error.response && error.response.data.message
-            ? error.response.data.message
-            : error.message,
-          'danger'
-        );
-      });
+          if (res.data.type === 'Transfer') {
+            const objDueFromAccount = accounts.find(
+              (account) => account._id === res.data.dueFromAccount
+            );
+            res.data['dueFromAccount'] = objDueFromAccount;
+          } else {
+            const objCategory = categories.find(
+              (cat) => cat._id === categoryId
+            );
+
+            res.data['category'] = objCategory;
+          }
+          setTransactions([...transactions, res.data]);
+          toggleModalTransactions();
+
+          if (res.data.type === 'Revenue') {
+            setAccountAmount(accountAmount + res.data.ammount);
+          } else if (res.data.type === 'Expense') {
+            setAccountAmount(accountAmount - res.data.ammount);
+          } else {
+            setAccountAmount(accountAmount - res.data.ammount);
+          }
+
+          getAccounts();
+        })
+        .catch((error) => {
+          console.error(error);
+          notify(
+            error.response && error.response.data.message
+              ? error.response.data.message
+              : error.message,
+            'danger'
+          );
+          toggleModalTransactions();
+        });
+    } else {
+      await axios
+        .put(
+          `${Config.SERVER_ADDRESS}/api/transactions/${transactionId}`,
+          objTransaction,
+          config
+        )
+        .then((res) => {
+          notify('You have successfully registered a new transaction');
+          if (res.data.type === 'Transfer') {
+            const objDueFromAccount = accounts.find(
+              (account) => account._id === res.data.dueFromAccount
+            );
+            res.data['dueFromAccount'] = objDueFromAccount;
+          } else {
+            const objCategory = categories.find(
+              (cat) => cat._id === categoryId
+            );
+
+            res.data['category'] = objCategory;
+          }
+          transactions.splice(
+            transactions.findIndex((trans) => trans._id === res.data._id),
+            1,
+            res.data
+          );
+          setTransactions(transactions);
+          toggleModalTransactions();
+          getAccounts();
+        })
+        .catch((error) => {
+          console.error(error);
+          notify(
+            error.response && error.response.data.message
+              ? error.response.data.message
+              : error.message,
+            'danger'
+          );
+          toggleModalTransactions();
+        });
+    }
   };
   const notificationAlertRef = useRef(null);
   const notify = (message, type = 'success', place = 'tc') => {
@@ -119,25 +209,74 @@ const ModalTransactions = ({
             >
               Expense
             </Button>
+            <Button
+              color='primary'
+              onClick={() => {
+                setSelected('Transfer');
+                setCategory(
+                  categories.find((cat) => cat.type === 'Transfer').name
+                );
+                setCategoryId(
+                  categories.find((cat) => cat.type === 'Transfer')._id
+                );
+              }}
+              active={selected === 'Transfer'}
+            >
+              Transfer
+            </Button>
           </ButtonGroup>
 
-          <Input
-            className='mt-3'
-            style={{ backgroundColor: '#2b3553' }}
-            type='select'
-            value={category}
-            onChange={(e) => {
-              setCategory(e.target.value);
-              setCategoryId(e.target[e.target.selectedIndex].id);
-            }}
-          >
-            <option value=''>Select an option</option>
-            {categoriesToBeDisplayes.map((cat) => (
-              <option id={cat._id} key={cat._id}>
-                {cat.name}
-              </option>
-            ))}
-          </Input>
+          {selected === 'Transfer' ? (
+            <>
+              <Label className='mt-3' htmlFor='destinationAccountId'>
+                Destination Account
+              </Label>
+              <Input
+                type='select'
+                style={{ backgroundColor: '#2b3553' }}
+                id='destinationAccountId'
+                value={account}
+                onChange={(e) => {
+                  setAccount(e.target.value);
+                  setAccountId(e.target[e.target.selectedIndex].id);
+                }}
+              >
+                <option value=''>Select an option</option>
+                {accounts
+                  .filter((account) => account._id !== id)
+                  .map((account) => (
+                    <option id={account._id} key={account._id}>
+                      {account.name}
+                    </option>
+                  ))}
+              </Input>
+            </>
+          ) : (
+            <>
+              <Label className='mt-3' htmlFor='categorySelectorId'>
+                Category
+              </Label>
+              <Input
+                id='categorySelectorId'
+                style={{ backgroundColor: '#2b3553' }}
+                type='select'
+                value={category}
+                onChange={(e) => {
+                  setAccount('');
+                  setAccountId('');
+                  setCategory(e.target.value);
+                  setCategoryId(e.target[e.target.selectedIndex].id);
+                }}
+              >
+                <option value=''>Select an option</option>
+                {categoriesToBeDisplayes.map((cat) => (
+                  <option id={cat._id} key={cat._id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </Input>
+            </>
+          )}
           <Label className='mt-3' htmlFor='exampleText'>
             Observation
           </Label>
@@ -149,10 +288,11 @@ const ModalTransactions = ({
             name='text'
             id='exampleText'
           />
-          <Label className='mt-3' htmlFor='exampleText'>
+          <Label className='mt-3' htmlFor='valueTransactionId'>
             Value
           </Label>
           <NumberFormat
+            id='valueTransactionId'
             style={{ backgroundColor: '#2b3553' }}
             onChange={(e) => {
               // setHasChanged(true);
@@ -186,8 +326,10 @@ const ModalTransactions = ({
               handleAddTransaction({
                 type: selected,
                 dueToAccount: id,
+                dueFromAccount: accountId ? accountId : undefined,
                 category: categoryId,
                 ammount: amount,
+                formerAmount: formerAmount,
                 observation,
               })
             }
