@@ -166,37 +166,37 @@ const Dashboard = () => {
         );
         console.log(Array.from(locationsForLoop));
 
-        for (const location of locationsForLoop) {
-          if (
-            location !== login.currency &&
-            !(`${location}_${login.currency}` in currencyExhangeRates)
-          ) {
-            try {
-              const res = await axios.get(
-                `${Config.SERVER_ADDRESS}/api/exchanges/${location}_${login.currency}`,
-                config
-              );
-              currencyExhangeRates[
-                `${location}_${login.currency}`
-              ] = Object.values(res.data)[0];
-            } catch (error) {
-              currencyExhangeRates[`${location}_${login.currency}`] = 1.5;
-            }
-            // const res = await axios.get(
-            //   `${Config.SERVER_ADDRESS}/api/exchanges/${location}_${login.currency}`,
-            //   config
-            // );
-            // currencyExhangeRates[
-            //   `${location}_${login.currency}`
-            // ] = Object.values(res.data)[0];
-            // mapdata[location[0]] = mapdata[location[0]] || 0;
-            // mapdata[location[0]] += location[2] * Object.values(res.data)[0];
-          } else {
-            if (!(`${location}_${login.currency}` in currencyExhangeRates)) {
-              currencyExhangeRates[`${location}_${login.currency}`] = 1;
-            }
-          }
+        // for (const location of locationsForLoop) {
+        // if (
+        //   location !== login.currency &&
+        //   !(`${location}_${login.currency}` in currencyExhangeRates)
+        // ) {
+        // try {
+        const res = await axios.post(
+          `${Config.SERVER_ADDRESS}/api/exchanges/`,
+          {
+            currencies: Array.from(currencyExhangeRates),
+            localCurrency: login.currency,
+          },
+          config
+        );
+        setCurrencyExhangeRates(res.data);
+
+        // } catch (error) {
+        //   currencyExhangeRates[`${location}_${login.currency}`] = 1.5;
+        // }
+        for (const location of Array.from(currencyExhangeRates)) {
+          console.log(location);
+          mapdata[location[0]] = mapdata[location[0]] || 0;
+          mapdata[location[0]] += location[2] * Object.values(location)[0];
         }
+        console.log(topLocations);
+        // } else {
+        //   if (!(`${location}_${login.currency}` in currencyExhangeRates)) {
+        //     currencyExhangeRates[`${location}_${login.currency}`] = 1;
+        //   }
+        // }
+        // }
         topLocations.sort((a, b) => b[2] - a[2]);
         setdataForInvestmentsTopLocation(topLocations);
         const mapdata = {};
