@@ -26,11 +26,10 @@ const Uploader = () => {
   );
   const [hasChosdenDate, setHasChosdenDate] = useState(false);
   const [submitCount, setSubmiCount] = useState(0);
+  const [counter, setCounter] = useState(0);
 
   const [investmentsBulkUpdate, setInvestmentsBulkUpdate] = useState([]);
   const [incomesArray] = useState({});
-
-  console.log(submitCount + 1);
 
   const setCounting = () => {
     setSubmiCount(submitCount + 1);
@@ -38,8 +37,11 @@ const Uploader = () => {
 
   useEffect(() => {
     const handlePromise = async () => {
+      setUploaded(true);
+      let i = 0;
       for (const income of investmentsBulkUpdate) {
-        setUploaded(true);
+        setCounter(i);
+        i++;
         const investment = await fetchInvestments(income.id, login);
 
         let incomeObject = {};
@@ -79,10 +81,9 @@ const Uploader = () => {
       investmentsBulkUpdate.length !== 0
     ) {
       notify(
-        `You have successfully bulk updated your investments for the month of ${date}`
+        `${submitCount} You have successfully bulk updated your investments for the month of ${date}`
       );
     }
-    console.log(investmentsBulkUpdate);
     // eslint-disable-next-line
   }, [investmentsBulkUpdate, submitCount]);
   const onSubmit = async (e) => {
@@ -112,12 +113,16 @@ const Uploader = () => {
         setFile(res.fileName);
       })
       .catch((error) => {
-        notify(
-          error.response && error.response.data.message
-            ? error.response.data.message
-            : error.message,
-          'danger'
-        );
+        console.log(error);
+        // notify(
+        //   // error.response && error.response.data.message
+        //   //   ? error.response.data.message
+        //   //   : error.message
+        //   //   ? error.message
+        //   //   :
+        //   'Please verify if you have filled all of the required fields for the incomes',
+        //   'danger'
+        // );
         setUploadPercentage(0);
       });
   };
@@ -151,7 +156,9 @@ const Uploader = () => {
         </h1>
         <Row>
           <div className='card flex-row text-center justify-content-center'>
-            {uploading ? <Spinner /> : null}
+            {uploading ? (
+              <Spinner percentage={counter / investmentsBulkUpdate.length} />
+            ) : null}
 
             <h2
               className='text-center'
@@ -240,6 +247,7 @@ const Uploader = () => {
                     >
                       <div>
                         <NumberFormat
+                          disabled={uploading}
                           type='text'
                           placeholder='R$0.00'
                           thousandSeparator={'.'}
@@ -247,7 +255,11 @@ const Uploader = () => {
                           prefix={'R$'}
                           customInput={Input}
                           id={'selector' + invest.id}
-                          defaultValue={Number(invest[date].toFixed(2))}
+                          defaultValue={
+                            invest[date]
+                              ? Number(invest[date].toFixed(2))
+                              : null
+                          }
                           onChange={(e) => {
                             const obj = {};
                             obj[
@@ -286,6 +298,7 @@ const Uploader = () => {
             </Table>
             <Row className='justify-content-center mt-4'>
               <Button
+                disabled={uploading}
                 color='success'
                 className='text-center'
                 onClick={() => submitHandler()}

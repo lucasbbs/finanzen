@@ -16,6 +16,8 @@ import {
   ModalFooter,
   Input,
   Label,
+  FormGroup,
+  Form,
 } from 'reactstrap';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
@@ -34,7 +36,9 @@ import { GlobalContext } from 'context/GlobalState';
 /*eslint-disable*/
 const InvestmentsList = () => {
   const { accounts, updateAccounts } = useContext(GlobalContext);
-
+  const [typeOperation, setTypeOperation] = useState('archive');
+  const [hasSelectedAccount, setHasSelectedAccount] = useState(false);
+  const [account, setAccount] = useState('');
   const [currency, setCurrency] = useState('');
   const [id, setId] = useState('');
   const [name, setName] = useState('');
@@ -53,6 +57,7 @@ const InvestmentsList = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [investment, setInvestment] = useState([]);
   const [modal, setModal] = useState(false);
+  const [modalToSelectAccount, setModalToSelectAccount] = useState(false);
   const [login] = useState(
     localStorage.getItem('userInfo')
       ? JSON.parse(localStorage.getItem('userInfo'))
@@ -149,7 +154,12 @@ const InvestmentsList = () => {
       ></ReactBSAlert>
     );
   };
-  const warningWithConfirmAndCancelMessage = (id, type = 'archive') => {
+  const warningWithConfirmAndCancelMessage = (
+    id,
+    type = 'archive',
+    currency,
+    accountId
+  ) => {
     setAlert(
       <ReactBSAlert
         warning
@@ -157,12 +167,20 @@ const InvestmentsList = () => {
         title='Are you sure?'
         onConfirm={() => {
           if (type === 'archive') {
-            handleArchive(id);
+            setTypeOperation('archive');
+            hideAlert();
+            toggleToSelectAccount();
           } else {
-            handleDelete(id);
+            setTypeOperation('delete');
+            hideAlert();
+            toggleToSelectAccount();
           }
+          setHasSelectedAccount(false);
         }}
-        onCancel={() => cancel()}
+        onCancel={() => {
+          setAccount('');
+          cancel();
+        }}
         confirmBtnBsStyle='success'
         cancelBtnBsStyle='danger'
         confirmBtnText={type === 'archive' ? 'Yes, archive!' : 'Yes, delete!'}
@@ -173,18 +191,6 @@ const InvestmentsList = () => {
         {type === 'archive'
           ? 'Do you want to archive this investment?'
           : 'You will not be able to restore the data for your investment again'}
-        {/* <FormGroup check>
-          <Label check>
-            <Input
-              name='optionCheckboxes'
-              type='checkbox'
-              // checked={hasRegisteredInvest}
-              // onChange={(e) => setHasRegisteredInvest(e.target.checked)}
-            />
-            <span className='form-check-sign' />
-            Have loaded all previous investments
-          </Label>
-        </FormGroup> */}
       </ReactBSAlert>
     );
   };
@@ -251,7 +257,10 @@ const InvestmentsList = () => {
     };
     // console.log(`Bearer ${login.token}`);
     const answer = await axios
-      .delete(`${Config.SERVER_ADDRESS}/api/investments/${id}`, config)
+      .delete(`${Config.SERVER_ADDRESS}/api/investments/${id}`, {
+        ...config,
+        data: { accountSelected: account },
+      })
       .then(async (response) => {
         success('delete');
         notify(`Investment deleted successfully`);
@@ -284,12 +293,15 @@ const InvestmentsList = () => {
           'danger'
         );
       });
+    setId('');
   };
   const hideAlert = () => {
     setAlert(null);
   };
 
   const toggle = () => setModal(!modal);
+  const toggleToSelectAccount = () =>
+    setModalToSelectAccount(!modalToSelectAccount);
   const closeBtn = (
     <button color='danger' className='close' onClick={toggle}>
       <span style={{ color: 'white' }}>×</span>
@@ -301,29 +313,32 @@ const InvestmentsList = () => {
         Authorization: `Bearer ${login.token}`,
       },
     };
-    console.log(`Bearer ${login.token}`);
     await axios
-      .get(`${Config.SERVER_ADDRESS}/api/investments/${id}/archive`, config)
+      .put(
+        `${Config.SERVER_ADDRESS}/api/investments/${id}/archive`,
+        { accountSelected: account },
+        config
+      )
       .then(async (response) => {
         success();
         notify(`You have successfully archived your investment ${name}`);
         setInvestment(investment.filter((invest) => invest._id !== id));
 
-        await axios
-          .put(
-            `${Config.SERVER_ADDRESS}/api/users/${login._id}`,
-            { fundsToInvest: login.fundsToInvest },
-            config
-          )
-          .then((res) => {
-            console.log(response.data);
-            login.fundsToInvest[response.data.broker.currency] =
-              login.fundsToInvest[response.data.broker.currency] || 0;
-            login.fundsToInvest[response.data.broker.currency] +=
-              response.data.accrued_income + response.data.initial_amount;
-            localStorage.setItem('userInfo', JSON.stringify(login));
-            updateAccounts(login.fundsToInvest);
-          });
+        // await axios
+        //   .put(
+        //     `${Config.SERVER_ADDRESS}/api/users/${login._id}`,
+        //     { fundsToInvest: login.fundsToInvest },
+        //     config
+        //   )
+        //   .then((res) => {
+        // console.log(response.data);
+        // login.fundsToInvest[response.data.broker.currency] =
+        //   login.fundsToInvest[response.data.broker.currency] || 0;
+        // login.fundsToInvest[response.data.broker.currency] +=
+        //   response.data.accrued_income + response.data.initial_amount;
+        // localStorage.setItem('userInfo', JSON.stringify(login));
+        updateAccounts();
+        // });
       })
       .catch((err) => {
         notify(
@@ -333,6 +348,18 @@ const InvestmentsList = () => {
           'danger'
         );
       });
+    setId('');
+  };
+
+  const handleProceed = () => {
+    if (hasSelectedAccount) {
+      toggleToSelectAccount();
+      if (typeOperation === 'archive') {
+        handleArchive(id);
+      } else {
+        handleDelete(id);
+      }
+    }
   };
   return (
     <>
@@ -344,6 +371,43 @@ const InvestmentsList = () => {
           <Spinner />
         ) : (
           <>
+            <Modal isOpen={modalToSelectAccount} toggle={toggleToSelectAccount}>
+              <ModalHeader toggle={toggleToSelectAccount}>
+                <span style={{ color: 'red' }}>
+                  Please let us know in which account do you wish to receive
+                  your money
+                </span>
+              </ModalHeader>
+              <ModalBody>
+                <Input
+                  id='accountSelector'
+                  style={{ color: 'rgb(0 0 0 / 80%)' }}
+                  type='select'
+                  defaultValue='default'
+                  onChange={(e) => {
+                    setAccount(e.target.value);
+                    setHasSelectedAccount(true);
+                  }}
+                >
+                  <option value='default' disabled={true}>
+                    Select an option
+                  </option>
+                  <option value=''>
+                    I do not want to receive the money in any account
+                  </option>
+                  {accounts
+                    .filter((account) => account.currency === currency)
+                    .map((account) => (
+                      <option key={account._id} value={account._id}>
+                        {account.name}
+                      </option>
+                    ))}
+                </Input>
+              </ModalBody>
+              <ModalFooter>
+                <Button onClick={handleProceed}>Proceed</Button>
+              </ModalFooter>
+            </Modal>
             <Modal
               modalClassName='modal-black'
               style={{
@@ -527,6 +591,7 @@ const InvestmentsList = () => {
                 </Button>
               </ModalFooter>
             </Modal>
+
             {alert}
             <Row>
               <Col md='12'>
@@ -616,8 +681,36 @@ const InvestmentsList = () => {
                                     id={inves._id}
                                     className='fas fa-archive'
                                     onClick={(e) => {
+                                      const filteredCurrency = investment.find(
+                                        (invest) =>
+                                          invest._id ===
+                                          e.target.parentElement.parentElement
+                                            .parentElement.id
+                                      ).broker.currency;
+
+                                      let accountId = investment.find(
+                                        (invest) =>
+                                          invest._id ===
+                                          e.target.parentElement.parentElement
+                                            .parentElement.id
+                                      ).account;
+                                      setId(
+                                        e.target.parentElement.parentElement
+                                          .parentElement.id
+                                      );
+                                      setAccount(
+                                        accounts.some(
+                                          (account) => account._id === accountId
+                                        )
+                                          ? accountId
+                                          : ''
+                                      );
+                                      setCurrency(filteredCurrency);
                                       warningWithConfirmAndCancelMessage(
-                                        e.target.id
+                                        e.target.id,
+                                        'archive',
+                                        filteredCurrency,
+                                        accountId
                                       );
                                     }}
                                   ></i>
@@ -694,10 +787,21 @@ const InvestmentsList = () => {
                                     className='tim-icons icon-trash-simple classVisible'
                                     onClick={(e) => {
                                       e.preventDefault();
-                                      console.log(e.target.id);
+                                      const filteredCurrency = investment.find(
+                                        (invest) =>
+                                          invest._id ===
+                                          e.target.parentElement.parentElement
+                                            .parentElement.id
+                                      ).broker.currency;
+                                      setCurrency(filteredCurrency);
+                                      setId(
+                                        e.target.parentElement.parentElement
+                                          .parentElement.id
+                                      );
                                       warningWithConfirmAndCancelMessage(
                                         e.target.id,
-                                        'delete'
+                                        'delete',
+                                        filteredCurrency
                                       );
                                     }}
                                   ></i>

@@ -1,5 +1,5 @@
 import axios from 'axios';
-import { addDays, format, parse } from 'date-fns';
+import { format, parse } from 'date-fns';
 
 import React, { useEffect, useRef, useState } from 'react';
 import {
@@ -15,6 +15,7 @@ import {
 import Config from '../config.json';
 import NotificationAlert from 'react-notification-alert';
 import Spinner from '../components/Spinner/Spinner';
+import { ISODateFormat } from 'helpers/functions';
 
 const Inflations = () => {
   const notificationAlertRef = useRef(null);
@@ -345,9 +346,8 @@ const Inflations = () => {
                     .fill(null)
                     .map((_, index) => (
                       <div key={index} style={{ height: '44px', width: '3vw' }}>
-                        {addDays(
-                          new Date(Object.keys(selectedInflation[0])),
-                          1
+                        {ISODateFormat(
+                          Object.keys(selectedInflation[0])
                         ).getFullYear() + index}
                       </div>
                     ))}
@@ -363,9 +363,8 @@ const Inflations = () => {
                   style={{
                     gridColumnStart:
                       selectedInflation.length !== 0
-                        ? addDays(
-                            new Date(Object.keys(selectedInflation[0])),
-                            1
+                        ? ISODateFormat(
+                            Object.keys(selectedInflation[0])
                           ).getMonth() + 1
                         : null,
                   }}

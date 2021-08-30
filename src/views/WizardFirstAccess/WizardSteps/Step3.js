@@ -109,12 +109,14 @@ const Step3 = React.forwardRef((props, ref) => {
                 }}
                 type='text'
                 placeholder={`${
-                  currencies[localStorage.getItem('tempCurrency')].symbol_native
+                  currencies[localStorage.getItem('tempCurrency')]
+                    ?.symbol_native
                 }0,00`}
                 thousandSeparator={'.'}
                 decimalSeparator={','}
                 prefix={
-                  currencies[localStorage.getItem('tempCurrency')].symbol_native
+                  currencies[localStorage.getItem('tempCurrency')]
+                    ?.symbol_native
                 }
                 customInput={Input}
                 onChange={(e) => {
@@ -143,12 +145,14 @@ const Step3 = React.forwardRef((props, ref) => {
                 }}
                 type='text'
                 placeholder={`${
-                  currencies[localStorage.getItem('tempCurrency')].symbol_native
+                  currencies[localStorage.getItem('tempCurrency')]
+                    ?.symbol_native
                 }0,00`}
                 thousandSeparator={'.'}
                 decimalSeparator={','}
                 prefix={
-                  currencies[localStorage.getItem('tempCurrency')].symbol_native
+                  currencies[localStorage.getItem('tempCurrency')]
+                    ?.symbol_native
                 }
                 customInput={Input}
                 onChange={(e) => {

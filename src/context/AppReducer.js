@@ -20,10 +20,7 @@ const AppReducer = (state, action) => {
         investments: [...state.investments, action.payload],
       };
     case 'UPDATE_ACCOUNTS':
-      return {
-        ...state,
-        accounts: { ...state.accounts, ...action.payload },
-      };
+      return { ...state, accounts: action.payload };
     case 'ARCHIVE_INVESTMENT':
       return {
         ...state,

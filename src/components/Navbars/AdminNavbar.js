@@ -48,6 +48,10 @@ import MyTooltip from 'components/Tooltip/MyTooltip';
 import { GlobalContext } from 'context/GlobalState';
 const AdminNavbar = (props) => {
   const { accounts, getAccounts } = useContext(GlobalContext);
+  useEffect(() => {
+    // console.log('Hello from the navbar');
+    getAccounts();
+  }, []);
   const [name] = useState(JSON.parse(localStorage.getItem('userInfo')).name);
   // const getName = (input) => {
   //   return input.split(' ').slice(0, -1).join(' ');
@@ -57,6 +61,7 @@ const AdminNavbar = (props) => {
   //     ? JSON.parse(localStorage.getItem('userInfo')).fundsToInvest
   //     : null
   // );
+  const [currencies, setCurrencies] = useState([]);
   const [filter, setFilter] = useState('');
   const [investments, setInvestments] = useState([]);
   const [investmentsFiltered, setInvestmentsFiltered] = useState([]);
@@ -70,7 +75,6 @@ const AdminNavbar = (props) => {
       ? JSON.parse(localStorage.getItem('userInfo'))
       : null
   );
-  console.log(accounts);
 
   const handleAsyncFunction = async () => {
     const investments = await fetchAllInvestments('', login);
@@ -88,12 +92,7 @@ const AdminNavbar = (props) => {
       setColor('navbar-transparent');
     }
   };
-  console.log(accounts);
   useEffect(() => {
-    console.log(Object.keys(accounts));
-    if (Object.keys(accounts).length === 0) {
-      getAccounts();
-    }
     const filteredInvestments =
       filter.trim() === ''
         ? [...investments]
@@ -120,7 +119,12 @@ const AdminNavbar = (props) => {
                 invest.due_date.toLowerCase().includes(filter.toLowerCase())
             );
     setInvestmentsFiltered(filteredInvestments);
-
+    const currency = [
+      ...new Set(
+        filteredInvestments.map((investment) => investment.broker.currency)
+      ),
+    ];
+    setCurrencies(currency);
     window.addEventListener('resize', updateColor);
     return function cleanup() {
       window.removeEventListener('resize', updateColor);
@@ -229,7 +233,12 @@ const AdminNavbar = (props) => {
                   <td>{invest.rate}</td>
                   <td>{moment(invest.investment_date).format('DD/MM/YYYY')}</td>
                   <td>{moment(invest.due_date).format('DD/MM/YYYY')}</td>
-                  <td>{currencyFormat(invest.initial_amount)}</td>
+                  <td>
+                    {currencyFormat(
+                      invest.initial_amount,
+                      invest.broker.currency
+                    )}
+                  </td>
                   <td>
                     <div
                       style={{
@@ -249,44 +258,49 @@ const AdminNavbar = (props) => {
               ))}
             </tbody>
             <tfoot>
-              <tr>
-                <td>Total</td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td></td>
-                <td>
-                  {currencyFormat(
-                    investmentsFiltered.reduce(
-                      (acum, curr) => acum + curr.initial_amount,
-                      0
-                    )
-                  )}
-                </td>
-                <td>
-                  <div
-                    style={{
-                      height: '20px',
-                      maxWidth: '180px',
-                      overflow: 'hidden',
-                      display: 'inline-block',
-                      textOverflow: 'ellipsis',
-                      minWidth: '80px',
-                      textAlign: 'right',
-                    }}
-                  >
-                    <span>
-                      {currencyFormat(
-                        investmentsFiltered.reduce(
-                          (acum, curr) => acum + curr.accrued_income,
-                          0
-                        )
-                      )}
-                    </span>
-                  </div>
-                </td>
-              </tr>
+              {currencies.map((currency) => (
+                <tr key={currency}>
+                  <td>Total</td>
+                  <td>{currency}</td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td></td>
+                  <td>
+                    {currencyFormat(
+                      investmentsFiltered
+                        .filter((inv) => inv.broker.currency === currency)
+                        .reduce((acum, curr) => acum + curr.initial_amount, 0),
+                      currency
+                    )}
+                  </td>
+                  <td>
+                    <div
+                      style={{
+                        height: '20px',
+                        maxWidth: '180px',
+                        overflow: 'hidden',
+                        display: 'inline-block',
+                        textOverflow: 'ellipsis',
+                        minWidth: '80px',
+                        textAlign: 'right',
+                      }}
+                    >
+                      <span>
+                        {currencyFormat(
+                          investmentsFiltered
+                            .filter((inv) => inv.broker.currency === currency)
+                            .reduce(
+                              (acum, curr) => acum + curr.accrued_income,
+                              0
+                            ),
+                          currency
+                        )}
+                      </span>
+                    </div>
+                  </td>
+                </tr>
+              ))}
             </tfoot>
           </Table>
         </ModalBody>
@@ -341,23 +355,32 @@ const AdminNavbar = (props) => {
                 <span className='navbar-toggler-bar bar3' />
               </button>
             </div>
-            <NavbarBrand
+
+            <div
+              className='navbar-brand'
               style={{ fontSize: '200%', whiteSpace: 'nowrap' }}
-              href='#'
-              onClick={(e) => e.preventDefault()}
             >
-              {props.brandText}
-            </NavbarBrand>
+              <Link rel='noopener noreferrer' to='/admin/dashboard'>
+                {props.brandText}
+              </Link>
+            </div>
           </div>
           <div className='account-class'>
-            {Object.keys(accounts).length !== 0
+            {accounts && Object.keys(accounts).length !== 0
               ? accounts.map((fund) => (
                   <div
                     style={{ marginBottom: '5px' }}
                     id={fund._id}
                     key={fund._id}
                   >
-                    <h6 style={{ marginBottom: 0 }}>{fund.name}</h6>
+                    <Link
+                      to={`/admin/account/${fund._id}`}
+                      target='_blank'
+                      rel='noopener noreferrer'
+                    >
+                      <span style={{ marginBottom: 0 }}>{fund.name}</span>
+                      <br />
+                    </Link>
                     <span>
                       {currencyFormat(
                         fund.initialAmmount + fund.balance,
@@ -450,6 +473,8 @@ const AdminNavbar = (props) => {
                           ? ''
                           : name.split(' ').slice(-1).join(' ')
                       }`}
+                      src={login.thumbnail}
+                      textSizeRatio={0}
                       size='31px'
                     />
                   </div>

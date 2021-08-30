@@ -21,7 +21,7 @@ import { Link } from 'react-router-dom';
 import moment from 'moment';
 import Spinner from '../components/Spinner/Spinner';
 import { fetchArchiveInvestments } from '../services/Investments';
-import { reverseFormatNumber } from '../helpers/functions';
+import { currencyFormat, reverseFormatNumber } from '../helpers/functions';
 import axios from 'axios';
 import NotificationAlert from 'react-notification-alert';
 import Config from '../config.json';
@@ -32,7 +32,12 @@ import { GlobalContext } from 'context/GlobalState';
 
 /*eslint-disable*/
 const ArchiveInvestments = () => {
-  const { updateAccounts } = useContext(GlobalContext);
+  const { accounts, updateAccounts } = useContext(GlobalContext);
+
+  const [currency, setCurrency] = useState('');
+  const [typeOperation, setTypeOperation] = useState('archive');
+  const [hasSelectedAccount, setHasSelectedAccount] = useState(false);
+  const [account, setAccount] = useState('');
   const [id, setId] = useState('');
   const [name, setName] = useState('');
   const [broker, setBroker] = useState('');
@@ -49,12 +54,17 @@ const ArchiveInvestments = () => {
   const [isLoading, setIsLoading] = useState(false);
   const [investment, setInvestment] = useState([]);
   const [modal, setModal] = useState(false);
+  const [modalToSelectAccount, setModalToSelectAccount] = useState(false);
   const [login] = useState(
     localStorage.getItem('userInfo')
       ? JSON.parse(localStorage.getItem('userInfo'))
       : null
   );
 
+  const toggleToSelectAccount = () => {
+    setAccount('');
+    setModalToSelectAccount(!modalToSelectAccount);
+  };
   const handleUpdate = async (investmentObj, id) => {
     const config = {
       headers: {
@@ -76,10 +86,6 @@ const ArchiveInvestments = () => {
         notify(`Investment updated successfully`);
         investmentObj['broker'] = brokers.find(
           (brk) => brk._id === investmentObj['broker']
-        );
-        console.log(
-          brokers,
-          brokers.find((broker) => broker._id === id)
         );
         if (!investmentObj['initial_amount']) {
           investmentObj['initial_amount'] = initialAmount;
@@ -142,10 +148,13 @@ const ArchiveInvestments = () => {
         title='Are you sure?'
         onConfirm={() => {
           if (type === 'archive') {
-            handleUnarchive(id);
+            setTypeOperation('archive');
+            hideAlert();
+            toggleToSelectAccount();
           } else {
             handleDelete(id);
           }
+          setHasSelectedAccount(false);
         }}
         onCancel={() => cancel()}
         confirmBtnBsStyle='success'
@@ -279,7 +288,10 @@ const ArchiveInvestments = () => {
     };
     console.log(`Bearer ${login.token}`);
     await axios
-      .delete(`${Config.SERVER_ADDRESS}/api/investments/${id}`, config)
+      .delete(`${Config.SERVER_ADDRESS}/api/investments/${id}`, {
+        ...config,
+        data: { accountSelected: account },
+      })
       .then((response) => {
         success('delete');
         notify(`Investment deleted successfully`);
@@ -312,26 +324,30 @@ const ArchiveInvestments = () => {
     };
     console.log(`Bearer ${login.token}`);
     await axios
-      .get(`${Config.SERVER_ADDRESS}/api/investments/${id}/unarchive`, config)
+      .put(
+        `${Config.SERVER_ADDRESS}/api/investments/${id}/unarchive`,
+        { accountSelected: account },
+        config
+      )
       .then(async (response) => {
         success();
         notify(`You have successfully unarchived your investment`);
         setInvestment(investment.filter((invest) => invest._id !== id));
 
-        await axios
-          .put(
-            `${Config.SERVER_ADDRESS}/api/users/${login._id}`,
-            { fundsToInvest: login.fundsToInvest },
-            config
-          )
-          .then((res) => {
-            login.fundsToInvest[response.data.broker.currency] =
-              login.fundsToInvest[response.data.broker.currency] || 0;
-            login.fundsToInvest[response.data.broker.currency] -=
-              response.data.accrued_income + response.data.initial_amount;
-            localStorage.setItem('userInfo', JSON.stringify(login));
-            updateAccounts(login.fundsToInvest);
-          });
+        // await axios
+        //   .put(
+        //     `${Config.SERVER_ADDRESS}/api/users/${login._id}`,
+        //     { fundsToInvest: login.fundsToInvest },
+        //     config
+        //   )
+        //   .then((res) => {
+        // login.fundsToInvest[response.data.broker.currency] =
+        //   login.fundsToInvest[response.data.broker.currency] || 0;
+        // login.fundsToInvest[response.data.broker.currency] -=
+        //   response.data.accrued_income + response.data.initial_amount;
+        // localStorage.setItem('userInfo', JSON.stringify(login));
+        updateAccounts();
+        // });
       })
       .catch((error) => {
         hideAlert();
@@ -343,6 +359,17 @@ const ArchiveInvestments = () => {
         );
       });
   };
+
+  const handleProceed = () => {
+    if (hasSelectedAccount) {
+      toggleToSelectAccount();
+      if (typeOperation === 'archive') {
+        handleUnarchive(id);
+      } else {
+        handleDelete(id);
+      }
+    }
+  };
   return (
     <>
       <div className='react-notification-alert-container'>
@@ -353,6 +380,43 @@ const ArchiveInvestments = () => {
           <Spinner />
         ) : (
           <>
+            <Modal isOpen={modalToSelectAccount} toggle={toggleToSelectAccount}>
+              <ModalHeader toggle={toggleToSelectAccount}>
+                <span style={{ color: 'red' }}>
+                  Please let us know in which account do you wish to have the
+                  money credited
+                </span>
+              </ModalHeader>
+              <ModalBody>
+                <Input
+                  id='accountSelector'
+                  style={{ color: 'rgb(0 0 0 / 80%)' }}
+                  type='select'
+                  defaultValue='default'
+                  onChange={(e) => {
+                    setAccount(e.target.value);
+                    setHasSelectedAccount(true);
+                  }}
+                >
+                  <option value='default' disabled={true}>
+                    Select an option
+                  </option>
+                  <option value=''>
+                    I do not want to receive the money in any account
+                  </option>
+                  {accounts
+                    .filter((account) => account.currency === currency)
+                    .map((account) => (
+                      <option key={account._id} value={account._id}>
+                        {account.name}
+                      </option>
+                    ))}
+                </Input>
+              </ModalBody>
+              <ModalFooter>
+                <Button onClick={handleProceed}>Proceed</Button>
+              </ModalFooter>
+            </Modal>
             <Modal
               modalClassName='modal-black'
               style={{
@@ -595,16 +659,17 @@ const ArchiveInvestments = () => {
                               {moment(inves.due_date).format('DD/MM/YYYY')}
                             </td>
                             <td className='text-center'>
-                              {inves.initial_amount.toLocaleString('pt-BR', {
-                                style: 'currency',
-                                currency: 'BRL',
-                              })}
+                              {currencyFormat(
+                                inves.initial_amount,
+                                inves.broker.currency
+                              )}
                             </td>
+
                             <td className='text-center'>
-                              {inves.accrued_income.toLocaleString('pt-BR', {
-                                style: 'currency',
-                                currency: 'BRL',
-                              })}
+                              {currencyFormat(
+                                inves.accrued_income,
+                                inves.broker.currency
+                              )}
                             </td>
                             <td style={{ textAlign: 'center' }}>
                               <MyTooltip
@@ -625,6 +690,14 @@ const ArchiveInvestments = () => {
                                   id={inves._id}
                                   className='tim-icons icon-upload'
                                   onClick={(e) => {
+                                    const filteredCurrency = investment.find(
+                                      (invest) =>
+                                        invest._id ===
+                                        e.target.parentElement.parentElement
+                                          .parentElement.id
+                                    ).broker.currency;
+                                    setCurrency(filteredCurrency);
+                                    setId(e.target.id);
                                     if (inves.broker) {
                                       warningWithConfirmAndCancelMessage(
                                         e.target.id

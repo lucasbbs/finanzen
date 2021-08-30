@@ -14,7 +14,7 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import React, { useState } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { currencies } from './currencies';
 import { countries } from './countries';
@@ -31,17 +31,26 @@ import {
   Row,
   Col,
   Label,
+  UncontrolledTooltip,
 } from 'reactstrap';
 import Config from '../../config.json';
 import ReactBSAlert from 'react-bootstrap-sweetalert';
 import { useHistory } from 'react-router-dom';
 import NumberFormat from 'react-number-format';
 import { reverseFormatNumber } from 'helpers/functions';
+import NotificationAlert from 'react-notification-alert';
 // import DatePicker from 'react-date-picker';
 
 const User = () => {
   let history = useHistory();
   // const [date, setDate] = useState(new Date());
+  const [defaultAccount, setDefaultAccount] = useState(
+    localStorage.getItem('userInfo')
+      ? JSON.parse(localStorage.getItem('userInfo')).defaultAccount
+      : null
+  );
+  const [accounts, setAccounts] = useState([]);
+  const [accountsToFilter, setAccountsToFilter] = useState([]);
   const userInfo = JSON.parse(localStorage.getItem('userInfo'));
 
   const [monthlySalary, setMonthlySalary] = useState(
@@ -61,10 +70,13 @@ const User = () => {
       ? JSON.parse(localStorage.getItem('userInfo')).hasRegisteredInvest
       : null
   );
-  const [email] = useState(
+  const [email, setEmail] = useState(
     localStorage.getItem('userInfo')
       ? JSON.parse(localStorage.getItem('userInfo')).email
       : null
+  ); // eslint-disable-next-line
+  const [hasEmail] = useState(
+    JSON.parse(localStorage.getItem('userInfo')).email ? true : false
   ); // eslint-disable-next-line
   const [registerConfirmPassword, setregisterConfirmPassword] = useState('');
   const [alert, setAlert] = useState(null);
@@ -100,6 +112,35 @@ const User = () => {
       ? JSON.parse(localStorage.getItem('userInfo')).currency
       : null
   );
+
+  useEffect(() => {
+    const getAccounts = async () => {
+      const config = {
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${token}`,
+        },
+      };
+
+      const accountsfromTheAPI = await axios.get(
+        `${Config.SERVER_ADDRESS}/api/accounts`,
+        config
+      );
+      setAccountsToFilter(accountsfromTheAPI.data.accounts);
+      setAccounts(
+        accountsfromTheAPI.data.accounts.filter(
+          (account) => account.currency === currency
+        )
+      );
+    };
+    getAccounts();
+  }, []);
+
+  useEffect(() => {
+    setAccounts(
+      accountsToFilter.filter((account) => account.currency === currency)
+    );
+  }, [currency]);
   // function that verifies if two strings are equal
   const compare = (string1, string2) => {
     if (string1 === string2) {
@@ -163,15 +204,25 @@ const User = () => {
         await axios
           .put(`${Config.SERVER_ADDRESS}/api/users/${userId}`, userObj, config)
           .then((res) => {
+            notify('You have successfully updated you info data');
             userInfo['country'] = country;
             userInfo['currency'] = currency;
             userInfo['name'] = name;
+            userInfo['defaultAccount'] = defaultAccount;
             userInfo['hasRegisteredInvest'] = hasRegisteredInvest;
             userInfo['monthlySalary'] = monthlySalary;
             userInfo['equityObjective'] = equityObjective;
+            userInfo['email'] = email;
             localStorage.setItem('userInfo', JSON.stringify(userInfo));
           })
-          .catch((error) => console.log(error));
+          .catch((error) =>
+            notify(
+              error.response && error.response.data.message
+                ? error.response.data.message
+                : error.message,
+              'danger'
+            )
+          );
       }
     }
   };
@@ -187,10 +238,17 @@ const User = () => {
       .delete(`${Config.SERVER_ADDRESS}/api/users/${userId}`, config)
       .then((res) => {
         successDelete();
-        console.log(res);
+        notify('You have successfully deleted your account');
         localStorage.removeItem('userInfo');
       })
-      .catch((err) => console.log(err));
+      .catch((error) =>
+        notify(
+          error.response && error.response.data.message
+            ? error.response.data.message
+            : error.message,
+          'danger'
+        )
+      );
   };
 
   const successDelete = () => {
@@ -198,7 +256,7 @@ const User = () => {
       <ReactBSAlert
         success
         style={{ display: 'block', marginTop: '-100px' }}
-        title='Deletado!'
+        title='Deleted'
         onConfirm={() => {
           hideAlert();
           history.push('/auth/login');
@@ -207,7 +265,7 @@ const User = () => {
         confirmBtnBsStyle='success'
         btnSize=''
       >
-        Seu usuário foi deletado...
+        Your profile was deleted...
       </ReactBSAlert>
     );
   };
@@ -216,7 +274,7 @@ const User = () => {
       <ReactBSAlert
         danger
         style={{ display: 'block', marginTop: '-100px' }}
-        title='Cancelado'
+        title='Cancelled'
         onConfirm={() => hideAlert()}
         onCancel={() => hideAlert()}
         confirmBtnText='Ok'
@@ -230,7 +288,7 @@ const User = () => {
       <ReactBSAlert
         warning
         style={{ display: 'block', marginTop: '-100px' }}
-        title='Você tem certeza disso?'
+        title='Are you sure?'
         onConfirm={() => {
           try {
             handleDelete();
@@ -239,20 +297,39 @@ const User = () => {
         onCancel={() => cancelDelete()}
         confirmBtnBsStyle='success'
         cancelBtnBsStyle='danger'
-        confirmBtnText='Sim, deletar!'
-        cancelBtnText='Cancelar'
+        confirmBtnText='Yes, delete!'
+        cancelBtnText='Cancel'
         showCancel
         btnSize=''
       >
-        Você não poderá recuperar os dados do seu investimentos
+        you will not be able to restores your profile data
       </ReactBSAlert>
     );
   };
   const hideAlert = () => {
     setAlert(null);
   };
+  const notificationAlertRef = useRef(null);
+  const notify = (message, type = 'success', place = 'tc') => {
+    var options = {};
+    options = {
+      place: place,
+      message: (
+        <div>
+          <div>{message}</div>
+        </div>
+      ),
+      type: type,
+      icon: 'tim-icons icon-bell-55',
+      autoDismiss: 7,
+    };
+    notificationAlertRef.current.notificationAlert(options);
+  };
   return (
     <>
+      <div className='react-notification-alert-container'>
+        <NotificationAlert ref={notificationAlertRef} />
+      </div>
       <div className='content'>
         {alert}
         <Row>
@@ -277,8 +354,9 @@ const User = () => {
                     </Col> */}
                     <Col md='3' style={{ paddingRight: '0' }}>
                       <FormGroup>
-                        <Label>Nome</Label>
+                        <Label htmlFor='nameId'>Name</Label>
                         <Input
+                          id='nameId'
                           value={name}
                           style={{ backgroundColor: '#2b3553' }}
                           onChange={(e) => setName(e.target.value)}
@@ -289,8 +367,9 @@ const User = () => {
                     </Col>
                     <Col md='3' style={{ paddingRight: '0' }}>
                       <FormGroup>
-                        <Label>Endereço de Email</Label>
+                        <Label htmlFor='emailId'>Email Address</Label>
                         <Input
+                          id='emailId'
                           style={{
                             backgroundColor: '#2b3553',
                             color: 'rgba(255, 255, 255, 0.8)',
@@ -298,6 +377,7 @@ const User = () => {
                           disabled
                           placeholder='email@email.com'
                           value={email}
+                          onChange={(e) => setEmail(e.target.value)}
                           autoComplete='username'
                           className='borderColor'
                           type='email'
@@ -372,8 +452,9 @@ const User = () => {
                       </FormGroup>
                     </Col>*/}
                     <Col md='3' style={{ paddingRight: '0' }}>
-                      <Label>Country</Label>
+                      <Label htmlFor='countryId'>Country</Label>
                       <Input
+                        id='countryId'
                         required
                         style={{ backgroundColor: '#2b3553' }}
                         type='select'
@@ -385,7 +466,7 @@ const User = () => {
                         }}
                       >
                         <option value='' disabled={true}>
-                          Selecione uma opção
+                          Select an option
                         </option>
                         {Object.entries(countries).map((country) => (
                           <option
@@ -399,16 +480,20 @@ const User = () => {
                       </Input>
                     </Col>
                     <Col md='3' hidden={isHidden} style={{ paddingRight: '0' }}>
-                      <Label>Currency</Label>
+                      <Label htmlFor='currencyId'>Currency</Label>
                       <Input
+                        id='currencyId'
                         required
                         style={{ backgroundColor: '#2b3553' }}
                         type='select'
                         value={currency}
-                        onChange={(e) => setCurrency(e.target.value)}
+                        onChange={(e) => {
+                          setCurrency(e.target.value);
+                          setDefaultAccount('');
+                        }}
                       >
                         <option value='' disabled={true}>
-                          Selecione uma opção
+                          Select an option
                         </option>
                         {Object.entries(currencies).map((currency) => (
                           // (country) => console.log(country[1].name)
@@ -421,8 +506,9 @@ const User = () => {
                   </Row>
                   <Row>
                     <Col md='3' style={{ paddingRight: '0' }}>
-                      <Label>Monthly Salary</Label>
+                      <Label htmlFor='salaryId'>Monthly Salary</Label>
                       <NumberFormat
+                        id='salaryId'
                         style={{ backgroundColor: '#2b3553' }}
                         onChange={(e) =>
                           setMonthlySalary(reverseFormatNumber(e.target.value))
@@ -437,8 +523,9 @@ const User = () => {
                       />
                     </Col>
                     <Col md='3' style={{ paddingRight: '0' }}>
-                      <Label>Equity Objective</Label>
+                      <Label htmlFor='objectiveId'>Equity Objective</Label>
                       <NumberFormat
+                        id='objectiveId'
                         style={{ backgroundColor: '#2b3553' }}
                         onChange={(e) =>
                           setEquityObjective(
@@ -453,6 +540,43 @@ const User = () => {
                         prefix={currencies[currency]?.symbol_native}
                         customInput={Input}
                       />
+                    </Col>
+                  </Row>
+                  <Row>
+                    <Col md='3'></Col>
+                    <Col md='3' style={{ paddingRight: '0' }}>
+                      <Label htmlFor='accountId'>
+                        Default Account
+                        <span
+                          id='UncontrolledTooltipExample'
+                          style={{ color: 'var(--primary)' }}
+                        >
+                          <i className='fas fa-info-circle'></i>
+                        </span>
+                        <UncontrolledTooltip
+                          placement='top'
+                          target='UncontrolledTooltipExample'
+                        >
+                          This is the account that is used to receive your
+                          monthly salaries
+                        </UncontrolledTooltip>
+                      </Label>
+                      <Input
+                        id='accountId'
+                        type='select'
+                        style={{ backgroundColor: '#2b3553' }}
+                        value={defaultAccount}
+                        onChange={(e) => setDefaultAccount(e.target.value)}
+                      >
+                        <option value='' disabled={true}>
+                          Select an option
+                        </option>
+                        {accounts.map((account) => (
+                          <option key={account._id} value={account._id}>
+                            {account.name}
+                          </option>
+                        ))}
+                      </Input>
                     </Col>
                   </Row>
                   {/* <Row>
@@ -472,7 +596,9 @@ const User = () => {
                     </Col>
                   </Row> */}
                   <Row>
-                    <Label sm='2'>Password</Label>
+                    <Label htmlFor='idSource' sm='2'>
+                      Password
+                    </Label>
                     <Col sm='2' style={{ paddingRight: '0' }}>
                       <FormGroup className={sourceState}>
                         <Input
@@ -481,6 +607,7 @@ const User = () => {
                           className='borderColor'
                           placeholder='password'
                           autoComplete='new-password'
+                          disabled={!hasEmail}
                           type='password'
                           onChange={(e) => {
                             change(e, 'source', 'password');
@@ -501,6 +628,7 @@ const User = () => {
                           className='borderColor'
                           autoComplete='new-password'
                           placeholder='confirm password'
+                          disabled={!hasEmail}
                           type='password'
                           onChange={(e) =>
                             change(e, 'destination', 'equalTo', {
@@ -541,6 +669,7 @@ const User = () => {
                   onClick={() => {
                     handleSave({
                       name,
+                      email,
                       country,
                       currency,
                       password,
@@ -550,7 +679,7 @@ const User = () => {
                     });
                   }}
                 >
-                  Salvar
+                  Save
                 </Button>
                 <Button
                   className='btn-fill'
@@ -558,7 +687,7 @@ const User = () => {
                   type='submit'
                   onClick={() => warningWithConfirmAndCancelMessage()}
                 >
-                  Excluir perfil
+                  Delete profile
                 </Button>
               </CardFooter>
             </Card>

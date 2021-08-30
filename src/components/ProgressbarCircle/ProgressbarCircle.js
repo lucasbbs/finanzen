@@ -64,8 +64,13 @@ const ProgressbarCircle = ({
           notify(`You have successfully bulk updated your investments`);
         }
       })
-      .catch((err) => {
-        console.log(err);
+      .catch((error) => {
+        notify(
+          error.response && error.response.data.message
+            ? error.response.data.message
+            : error.message,
+          'danger'
+        );
       });
   };
 

@@ -29,7 +29,7 @@ import Sidebar from 'components/Sidebar/Sidebar.js';
 
 import routes from 'routes.js';
 
-import logo from 'assets/img/react-logo.png';
+import logo from 'assets/img/purple-heavy-dollar-sign.png';
 import { Row } from 'reactstrap';
 
 var ps;
@@ -199,8 +199,9 @@ const Admin = (props) => {
         routes={routes}
         activeColor={activeColor}
         logo={{
-          outterLink: 'https://www.creative-tim.com/',
-          text: 'Creative Tim',
+          innerLink: '#',
+          outterLink: undefined,
+          text: 'Financial Manager',
           imgSrc: logo,
         }}
         closeSidebar={closeSidebar}

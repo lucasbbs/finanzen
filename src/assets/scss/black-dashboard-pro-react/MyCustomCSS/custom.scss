@@ -679,3 +679,7 @@ button.react-calendar__navigation__arrow {
   color: var(--primary) !important;
   background: #000 !important;
 }
+
+.sidebar-wrapper > ul.nav > li > div > ul.nav {
+  background-color: #27293d;
+}

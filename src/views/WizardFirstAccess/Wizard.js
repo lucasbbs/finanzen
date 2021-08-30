@@ -89,6 +89,7 @@ const WizardFirstAccess = () => {
         userInfo['currency'] = states.About.currency;
         localStorage.setItem('userInfo', JSON.stringify(userInfo));
         history.push('/admin/dashboard');
+        window.location.reload();
       });
   };
   return (

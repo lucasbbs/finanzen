@@ -28,7 +28,11 @@ import 'assets/css/nucleo-icons.css';
 import 'react-notification-alert/dist/animate.css';
 import 'assets/scss/black-dashboard-pro-react.scss?v=1.2.0';
 import 'assets/demo/demo.css';
-import { isAuthenticated, isFirtAccess } from './services/auth';
+import {
+  hasRestoredLogin,
+  isAuthenticated,
+  isFirtAccess,
+} from './services/auth';
 import { GlobalProvider } from './context/GlobalState';
 
 const PrivateRoute = ({ component: Component, ...rest }) => (
@@ -40,6 +44,13 @@ const PrivateRoute = ({ component: Component, ...rest }) => (
           <Redirect
             to={{
               pathname: '/auth/first-access',
+              // state: { from: props.location },
+            }}
+          />
+        ) : hasRestoredLogin() ? (
+          <Redirect
+            to={{
+              pathname: '/auth/restore-access',
               // state: { from: props.location },
             }}
           />

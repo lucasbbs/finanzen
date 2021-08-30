@@ -10,14 +10,14 @@ import { Line, Bar, Pie } from 'react-chartjs-2';
 import { VectorMap } from 'react-jvectormap';
 // reactstrap components
 //prettier-ignore
-import {Button,ButtonGroup,Card,CardHeader,CardBody,CardFooter,CardTitle,DropdownToggle,DropdownMenu,DropdownItem,UncontrolledDropdown,Label,FormGroup,Input,Table,Row,Col,Form,Modal, ModalHeader, ModalBody, ModalFooter, Collapse} from 'reactstrap';
+import {Button,ButtonGroup,Card,CardHeader,CardBody,CardFooter,CardTitle,DropdownToggle,DropdownMenu,DropdownItem,UncontrolledDropdown,Label,FormGroup,Input,Table,Row,Col,Form,Modal, ModalHeader,ModalBody,ModalFooter} from 'reactstrap';
 import { countries } from './pages/countries';
 
 // core components
 //prettier-ignore
 import {chartExample2,chartExample3,chartExample4,chartDefault} from 'variables/charts.js';
 //prettier-ignore
-import { currencyFormat, percentageFormat, decimalFormat, reverseFormatNumber, geometricMeanReturnInvestments } from '../helpers/functions';
+import { currencyFormat, percentageFormat, decimalFormat, reverseFormatNumber, geometricMeanReturnInvestments, ISODateFormat } from '../helpers/functions';
 // eslint-disable-next-line
 import TableTopInvestments from '../components/TableTopInvestments/TableTopInvestments';
 import TableSalaries from '../components/TableSalaries/TableSalaries';
@@ -51,8 +51,19 @@ Array.prototype.min = function () {
 };
 
 const Dashboard = () => {
-  // const [loadedCurrencies, setLoadedCurrencies] = useState(false);
+  const [login] = useState(
+    localStorage.getItem('userInfo')
+      ? JSON.parse(localStorage.getItem('userInfo'))
+      : null
+  );
   const { accounts, updateAccounts, getAccounts } = useContext(GlobalContext);
+  useEffect(() => {
+    // if (!accounts && Object.keys(accounts).length === 0) {
+    // getAccounts();
+    // updateAccounts();
+    // }
+  }, []);
+  // const [loadedCurrencies, setLoadedCurrencies] = useState(false);
   const [equivalentAnnualRate, setEquivalentAnnualRate] = useState(
     '0,0000000000%'
   );
@@ -87,11 +98,6 @@ const Dashboard = () => {
   const [Incomes, setIncomes] = useState([]);
   const [investmentsToBeDisplayed, setInvestmentsToBeDisplayed] = useState([]);
 
-  const [login] = useState(
-    localStorage.getItem('userInfo')
-      ? JSON.parse(localStorage.getItem('userInfo'))
-      : null
-  );
   const [inflations, setInflations] = useState([]);
   const [inflationsToBeDisplayed, setInflationsToBeDisplayed] = useState([]);
   const [inflation12Months, setInflation12Months] = useState([]);
@@ -99,7 +105,7 @@ const Dashboard = () => {
     dataChartInvetmentsPerBrokers,
     setDataChartInvetmentsPerartBrokers,
   ] = useState([]);
-
+  const [modalBankStatements, setModalBankStatements] = useState(false);
   const [bigChartData, setbigChartData] = useState('data1');
   const setBgChartData = (name) => {
     setbigChartData(name);
@@ -116,11 +122,26 @@ const Dashboard = () => {
     };
     getTransactions();
   }, []);
+
   useEffect(() => {
-    console.log(Object.keys(accounts));
-    if (Object.keys(accounts).length === 0) {
-      getAccounts();
-    }
+    const getInflations = async () => {
+      const inflation = await fetchInflationsFromLocalAPI(login.country); //fetchInflation();
+
+      inflation.forEach((inf) => {
+        const dataPartes = inf.data.split('/');
+        inf.data = `${dataPartes[2]}-${dataPartes[1]}-${dataPartes[0]}`;
+        inf.valor = Number(inf.valor) / 100 + 1;
+      });
+      setInflations(inflation);
+      setInflation12Months(getDataForTheInflationChart(inflation));
+      setInflationsToBeDisplayed(getDataForTheInflationChart(inflation));
+      setInflationsForTheTotalPeriod(
+        getDataForTheInflationChartTotalPeriod(inflation)
+      );
+    };
+    getInflations();
+  }, []);
+  useEffect(() => {
     const getInvestments = async () => {
       const investment = await fetchAllInvestments('', login);
       geometricMeanReturnInvestments(investment);
@@ -143,7 +164,8 @@ const Dashboard = () => {
         Object.values(accounts).forEach((location) =>
           locationsForLoop.add(location.currency)
         );
-        console.log(locationsForLoop);
+        console.log(Array.from(locationsForLoop));
+
         for (const location of locationsForLoop) {
           if (
             location !== login.currency &&
@@ -186,32 +208,15 @@ const Dashboard = () => {
         });
         setMapData(mapdata);
       }
-
-      setIncomes(getDataForTheFirstChart(investment));
-      setInvestmentsToBeDisplayed(getDataForTheFirstChart(investments));
-      setTaxes(getDataForTotalTaxes(investments));
-
-      setTaxesToBeDisplayed(
-        getDataForTotalTaxes(investments)[1].reduce(
-          (acc, curr) => acc + curr,
-          0
-        )
+      const dataForTheFirstChart = getDataForTheFirstChart(
+        investment,
+        undefined,
+        undefined,
+        currencyExhangeRates,
+        login.currency
       );
-      if (inflations.length === 0) {
-        const inflation = await fetchInflationsFromLocalAPI(login.country); //fetchInflation();
-
-        inflation.forEach((inf) => {
-          const dataPartes = inf.data.split('/');
-          inf.data = `${dataPartes[2]}-${dataPartes[1]}-${dataPartes[0]}`;
-          inf.valor = Number(inf.valor) / 100 + 1;
-        });
-        setInflations(inflation);
-        setInflation12Months(getDataForTheInflationChart(inflation));
-        setInflationsToBeDisplayed(getDataForTheInflationChart(inflation));
-        setInflationsForTheTotalPeriod(
-          getDataForTheInflationChartTotalPeriod(inflation)
-        );
-      }
+      setIncomes(dataForTheFirstChart);
+      setInvestmentsToBeDisplayed(dataForTheFirstChart);
 
       const brokers = [
         ...new Set(
@@ -518,48 +523,79 @@ const Dashboard = () => {
 
   const handleTotalMoney = (array) => {
     let total = 0;
-    console.log(array);
-    for (const account of array) {
-      total +=
-        (account['initialAmmount'] + account['balance']) *
-        currencyExhangeRates[`${account['currency']}_${login.currency}`];
+    // console.log(array);
+    if (array) {
+      for (const account of array) {
+        total +=
+          (account['initialAmmount'] + account['balance']) *
+          currencyExhangeRates[`${account['currency']}_${login.currency}`];
+      }
+      return total;
     }
-    return total;
   };
 
   const handleShowAccountStatements = () => {
-    console.log(accounts);
+    setModalBankStatements(!modalBankStatements);
   };
+
+  const closeBtn = (
+    <button
+      color='danger'
+      className='close'
+      onClick={() => handleShowAccountStatements()}
+    >
+      <span style={{ color: 'white' }}>×</span>
+    </button>
+  );
+  useEffect(() => {
+    const taxesInUseEffects = getDataForTotalTaxes(
+      investments,
+      currencyExhangeRates,
+      login.currency
+    );
+    setTaxes(taxesInUseEffects);
+
+    setTaxesToBeDisplayed(
+      taxesInUseEffects[1].reduce((acc, curr) => acc + curr, 0)
+    );
+  }, [investments, currencyExhangeRates]);
   return (
     <>
       <div className='content'>
-        {!dataChartInvetmentsPerBrokers.length ? (
+        {!dataChartInvetmentsPerBrokers.length ||
+        !investmentsToBeDisplayed.length ? (
           <>
             <Spinner />
           </>
         ) : (
           <>
             <Modal
-              isOpen={true}
+              isOpen={modalBankStatements}
               modalClassName='modal-black'
+              keyboard={true}
               scrollable={true}
+              toggle={() => handleShowAccountStatements()}
               style={{
                 position: 'fixed',
                 left: '50%',
                 top: '40%',
                 maxHeight: '600px',
-                minWidth: '500px',
+                minWidth: '700px',
                 background:
                   'linear-gradient(180deg,#222a42 0,#1d253b)!important',
                 transform: 'translate(-50%, -50%)',
               }}
             >
-              <ModalHeader></ModalHeader>
+              <ModalHeader
+                close={closeBtn}
+                toggle={() => handleShowAccountStatements()}
+              >
+                Check your account statements
+              </ModalHeader>
               <ModalBody>
                 <Card>
                   <CardHeader>
-                    <h5 className='card-category'>Collpase example</h5>
-                    <CardTitle tag='h3'>Collapsible Accordion</CardTitle>
+                    <CardTitle tag='h3'>Account Statements</CardTitle>
                   </CardHeader>
 
                   <div
@@ -568,22 +604,24 @@ const Dashboard = () => {
                     id='accordion'
                     role='tablist'
                   >
-                    {accounts.map((account) => (
-                      <CollapsibleItem
-                        id={account._id}
-                        transactions={transactions.filter(
-                          (transact) =>
-                            transact.dueToAccount === account._id ||
-                            transact.dueFromAccount?._id === account._id
-                        )}
-                        key={account._id}
-                        name={account.name}
-                        currency={account.currency}
-                        initialAmmount={account.initialAmmount}
-                        balance={account.balance}
-                        icon={account.icon}
-                      />
-                    ))}
+                    {accounts
+                      ? accounts.map((account) => (
+                          <CollapsibleItem
+                            id={account._id}
+                            transactions={transactions.filter(
+                              (transact) =>
+                                transact.dueToAccount?._id === account._id ||
+                                transact.dueFromAccount?._id === account._id
+                            )}
+                            key={account._id}
+                            name={account.name}
+                            currency={account.currency}
+                            initialAmmount={account.initialAmmount}
+                            balance={account.balance}
+                            icon={account.icon}
+                          />
+                        ))
+                      : null}
                   </div>
                 </Card>
               </ModalBody>
@@ -599,29 +637,29 @@ const Dashboard = () => {
                     <Row>
                       <Col md='12'>
                         <div
-                          style={{ display: 'flex', justifyContent: 'center' }}
+                          style={{
+                            display: 'flex',
+                            justifyContent: 'center',
+                          }}
                         >
                           <Form inline>
                             <FormGroup className='mb-2 mr-sm-2 mb-sm-0'>
                               <Col sm='12'>
                                 <Label for='InitialDate'>
-                                  Informe uma data inicial
+                                  Inform a initial date
                                 </Label>
                                 <Input
                                   className='borderColor'
                                   id='InitialDate'
                                   type='month'
                                   min={format(
-                                    addDays(
-                                      new Date(inflations[0]['data']),
-                                      28
-                                    ),
+                                    ISODateFormat(inflations[0]['data']),
                                     'yyyy-MM',
                                     { locale: ptBR }
                                   )}
                                   max={
                                     //prettier-ignore
-                                    format(addDays(new Date(inflations[inflations.length - 1]['data']),1),'yyyy-MM',{ locale: ptBR })
+                                    format(ISODateFormat(inflations[inflations.length - 1]['data']),'yyyy-MM',{ locale: ptBR })
                                   }
                                 />
                               </Col>
@@ -629,28 +667,20 @@ const Dashboard = () => {
                             <FormGroup className='mb-2 mr-sm-2 mb-sm-0'>
                               <Col sm='12'>
                                 <Label for='FinalDate'>
-                                  Informe uma data final
+                                  Inform a final date
                                 </Label>
                                 <Input
                                   className='borderColor'
                                   id='FinalDate'
                                   type='month'
                                   min={format(
-                                    addDays(
-                                      new Date(inflations[0]['data']),
-                                      28
-                                    ),
+                                    ISODateFormat(inflations[0]['data']),
                                     'yyyy-MM',
                                     { locale: ptBR }
                                   )}
                                   max={format(
-                                    addDays(
-                                      new Date(
-                                        inflations[inflations.length - 1][
-                                          'data'
-                                        ]
-                                      ),
-                                      1
+                                    ISODateFormat(
+                                      inflations[inflations.length - 1]['data']
                                     ),
                                     'yyyy-MM',
                                     { locale: ptBR }
@@ -746,7 +776,7 @@ const Dashboard = () => {
                             onClick={() => setBgChartData('data1')}
                           >
                             <span className='d-none d-sm-block d-md-block d-lg-block d-xl-block'>
-                              Rendimentos
+                              Incomes
                             </span>
                             <span className='d-block d-sm-none'>
                               <i className='tim-icons icon-single-02' />
@@ -763,7 +793,7 @@ const Dashboard = () => {
                             onClick={() => setBgChartData('data2')}
                           >
                             <span className='d-none d-sm-block d-md-block d-lg-block d-xl-block'>
-                              Inflação
+                              Inflation
                             </span>
                             <span className='d-block d-sm-none'>
                               <i className='tim-icons icon-gift-2' />
@@ -943,7 +973,8 @@ const Dashboard = () => {
                                 login.equityObjective,
                                 investments,
                                 login.currency,
-                                currencyExhangeRates
+                                currencyExhangeRates,
+                                accounts
                               ),
                               login.currency
                             )}
@@ -1023,7 +1054,7 @@ const Dashboard = () => {
                   </CardFooter>
                 </Card>
               </Col>
-              <Col lg='4'>
+              {/* <Col lg='4'>
                 <Card className='card-chart'>
                   <CardHeader>
                     <h5 className='card-category'>Total Shipments</h5>
@@ -1078,15 +1109,13 @@ const Dashboard = () => {
                     </div>
                   </CardBody>
                 </Card>
-              </Col>
+              </Col> */}
             </Row>
             <Row>
               <Col lg='5'>
                 <Card className='card-tasks'>
                   <CardHeader>
-                    <h6 className='title d-inline'>
-                      Investimentos por Corretoras
-                    </h6>
+                    <h6 className='title d-inline'>Investments by brokers</h6>
                     <UncontrolledDropdown>
                       <DropdownToggle
                         caret

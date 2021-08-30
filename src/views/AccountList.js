@@ -3,7 +3,7 @@ import ModalIconPicker from 'components/ModalIconPIcker/ModalIconPicker';
 import MyTooltip from 'components/Tooltip/MyTooltip';
 import { reverseFormatNumber } from 'helpers/functions';
 import { currencyFormat } from 'helpers/functions';
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import NumberFormat from 'react-number-format';
 import { Link } from 'react-router-dom';
 import NotificationAlert from 'react-notification-alert';
@@ -27,8 +27,10 @@ import {
 import Config from '../config.json';
 import { currencies } from './pages/currencies';
 import Spinner from 'components/Spinner/Spinner';
+import { GlobalContext } from 'context/GlobalState';
 
 const AccountList = () => {
+  const { updateAccounts } = useContext(GlobalContext);
   const [login] = useState(
     localStorage.getItem('userInfo')
       ? JSON.parse(localStorage.getItem('userInfo'))
@@ -70,7 +72,10 @@ const AccountList = () => {
     setAlert(
       <ReactBSAlert
         danger
-        style={{ display: 'block', marginTop: '-100px' }}
+        style={{
+          display: 'block',
+          marginTop: '-100px',
+        }}
         title='Cancelled'
         onConfirm={() => hideAlert()}
         onCancel={() => hideAlert()}
@@ -88,27 +93,28 @@ const AccountList = () => {
     };
     console.log(`Bearer ${login.token}`);
     await axios
-      .get(`${Config.SERVER_ADDRESS}/api/accounts/${id}/archive`, config)
+      .put(`${Config.SERVER_ADDRESS}/api/accounts/${id}/archive`, null, config)
       .then(async (response) => {
         success();
         notify(`You have successfully archived your account ${name}`);
         setAccounts(accounts.filter((account) => account._id !== id));
+        updateAccounts();
 
-        await axios
-          .put(
-            `${Config.SERVER_ADDRESS}/api/users/${login._id}`,
-            { fundsToInvest: login.fundsToInvest },
-            config
-          )
-          .then((res) => {
-            // console.log(response.data);
-            // login.fundsToInvest[response.data.broker.currency] =
-            //   login.fundsToInvest[response.data.broker.currency] || 0;
-            // login.fundsToInvest[response.data.broker.currency] +=
-            //   response.data.accrued_income + response.data.initial_amount;
-            // localStorage.setItem('userInfo', JSON.stringify(login));
-            // updateAccounts(login.fundsToInvest);
-          });
+        // await axios
+        //   .put(
+        //     `${Config.SERVER_ADDRESS}/api/users/${login._id}`,
+        //     { fundsToInvest: login.fundsToInvest },
+        //     config
+        //   )
+        //   .then((res) => {
+        // console.log(response.data);
+        // login.fundsToInvest[response.data.broker.currency] =
+        //   login.fundsToInvest[response.data.broker.currency] || 0;
+        // login.fundsToInvest[response.data.broker.currency] +=
+        //   response.data.accrued_income + response.data.initial_amount;
+        // localStorage.setItem('userInfo', JSON.stringify(login));
+        // updateAccounts(login.fundsToInvest);
+        // });
       })
       .catch((err) => {
         notify(
@@ -132,7 +138,7 @@ const AccountList = () => {
         success('delete');
         notify(`Account deleted successfully`);
         setAccounts(accounts.filter((account) => account._id !== id));
-
+        updateAccounts();
         //------------STUFF RELATED TO THE CURRENT AMOUNT OF MONEY---------------//
 
         // await axios
@@ -149,7 +155,7 @@ const AccountList = () => {
         //   response.data.invest.accrued_income +
         //   response.data.invest.initial_amount;
         // localStorage.setItem('userInfo', JSON.stringify(login));
-        // updateAccounts(login.fundsToInvest);
+        updateAccounts();
         // });
       })
       .catch((error) => {
@@ -168,7 +174,7 @@ const AccountList = () => {
       place: place,
       message: (
         <div>
-          <div>{message}</div>
+          <div> {message} </div>
         </div>
       ),
       type: type,
@@ -181,7 +187,13 @@ const AccountList = () => {
   const toggleModalIcons = () => setModalIcons(!modalIcons);
   const closeBtn = (
     <button color='danger' className='close' onClick={toggle}>
-      <span style={{ color: 'white' }}>×</span>
+      <span
+        style={{
+          color: 'white',
+        }}
+      >
+        ×
+      </span>
     </button>
   );
   useEffect(() => {
@@ -197,12 +209,13 @@ const AccountList = () => {
         `${Config.SERVER_ADDRESS}/api/accounts`,
         config
       );
-      console.log(accountsFromApi.data.accounts);
       setAccounts(accountsFromApi.data.accounts);
       setIsLoading(false);
     };
-    accounts.length === 0 && getAccounts();
-  }, [accounts, login.token]);
+    if (accounts.length === 0) {
+      getAccounts();
+    }
+  }, [login.token]);
   const handleUpdate = async (objAccount, id) => {
     const config = {
       headers: {
@@ -227,6 +240,7 @@ const AccountList = () => {
 
         setAccounts([...accounts]);
         notify('You have successfully updated your account');
+        updateAccounts();
       })
       .catch((error) => {
         // setIsLoading(false);
@@ -244,7 +258,10 @@ const AccountList = () => {
     setAlert(
       <ReactBSAlert
         warning
-        style={{ display: 'block', marginTop: '-100px' }}
+        style={{
+          display: 'block',
+          marginTop: '-100px',
+        }}
         title='Are you sure?'
         onConfirm={() => {
           if (type === 'archive') {
@@ -265,17 +282,17 @@ const AccountList = () => {
           ? 'Do you want to archive this account?'
           : 'You will not be able to restore the data for your account again'}
         {/* <FormGroup check>
-          <Label check>
-            <Input
-              name='optionCheckboxes'
-              type='checkbox'
-              // checked={hasRegisteredInvest}
-              // onChange={(e) => setHasRegisteredInvest(e.target.checked)}
-            />
-            <span className='form-check-sign' />
-            Have loaded all previous investments
-          </Label>
-        </FormGroup> */}
+                  <Label check>
+                    <Input
+                      name='optionCheckboxes'
+                      type='checkbox'
+                      // checked={hasRegisteredInvest}
+                      // onChange={(e) => setHasRegisteredInvest(e.target.checked)}
+                    />
+                    <span className='form-check-sign' />
+                    Have loaded all previous investments
+                  </Label>
+                </FormGroup> */}
       </ReactBSAlert>
     );
   };
@@ -306,11 +323,17 @@ const AccountList = () => {
               // className='modal-sm'
             >
               <ModalHeader
-                style={{ color: 'hsla(0,0%,100%,.8)' }}
+                style={{
+                  color: 'hsla(0,0%,100%,.8)',
+                }}
                 toggle={toggle}
                 close={closeBtn}
               >
-                <span style={{ color: 'hsla(0,0%,100%,.9)' }}>
+                <span
+                  style={{
+                    color: 'hsla(0,0%,100%,.9)',
+                  }}
+                >
                   Edit Account
                 </span>
               </ModalHeader>
@@ -320,9 +343,13 @@ const AccountList = () => {
                     'linear-gradient(180deg,#222a42 0,#1d253b)!important',
                 }}
               >
-                <Row style={{ marginBottom: '10px' }}>
+                <Row
+                  style={{
+                    marginBottom: '10px',
+                  }}
+                >
                   <Col md='4'>
-                    <Label>Icon</Label>
+                    <Label> Icon </Label>
                     <Button
                       style={{
                         color: 'hsla(0,0%,100%,.8)',
@@ -335,16 +362,23 @@ const AccountList = () => {
                       className='btn btn-link btn-just-icon'
                       onClick={toggleModalIcons}
                     >
-                      <span style={{ fontSize: '45px' }}>
+                      <span
+                        style={{
+                          fontSize: '45px',
+                        }}
+                      >
                         <i className={`icomoon-${icon}`} />
                       </span>
                     </Button>
                   </Col>
                   <Col md='8'>
-                    <Label>Name</Label>
+                    <Label htmlFor='nameID'> Name </Label>
                     <Input
+                      id='nameID'
                       required
-                      style={{ backgroundColor: '#2b3553' }}
+                      style={{
+                        backgroundColor: '#2b3553',
+                      }}
                       type='text'
                       value={name}
                       onChange={(e) => {
@@ -352,10 +386,18 @@ const AccountList = () => {
                       }}
                     />
                   </Col>
-                  <Col md='6' style={{ paddingRight: '0' }}>
-                    <Label>Currency</Label>
+                  <Col
+                    md='6'
+                    style={{
+                      paddingRight: '0',
+                    }}
+                  >
+                    <Label htmlFor='currencyID'> Currency </Label>
                     <Input
-                      style={{ backgroundColor: '#2b3553' }}
+                      id='currencyID'
+                      style={{
+                        backgroundColor: '#2b3553',
+                      }}
                       type='select'
                       value={currency}
                       onChange={(e) => setCurrency(e.target.value)}
@@ -370,22 +412,29 @@ const AccountList = () => {
                       ))}
                     </Input>
                   </Col>
-
-                  <Col md='6' style={{ paddingRight: '0' }}>
-                    <Label>Initial amount</Label>
+                  <Col
+                    md='6'
+                    style={{
+                      paddingRight: '0',
+                    }}
+                  >
+                    <Label htmlFor='initialAmountID'> Initial amount </Label>
                     <NumberFormat
-                      style={{ backgroundColor: '#2b3553' }}
+                      style={{
+                        backgroundColor: '#2b3553',
+                      }}
                       onChange={(e) => {
                         // setHasChanged(true);
                         setAmount(reverseFormatNumber(e.target.value));
                       }}
+                      id='initialAmountID'
                       type='text'
                       value={amount}
                       placeholder={`${currencies[currency]?.symbol_native}0,00`}
                       thousandSeparator={'.'}
                       decimalSeparator={','}
-                      prefix={currencies[currency]?.symbol_native}
                       customInput={Input}
+                      prefix={currencies[currency]?.symbol_native}
                     />
                   </Col>
                 </Row>
@@ -421,49 +470,106 @@ const AccountList = () => {
             <Card>
               <CardHeader className='row justify-content-between ml-2 mt-1 mr-2 align-items-center'>
                 <CardTitle className='m-0' tag='h1'>
-                  <i className='icomoon-480'></i> Accounts
+                  <i className='icomoon-480'> </i> Accounts
                 </CardTitle>
                 <Link to='/admin/account/:id'>
-                  <Button>New Account</Button>
+                  <Button> New Account </Button>
                 </Link>
               </CardHeader>
               <Table
                 className='tablesorter'
                 // responsive
-                style={{ overflowX: 'auto', position: 'relative' }}
+                style={{
+                  overflowX: 'auto',
+                  position: 'relative',
+                }}
               >
                 <thead className='text-primary'>
                   <tr>
-                    <th style={{ textAlign: 'center' }}>Icon</th>
-                    <th style={{ textAlign: 'center' }}>Name</th>
-                    <th style={{ textAlign: 'center' }}>Currency</th>
-                    <th style={{ textAlign: 'center' }}>Current Amount</th>
-                    <th style={{ textAlign: 'center' }}>Actions</th>
+                    <th
+                      style={{
+                        textAlign: 'center',
+                      }}
+                    >
+                      Icon
+                    </th>
+                    <th
+                      style={{
+                        textAlign: 'center',
+                      }}
+                    >
+                      Name
+                    </th>
+                    <th
+                      style={{
+                        textAlign: 'center',
+                      }}
+                    >
+                      Currency
+                    </th>
+                    <th
+                      style={{
+                        textAlign: 'center',
+                      }}
+                    >
+                      Current Amount
+                    </th>
+                    <th
+                      style={{
+                        textAlign: 'center',
+                      }}
+                    >
+                      Actions
+                    </th>
                   </tr>
                 </thead>
                 <tbody>
                   {accounts.map((account) => (
                     <tr id={account._id} key={account._id}>
-                      <td style={{ textAlign: 'center' }}>
-                        <span style={{ fontSize: '35px' }}>
-                          <i className={`icomoon-${account.icon.Number}`}></i>
+                      <td
+                        style={{
+                          textAlign: 'center',
+                        }}
+                      >
+                        <span
+                          style={{
+                            fontSize: '35px',
+                          }}
+                        >
+                          <i className={`icomoon-${account.icon.Number}`}> </i>
                         </span>
                       </td>
-                      <td style={{ textAlign: 'center' }}>
+                      <td
+                        style={{
+                          textAlign: 'center',
+                        }}
+                      >
                         <Link to={`/admin/account/${account._id}`}>
                           {account.name}
                         </Link>
                       </td>
-                      <td style={{ textAlign: 'center' }}>
+                      <td
+                        style={{
+                          textAlign: 'center',
+                        }}
+                      >
                         {account.currency}
                       </td>
-                      <td style={{ textAlign: 'center' }}>
+                      <td
+                        style={{
+                          textAlign: 'center',
+                        }}
+                      >
                         {currencyFormat(
-                          account.initialAmmount,
+                          account.initialAmmount + account.balance,
                           account.currency
                         )}
                       </td>
-                      <td style={{ textAlign: 'center' }}>
+                      <td
+                        style={{
+                          textAlign: 'center',
+                        }}
+                      >
                         <MyTooltip
                           placement='top'
                           target={`archive-${account._id}`}
@@ -471,18 +577,22 @@ const AccountList = () => {
                           Arquivar
                         </MyTooltip>
                         <Button
-                          style={{ cursor: 'default' }}
+                          style={{
+                            cursor: 'default',
+                          }}
                           id={`archive-${account._id}`}
                           color='info'
                           size='sm'
                           className={'btn-icon btn-link like'}
                         >
                           <i
-                            style={{ cursor: 'pointer' }}
+                            style={{
+                              cursor: 'pointer',
+                            }}
                             id={account._id}
                             className='fas fa-archive'
                             onClick={(e) => {
-                              // warningWithConfirmAndCancelMessage(e.target.id);
+                              warningWithConfirmAndCancelMessage(e.target.id);
                             }}
                           ></i>
                         </Button>
@@ -497,7 +607,9 @@ const AccountList = () => {
                           color='warning'
                           size='sm'
                           className={'btn-icon btn-link like'}
-                          style={{ cursor: 'default' }}
+                          style={{
+                            cursor: 'default',
+                          }}
                         >
                           <i
                             onClick={(e) => {
@@ -516,7 +628,9 @@ const AccountList = () => {
                               toggle();
                             }}
                             className='tim-icons icon-pencil'
-                            style={{ cursor: 'pointer' }}
+                            style={{
+                              cursor: 'pointer',
+                            }}
                           />
                         </Button>
                         <MyTooltip

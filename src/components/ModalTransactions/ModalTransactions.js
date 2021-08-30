@@ -44,6 +44,8 @@ const ModalTransactions = ({
   transactionId,
   formerAmount,
   setFormerAmount,
+  date,
+  setDate,
 }) => {
   const {
     // accounts: accountsFromContext,
@@ -53,6 +55,7 @@ const ModalTransactions = ({
   const [accounts, setAccounts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [categoriesToBeDisplayes, setCategoriesToBeDisplayes] = useState([]);
+
   useEffect(() => {
     setCategoriesToBeDisplayes(
       categories.filter((category) => category.type === selected)
@@ -66,7 +69,11 @@ const ModalTransactions = ({
         `${Config.SERVER_ADDRESS}/api/categories`,
         config
       );
-      setCategories(categoriesFromTheAPI.data);
+      setCategories(
+        categoriesFromTheAPI.data.filter(
+          (category) => category.name !== 'Investimento'
+        )
+      );
       const accountsFromTheAPI = await axios.get(
         `${Config.SERVER_ADDRESS}/api/accounts`,
         config
@@ -82,6 +89,7 @@ const ModalTransactions = ({
     </button>
   );
   const handleAddTransaction = async (objTransaction) => {
+    console.log(objTransaction);
     const config = { headers: { Authorization: `Bearer ${token}` } };
     if (transactionId === '') {
       await axios
@@ -154,7 +162,9 @@ const ModalTransactions = ({
             1,
             res.data
           );
-          setTransactions(transactions);
+          setTransactions(
+            transactions.sort((a, b) => new Date(a.date) - new Date(b.date))
+          );
           toggleModalTransactions();
           getAccounts();
         })
@@ -277,7 +287,7 @@ const ModalTransactions = ({
               </Input>
             </>
           )}
-          <Label className='mt-3' htmlFor='exampleText'>
+          <Label className='mt-3' htmlFor='observationId'>
             Observation
           </Label>
           <Input
@@ -286,7 +296,7 @@ const ModalTransactions = ({
             value={observation}
             onChange={(e) => setObservation(e.target.value)}
             name='text'
-            id='exampleText'
+            id='observationId'
           />
           <Label className='mt-3' htmlFor='valueTransactionId'>
             Value
@@ -318,6 +328,17 @@ const ModalTransactions = ({
               return formattedValue === '' || floatValue >= 0;
             }}
           />
+
+          <Label className='mt-3' htmlFor='dateTransactionId'>
+            Date of transaction
+          </Label>
+          <Input
+            type='date'
+            id='dateTransactionId'
+            style={{ backgroundColor: '#2b3553' }}
+            value={date}
+            onChange={(e) => setDate(e.target.value)}
+          ></Input>
         </ModalBody>
         <ModalFooter>
           <Button
@@ -331,6 +352,7 @@ const ModalTransactions = ({
                 ammount: amount,
                 formerAmount: formerAmount,
                 observation,
+                date,
               })
             }
             style={{ margin: '0 20px 20px' }}

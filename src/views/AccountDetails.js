@@ -4,6 +4,7 @@ import NotificationAlert from 'react-notification-alert';
 import { useState } from 'react';
 import Config from '../config.json';
 import axios from 'axios';
+import { format } from 'date-fns';
 import { useHistory, useParams } from 'react-router-dom';
 import {
   Button,
@@ -21,15 +22,19 @@ import {
 import { currencies } from './pages/currencies';
 import ModalIconPicker from 'components/ModalIconPIcker/ModalIconPicker';
 import NumberFormat from 'react-number-format';
-import { reverseFormatNumber } from 'helpers/functions';
-import { currencyFormat } from 'helpers/functions';
+//prettier-ignore
+import {
+  reverseFormatNumber,
+  currencyFormat,
+  ISODateFormat
+} from 'helpers/functions';
 import ModalTransactions from 'components/ModalTransactions/ModalTransactions';
 import MyTooltip from 'components/Tooltip/MyTooltip';
 import ReactBSAlert from 'react-bootstrap-sweetalert';
 import { GlobalContext } from 'context/GlobalState';
 
 const AccountDetails = () => {
-  const { accounts, updateAccounts, getAccounts } = useContext(GlobalContext);
+  const { getAccounts, updateAccounts } = useContext(GlobalContext);
   const history = useHistory();
   const [alert, setAlert] = useState(null);
   const [transactionId, setTransactionId] = useState('');
@@ -52,6 +57,7 @@ const AccountDetails = () => {
   const [accountId, setAccountId] = useState('');
   const [observation, setObservation] = useState('');
   const [amountTransaction, setAmountTransaction] = useState(0);
+  const [date, setDate] = useState('');
   const [login] = useState(
     localStorage.getItem('userInfo')
       ? JSON.parse(localStorage.getItem('userInfo'))
@@ -72,6 +78,7 @@ const AccountDetails = () => {
       setObservation('');
       setAccountId('');
       setAmountTransaction(0);
+      setDate('');
     }
 
     setModalTransactions(!modalTransactions);
@@ -90,6 +97,7 @@ const AccountDetails = () => {
       .then((res) => {
         notify('You have successfully created an account');
         history.push(`/account/${res.data._id}`);
+        updateAccounts();
       })
       .catch((error) => {
         notify(
@@ -116,7 +124,7 @@ const AccountDetails = () => {
       for (const transact of [
         ...transactionsFromTheAPI.data.transactionsDueToAccount,
         ...transactionsFromTheAPI.data.transactionsDueFromAccount,
-      ]) {
+      ].sort((a, b) => new Date(a.date) - new Date(b.date))) {
         if (transact.type === 'Revenue') {
           totalBalance += transact.ammount;
         } else if (transact.type === 'Expense') {
@@ -124,15 +132,17 @@ const AccountDetails = () => {
         } else {
           typeof transact.dueToAccount === 'string'
             ? (totalBalance -= transact.ammount)
-            : (totalBalance += transact.ammount);
+            : (totalBalance += transact.ammount * transact.exchangeRate);
         }
       }
       setAmountTransactions(Number(totalBalance.toFixed(2)));
 
-      setInitialTransactions([
-        ...transactionsFromTheAPI.data.transactionsDueToAccount,
-        ...transactionsFromTheAPI.data.transactionsDueFromAccount,
-      ]);
+      setInitialTransactions(
+        [
+          ...transactionsFromTheAPI.data.transactionsDueToAccount,
+          ...transactionsFromTheAPI.data.transactionsDueFromAccount,
+        ].sort((a, b) => new Date(a.date) - new Date(b.date))
+      );
     };
     getTransactions();
   }, [login.token]);
@@ -154,6 +164,7 @@ const AccountDetails = () => {
           `${Config.SERVER_ADDRESS}/api/accounts/${id}`,
           config
         );
+        setAccount(accountFromTheAPI.data.account);
         setIconId(accountFromTheAPI.data.account.icon);
 
         setIcon(
@@ -163,7 +174,9 @@ const AccountDetails = () => {
         setName(accountFromTheAPI.data.account.name);
         setCurrency(accountFromTheAPI.data.account.currency);
         if (id === ':id') {
-          setAmount(accountFromTheAPI.data.account.initialAmmount);
+          setAmount(
+            Number(accountFromTheAPI.data.account.initialAmmount.toFixed(2))
+          );
         } else {
           const newObjTransaction = {};
           newObjTransaction['_id'] = 'initialEvent';
@@ -171,14 +184,21 @@ const AccountDetails = () => {
           newObjTransaction['category'] = {
             _id: 'Initial Category',
             name: 'Initial Deposit',
-            icon: { Number: 1273 },
+            icon: {
+              Number: 1273,
+            },
           };
           newObjTransaction['observation'] = 'Initial deposit made';
           newObjTransaction['ammount'] =
             accountFromTheAPI.data.account.initialAmmount;
           setTransactions([newObjTransaction, ...initialTransactions]);
           setAmount(
-            amountTransactions + accountFromTheAPI.data.account.initialAmmount
+            Number(
+              (
+                amountTransactions +
+                accountFromTheAPI.data.account.initialAmmount
+              ).toFixed(2)
+            )
           );
         }
         if (accountFromTheAPI.data['hasLoaded'] && icon !== '') {
@@ -205,7 +225,7 @@ const AccountDetails = () => {
       place: place,
       message: (
         <div>
-          <div>{message}</div>
+          <div> {message} </div>
         </div>
       ),
       type: type,
@@ -281,7 +301,10 @@ const AccountDetails = () => {
     setAlert(
       <ReactBSAlert
         success
-        style={{ display: 'block', marginTop: '-100px' }}
+        style={{
+          display: 'block',
+          marginTop: '-100px',
+        }}
         title='Deleted!'
         onConfirm={() => hideAlert()}
         onCancel={() => hideAlert()}
@@ -296,7 +319,10 @@ const AccountDetails = () => {
     setAlert(
       <ReactBSAlert
         danger
-        style={{ display: 'block', marginTop: '-100px' }}
+        style={{
+          display: 'block',
+          marginTop: '-100px',
+        }}
         title='Cancelled'
         onConfirm={() => hideAlert()}
         onCancel={() => hideAlert()}
@@ -310,7 +336,10 @@ const AccountDetails = () => {
     setAlert(
       <ReactBSAlert
         warning
-        style={{ display: 'block', marginTop: '-100px' }}
+        style={{
+          display: 'block',
+          marginTop: '-100px',
+        }}
         title='Are you sure?'
         onConfirm={() => {
           handleDelete(id);
@@ -327,6 +356,7 @@ const AccountDetails = () => {
       </ReactBSAlert>
     );
   };
+
   return (
     <>
       <div className='react-notification-alert-container'>
@@ -364,6 +394,8 @@ const AccountDetails = () => {
               setAccountAmount={setAmount}
               accountAmount={amount}
               transactionId={transactionId}
+              date={date}
+              setDate={setDate}
             />
             <ModalIconPicker
               modalIcons={modalIcons}
@@ -372,9 +404,8 @@ const AccountDetails = () => {
               setIconId={setIconId}
             />
             <Modal>
-              <ModalHeader></ModalHeader>
-              <ModalBody></ModalBody>
-              <ModalFooter></ModalFooter>
+              <ModalHeader> </ModalHeader> <ModalBody> </ModalBody>
+              <ModalFooter> </ModalFooter>
             </Modal>
             {alert}
             <Row className='justify-content-center'>
@@ -388,31 +419,58 @@ const AccountDetails = () => {
                     marginBottom: '30px',
                   }}
                 >
-                  <h1 style={{ marginBottom: '0' }}>
-                    <i className='fas fa-dollar-sign'></i> {name}
+                  <h1
+                    style={{
+                      marginBottom: '0',
+                    }}
+                  >
+                    <i className='fas fa-dollar-sign'> </i> {name}
                   </h1>
-                  <Button onClick={toggleModalTransactions}>
-                    New Transaction
-                  </Button>
+                  {
+                    //prettier-ignore
+                    (!account?.isArchived || id !== ':id') ? ( 
+                    
+                    <Button onClick = {
+              toggleModalTransactions
+            } >
+            New Transaction </Button>
+          ): null
+                  }
                 </div>
                 <Col md='10' className='mx-auto'>
                   <Row
-                    style={{ marginBottom: '10px' }}
+                    style={{
+                      marginBottom: '10px',
+                    }}
                     className='align-items-center'
                   >
-                    <Col md='3' style={{ paddingRight: '0' }}>
-                      <Label>Name</Label>
+                    <Col
+                      md='3'
+                      style={{
+                        paddingRight: '0',
+                      }}
+                    >
+                      <Label> Name </Label>
                       <Input
                         required
                         value={name}
                         onChange={(e) => setName(e.target.value)}
-                        style={{ backgroundColor: '#2b3553' }}
+                        style={{
+                          backgroundColor: '#2b3553',
+                        }}
                       />
                     </Col>
-                    <Col md='3' style={{ paddingRight: '0' }}>
-                      <Label>Currency</Label>
+                    <Col
+                      md='3'
+                      style={{
+                        paddingRight: '0',
+                      }}
+                    >
+                      <Label> Currency </Label>
                       <Input
-                        style={{ backgroundColor: '#2b3553' }}
+                        style={{
+                          backgroundColor: '#2b3553',
+                        }}
                         type='select'
                         value={currency}
                         onChange={(e) => setCurrency(e.target.value)}
@@ -427,12 +485,19 @@ const AccountDetails = () => {
                         ))}
                       </Input>
                     </Col>
-                    <Col md='3' style={{ paddingRight: '0' }}>
+                    <Col
+                      md='3'
+                      style={{
+                        paddingRight: '0',
+                      }}
+                    >
                       <Label>
                         {id === ':id' ? 'Initial amount' : 'Balance'}
                       </Label>
                       <NumberFormat
-                        style={{ backgroundColor: '#2b3553' }}
+                        style={{
+                          backgroundColor: '#2b3553',
+                        }}
                         onChange={(e) => {
                           // setHasChanged(true);
                           setAmount(reverseFormatNumber(e.target.value));
@@ -459,7 +524,7 @@ const AccountDetails = () => {
                       />
                     </Col>
                     <Col md='3' className='row flex-column'>
-                      <Label>Pick an Icon</Label>
+                      <Label> Pick an Icon </Label>
                       <Button
                         style={{
                           color: 'hsla(0,0%,100%,.8)',
@@ -472,7 +537,11 @@ const AccountDetails = () => {
                         className='btn btn-link btn-just-icon'
                         onClick={toggleModalIcons}
                       >
-                        <span style={{ fontSize: '45px' }}>
+                        <span
+                          style={{
+                            fontSize: '45px',
+                          }}
+                        >
                           <i className={`icomoon-${icon}`} />
                         </span>
                       </Button>
@@ -485,13 +554,29 @@ const AccountDetails = () => {
                   <Card>
                     <div
                       className='table-responsive'
-                      style={{ overflowX: 'auto', overflowY: 'hidden' }}
+                      style={{
+                        overflowX: 'auto',
+                        overflowY: 'hidden',
+                      }}
                     >
                       <Table>
                         <thead>
                           <tr>
-                            <th style={{ textAlign: 'center' }}>Type</th>
-                            <th style={{ textAlign: 'center' }}>Category</th>
+                            <th
+                              style={{
+                                textAlign: 'center',
+                              }}
+                            >
+                              Type
+                            </th>
+                            <th> Date </th>
+                            <th
+                              style={{
+                                textAlign: 'center',
+                              }}
+                            >
+                              Category
+                            </th>
                             <th>Name</th>
                             <th>Observation</th>
                             <th>Amount</th>
@@ -501,7 +586,11 @@ const AccountDetails = () => {
                         <tbody>
                           {transactions.map((trans) => (
                             <tr id={trans._id} key={trans._id}>
-                              <td style={{ textAlign: 'center' }}>
+                              <td
+                                style={{
+                                  textAlign: 'center',
+                                }}
+                              >
                                 <span
                                   style={{
                                     display: 'inline-block',
@@ -523,7 +612,21 @@ const AccountDetails = () => {
                                     : 'Incoming transfer'
                                   : trans.type}
                               </td>
-                              <td style={{ textAlign: 'center' }}>
+                              <td>
+                                {trans.date
+                                  ? [
+                                      format(
+                                        ISODateFormat(trans.date),
+                                        'dd/MMM/yyyy'
+                                      ),
+                                    ]
+                                  : null}
+                              </td>
+                              <td
+                                style={{
+                                  textAlign: 'center',
+                                }}
+                              >
                                 <span
                                   style={{
                                     color: 'var(--primary)',
@@ -569,22 +672,39 @@ const AccountDetails = () => {
                                   : trans.dueToAccount.name}
                               </td>
                               <td>{trans.observation}</td>
-                              <td>{currencyFormat(trans.ammount, currency)}</td>
                               <td>
-                                {trans.type !== 'Initial Amount' ? (
+                                {trans.type === 'Transfer'
+                                  ? typeof trans.dueToAccount === 'string'
+                                    ? currencyFormat(trans.ammount, currency)
+                                    : currencyFormat(
+                                        trans.ammount * trans.exchangeRate,
+                                        currency
+                                      )
+                                  : currencyFormat(trans.ammount, currency)}
+                              </td>
+                              <td>
+                                {!account?.isArchived &&
+                                trans.type !== 'Initial Amount' &&
+                                trans.category.name !== 'Investimento' &&
+                                trans.category.name !== 'Receita de Juros' &&
+                                trans.category.name !==
+                                  'Vencimento de Investimento' &&
+                                trans.dueFromAccount !== id ? (
                                   <>
                                     <MyTooltip
                                       placement='top'
                                       target={`Tooltip-${trans._id}`}
                                     >
-                                      Editar
+                                      Edit
                                     </MyTooltip>
                                     <Button
                                       id={`Tooltip-${trans._id}`}
                                       color='warning'
                                       size='sm'
                                       className={'btn-icon btn-link like'}
-                                      style={{ cursor: 'default' }}
+                                      style={{
+                                        cursor: 'default',
+                                      }}
                                     >
                                       <i
                                         onClick={(e) => {
@@ -599,6 +719,7 @@ const AccountDetails = () => {
                                           setAmountTransaction(
                                             filtered.ammount
                                           );
+                                          setDate(filtered.date.slice(0, 10));
                                           setTransactionId(filtered._id);
                                           setCategory(filtered.category.name);
                                           setCategoryId(filtered.category._id);
@@ -618,14 +739,16 @@ const AccountDetails = () => {
                                           toggleModalTransactions();
                                         }}
                                         className='tim-icons icon-pencil'
-                                        style={{ cursor: 'pointer' }}
+                                        style={{
+                                          cursor: 'pointer',
+                                        }}
                                       />
                                     </Button>
                                     <MyTooltip
                                       placement='top'
                                       target={`Delete-${trans._id}`}
                                     >
-                                      Excluir
+                                      Delete
                                     </MyTooltip>
                                     <Button
                                       id={`Delete-${trans._id}`}

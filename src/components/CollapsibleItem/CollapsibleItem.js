@@ -1,3 +1,5 @@
+import { format } from 'date-fns';
+import { ISODateFormat } from 'helpers/functions';
 import { currencyFormat } from 'helpers/functions';
 import { useEffect, useState } from 'react';
 import { Card, CardBody, CardHeader, Collapse, Table } from 'reactstrap';
@@ -73,6 +75,7 @@ const CollapsibleItem = ({
             <thead>
               <tr>
                 <th style={{ textAlign: 'center' }}>Type</th>
+                <th>Date</th>
                 <th style={{ textAlign: 'center' }}>Category</th>
                 <th>Observation</th>
                 <th>Amount</th>
@@ -94,10 +97,15 @@ const CollapsibleItem = ({
                     </span>
                     <br />
                     {trans.type === 'Transfer'
-                      ? trans.dueToAccount === id
+                      ? trans.dueToAccount._id === id
                         ? 'Outgoing transfer'
                         : 'Incoming transfer'
                       : trans.type}
+                  </td>
+                  <td>
+                    {trans.date
+                      ? format(ISODateFormat(trans.date), 'dd/MMM/yyyy')
+                      : null}
                   </td>
                   <td style={{ textAlign: 'center' }}>
                     <span
@@ -124,9 +132,9 @@ const CollapsibleItem = ({
                           <i
                             className={`icomoon-${trans?.category?.icon?.Number}`}
                           />
-                        ) : typeof trans.dueToAccount === 'string' ? (
+                        ) : trans.dueToAccount._id === id ? (
                           <i
-                            className={`icomoon-${trans.dueFromAccount?.icon?.Number}`}
+                            className={`icomoon-${trans.dueFromAccount.icon.Number}`}
                           />
                         ) : (
                           <i
@@ -139,14 +147,22 @@ const CollapsibleItem = ({
                     <span>
                       {trans.type !== 'Transfer'
                         ? trans.category.name
-                        : typeof trans.dueToAccount === 'string'
+                        : trans.dueToAccount._id === id
                         ? trans.dueFromAccount.name
                         : trans.dueToAccount.name}
                     </span>
                   </td>
 
                   <td>{trans.observation}</td>
-                  <td>{currencyFormat(trans.ammount, currency)}</td>
+                  <td>
+                    {currencyFormat(
+                      id !== trans.dueToAccount?._id &&
+                        trans.type === 'Transfer'
+                        ? trans.ammount * trans.exchangeRate
+                        : trans.ammount,
+                      currency
+                    )}
+                  </td>
                 </tr>
               ))}
             </tbody>

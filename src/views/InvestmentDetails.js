@@ -1,4 +1,4 @@
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import { fetchInvestments } from 'services/Investments';
 import PaginationUI from '../components/Pagination/Pagination';
 import { Button, Col, Input, Label, Row } from 'reactstrap';
@@ -12,6 +12,7 @@ import NotificationAlert from 'react-notification-alert';
 import Spinner from '../components/Spinner/Spinner';
 import Config from '../config.json';
 import { currencies } from './pages/currencies';
+import { GlobalContext } from 'context/GlobalState';
 
 const InvestmentDetails = () => {
   const notificationAlertRef = useRef(null);
@@ -30,7 +31,9 @@ const InvestmentDetails = () => {
     };
     notificationAlertRef.current.notificationAlert(options);
   };
-
+  const { updateAccounts } = useContext(GlobalContext);
+  const [accountsFromTheApi, setAccountsFromTheApi] = useState([]);
+  const [account, setAccount] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [investmentsPerPage, setInvestmentsPerpage] = useState(
     localStorage.getItem('incomesPerPage')
@@ -38,6 +41,7 @@ const InvestmentDetails = () => {
       : 8
   );
   const [currency, setCurrency] = useState('');
+  const [accounts, setAccounts] = useState([]);
   const [name, setName] = useState('');
   const [broker, setBroker] = useState('');
   const [brokers, setBrokers] = useState([]);
@@ -57,6 +61,13 @@ const InvestmentDetails = () => {
       : null
   );
   const { id } = useParams();
+
+  useEffect(() => {
+    setAccounts(
+      accountsFromTheApi.filter((account) => account.currency === currency)
+    );
+  }, [currency, accountsFromTheApi]);
+
   useEffect(() => {
     const getInvestmentDetails = async () => {
       const config = {
@@ -84,6 +95,7 @@ const InvestmentDetails = () => {
         setInvestmentDate(investment['invest'].investment_date);
         setInitialAmount(investment['invest'].initial_amount);
         setAccruedIncome(investment['invest'].accrued_income);
+        setAccount(investment['invest'].account);
 
         const dates = investment['invest'].incomes
           .filter((invest) => Object.values(invest)[0] !== null)
@@ -110,6 +122,17 @@ const InvestmentDetails = () => {
     getInvestmentDetails();
   }, [id, login]);
 
+  useEffect(() => {
+    const getAccounts = async () => {
+      const config = { headers: { Authorization: `Bearer ${login.token}` } };
+      const { data } = await axios.get(
+        `${Config.SERVER_ADDRESS}/api/accounts`,
+        config
+      );
+      setAccountsFromTheApi(data.accounts);
+    };
+    getAccounts();
+  }, []);
   const indexOfFirstInvestment = currentPage * investmentsPerPage;
   const indexOfLastInvestment = indexOfFirstInvestment + investmentsPerPage;
 
@@ -130,6 +153,9 @@ const InvestmentDetails = () => {
   };
 
   const setNewIncomes = (input) => {
+    input.forEach((income) => {
+      delete income[1].isSubmited;
+    });
     setIncomes(input);
   };
   const history = useHistory();
@@ -149,6 +175,8 @@ const InvestmentDetails = () => {
           const config = {
             headers: { Authorization: `Bearer ${login.token}` },
           };
+
+          updateAccounts();
           await axios
             .put(
               `${Config.SERVER_ADDRESS}/api/users/${login._id}`,
@@ -174,6 +202,12 @@ const InvestmentDetails = () => {
           'danger'
         );
       });
+  };
+
+  const handleGetAccounts = (currency) => {
+    setAccounts(
+      accountsFromTheApi.filter((account) => account.currency === currency)
+    );
   };
   return (
     <>
@@ -231,7 +265,12 @@ const InvestmentDetails = () => {
                             'currency'
                           )
                         );
-                        console.log();
+                        setAccount('');
+                        handleGetAccounts(
+                          e.target[e.target.selectedIndex].getAttribute(
+                            'currency'
+                          )
+                        );
                       }}
                     >
                       <option value='' disabled={true}>
@@ -295,7 +334,28 @@ const InvestmentDetails = () => {
                       <option>Prefixado</option>
                     </Input>
                   </Col>
-                  <Col md='3' style={{ paddingRight: '0' }}>
+                  <Col md='2' style={{ paddingRight: '0' }}>
+                    <Label>Account</Label>
+                    <Input
+                      required
+                      value={account}
+                      onChange={(e) => {
+                        setAccount(e.target.value);
+                      }}
+                      style={{ backgroundColor: '#2b3553' }}
+                      type='select'
+                    >
+                      <option value='' disabled={true}>
+                        Select an option
+                      </option>
+                      {accounts.map((account) => (
+                        <option key={account._id} value={account._id}>
+                          {account.name}
+                        </option>
+                      ))}
+                    </Input>
+                  </Col>
+                  <Col md='2' style={{ paddingRight: '0' }}>
                     <Label>Investment date</Label>
                     <Input
                       style={{ backgroundColor: '#2b3553' }}
@@ -306,7 +366,7 @@ const InvestmentDetails = () => {
                       }}
                     />
                   </Col>
-                  <Col md='3' style={{ paddingRight: '0' }}>
+                  <Col md='2' style={{ paddingRight: '0' }}>
                     <Label>Due date</Label>
                     <Input
                       style={{ backgroundColor: '#2b3553' }}
@@ -332,7 +392,11 @@ const InvestmentDetails = () => {
                         return login.hasRegisteredInvest
                           ? formattedValue === '' ||
                               (floatValue >= 0 &&
-                                floatValue <= login.fundsToInvest[currency])
+                                floatValue <=
+                                  accounts.find((acc) => acc._id === account)
+                                    .initialAmmount +
+                                    accounts.find((acc) => acc._id === account)
+                                      .balance)
                           : true;
                       }}
                     />
@@ -361,6 +425,8 @@ const InvestmentDetails = () => {
             {investment['isValid'] ? (
               <>
                 <Incomes
+                  // accounts={accountsFromTheApi}
+                  account={account}
                   id={id}
                   incomesToBeUpdated={investment['invest'].incomes}
                   incomes={currentincomes}
@@ -370,6 +436,7 @@ const InvestmentDetails = () => {
                   setAccruedIncome={setAccruedIncome}
                   setIsLoading={setIsLoading}
                   currency={currency}
+                  investment={investment}
                 />
                 <PaginationUI
                   incomesPerPage={investmentsPerPage}
@@ -391,6 +458,7 @@ const InvestmentDetails = () => {
                       handleSave({
                         name,
                         broker,
+                        account,
                         type,
                         rate,
                         indexer,
@@ -413,9 +481,11 @@ const InvestmentDetails = () => {
                       </h4>
                       <h3 style={{ display: 'block', textAlign: 'center' }}>
                         {currencyFormat(
-                          (login.fundsToInvest[currency]
-                            ? login.fundsToInvest[currency]
-                            : 0) - reverseFormatNumber(initialAmount),
+                          (accounts.find((acc) => acc._id === account)
+                            ?.initialAmmount || 0) +
+                            (accounts.find((acc) => acc._id === account)
+                              ?.balance || 0) -
+                            reverseFormatNumber(initialAmount),
                           currency || login.currency
                         )}
                       </h3>

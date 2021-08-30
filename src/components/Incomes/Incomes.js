@@ -1,7 +1,7 @@
 import axios from 'axios';
-import { addDays, format, parse } from 'date-fns';
+import { format, parse } from 'date-fns';
 
-import React, { useEffect, useRef, useState } from 'react';
+import React, { useContext, useEffect, useRef, useState } from 'react';
 import NumberFormat from 'react-number-format';
 import { Link } from 'react-router-dom';
 import NotificationAlert from 'react-notification-alert';
@@ -22,12 +22,19 @@ import {
   Row,
   Table,
 } from 'reactstrap';
-import { currencyFormat, reverseFormatNumber } from '../../helpers/functions';
+import {
+  currencyFormat,
+  ISODateFormat,
+  reverseFormatNumber,
+} from '../../helpers/functions';
 import { ptBR } from 'date-fns/locale';
 import { currencies } from '../../views/pages/currencies';
 import Config from '../../config.json';
+import { GlobalContext } from 'context/GlobalState';
 
 const Incomes = ({
+  // accounts,
+  account,
   incomes,
   numberPerPage,
   setNumberPerPage,
@@ -37,7 +44,11 @@ const Incomes = ({
   id,
   setIsLoading,
   currency,
+  investment,
 }) => {
+  console.log(investment);
+  const { updateAccounts } = useContext(GlobalContext);
+
   const notificationAlertRef = useRef(null);
   const notify = (message, type = 'success', place = 'tc') => {
     var options = {};
@@ -54,6 +65,7 @@ const Incomes = ({
     };
     notificationAlertRef.current.notificationAlert(options);
   };
+  const [notUpdate, setNotUpdate] = useState(false);
   const [tax, setTax] = useState(0);
   const [taxRate, setTaxRate] = useState(0);
   const [checkbox, setCheckbox] = useState(true);
@@ -71,6 +83,7 @@ const Incomes = ({
   const [isAdding, setIsAdding] = useState(false);
   const [dateEl, setDateEl] = useState(format(new Date(), 'yyyy-MM'));
   const [valueEl, setValueEl] = useState('0');
+  const [transactionEl, setTransactionEl] = useState('');
   const [login] = useState(
     localStorage.getItem('userInfo')
       ? JSON.parse(localStorage.getItem('userInfo'))
@@ -96,8 +109,14 @@ const Incomes = ({
       var index = updatedIncome
         .map((key) => Object.keys(key)[0])
         .indexOf(Object.keys(incomeObject)[0]);
-
-      handleAddIncome({ incomes: updatedIncome }, dateEl, valueEl, index);
+      if (!notUpdate) {
+        handleAddIncome(
+          { incomes: updatedIncome, account },
+          dateEl,
+          valueEl,
+          index
+        );
+      }
     }
     // eslint-disable-next-line
   }, [updatedIncome]);
@@ -146,7 +165,6 @@ const Incomes = ({
   const handleIncome = () => {
     setIsLoading(true);
     if (isEdit) {
-      console.log('hello world');
       setDateEl(document.querySelector('#IncomeDate').value);
       setDateIncome('');
       setValueIncome(0.0);
@@ -237,6 +255,8 @@ const Incomes = ({
     ] = {
       value: -1 * reverseFormatNumber(valueEl),
       type: 'fund',
+      transaction: transactionEl,
+      isSubmited: true,
     };
 
     const index = updatedIncome
@@ -255,9 +275,10 @@ const Incomes = ({
       );
     } else {
       setUpdatedIncome(
-        [...updatedIncome, fundObject].sort((a, b) =>
-          Object.keys(a)[0].localeCompare(Object.keys(b)[0])
-        )
+        [...updatedIncome, fundObject].sort((a, b) => {
+          console.log(a, b);
+          return Object.keys(a)[0].localeCompare(Object.keys(b)[0]);
+        })
       );
     }
 
@@ -270,6 +291,7 @@ const Incomes = ({
         Authorization: `Bearer ${login.token}`,
       },
     };
+    setNotUpdate(true);
     await axios
       .put(
         `${Config.SERVER_ADDRESS}/api/investments/${id}/incomes`,
@@ -293,6 +315,7 @@ const Incomes = ({
               { locale: ptBR }
             )}`
           );
+          updateAccounts();
         } else {
           setDateIncome('');
           setValueIncome(0.0);
@@ -334,8 +357,8 @@ const Incomes = ({
             reverseFormatNumber(valueEl),
           ];
         }
-
-        const dates = updatedIncome
+        setUpdatedIncome(response.data.incomes);
+        const dates = response.data.incomes
           .filter((invest) => Object.values(invest)[0] !== null)
           .map((key) => Object.keys(key).map((date) => date))
           .flat()
@@ -344,7 +367,7 @@ const Incomes = ({
             return `${datePartes[2]}/${datePartes[1]}/${datePartes[0]}`;
           });
 
-        const IncomesTemp = updatedIncome
+        const IncomesTemp = response.data.incomes
           .filter((invest) => Object.values(invest)[0] !== null)
           .map((key) => Object.values(key)[0]);
 
@@ -357,12 +380,13 @@ const Incomes = ({
 
         setAccruedIncome(
           Number(
-            updatedIncome
+            response.data.incomes
               .map((key) => Object.values(key)[0])
               .reduce((acc, curr) => acc + curr.value, 0)
               .toFixed(2)
           )
         );
+        updateAccounts();
       })
       .catch((error) => {
         setIsLoading(false);
@@ -374,18 +398,19 @@ const Incomes = ({
           'danger'
         );
       });
-    if (index === -1) {
-    }
+    setTransactionEl('');
+    // if (index === -1) {
+    // }
+    setNotUpdate(false);
   };
 
   const handleRemoveIncome = async (input, removido, formerValues) => {
-    console.log(Object.values(removido[0])[0].value < 0);
+    console.log(input);
     if (Object.values(removido[0])[0].value < 0) {
-      console.log('Hello world');
       handleDeleteMoney(formerValues);
     }
     setIsLoading(true);
-    let incomesObj = { incomes: input };
+    let incomesObj = { incomes: input, account };
     const config = {
       headers: {
         'Content-Type': 'application/json',
@@ -403,13 +428,10 @@ const Incomes = ({
         setIsLoading(false);
         notify(
           `You have successfully deleted the income for the period ${format(
-            addDays(
-              new Date(
-                Object.keys(removido[0])[0]
-                  .replace('income', '')
-                  .replace('fund', '')
-              ),
-              1
+            ISODateFormat(
+              Object.keys(removido[0])[0]
+                .replace('income', '')
+                .replace('fund', '')
             ),
             'MMM/yyyy',
             {
@@ -417,6 +439,8 @@ const Incomes = ({
             }
           )}`
         );
+
+        updateAccounts();
       })
       .catch((error) => {
         setIsLoading(false);
@@ -564,7 +588,9 @@ const Incomes = ({
             </Row>
             <Row className='align-items-center' style={{ marginTop: '6px' }}>
               <Col md='2'>
-                <Label style={{ marginBottom: '0' }}>Tax</Label>
+                <Label htmlFor='taxPercentage' style={{ marginBottom: '0' }}>
+                  Tax
+                </Label>
               </Col>
               <Col md='3'>
                 <FormGroup check style={{ marginTop: '0' }}>
@@ -598,6 +624,7 @@ const Incomes = ({
               </Col>
               <Col md='3'>
                 <NumberFormat
+                  id='taxPercentage'
                   value={taxRate}
                   disabled={checkbox}
                   thousandSeparator={'.'}
@@ -683,7 +710,9 @@ const Incomes = ({
           <FormGroup>
             <Row className='align-items-center'>
               <Col md='6'>
-                <Label style={{ marginBottom: '0' }}>Fund date</Label>
+                <Label htmlFor='FundDate' style={{ marginBottom: '0' }}>
+                  Fund date
+                </Label>
               </Col>
               <Col md='6'>
                 <Input
@@ -705,7 +734,9 @@ const Incomes = ({
             </Row>
             <Row className='align-items-center' style={{ marginTop: '6px' }}>
               <Col md='6'>
-                <Label style={{ marginBottom: '0' }}>Value</Label>
+                <Label htmlFor='FundValue' style={{ marginBottom: '0' }}>
+                  Value
+                </Label>
               </Col>
               <Col md='6'>
                 <NumberFormat
@@ -832,30 +863,42 @@ const Incomes = ({
           }}
         >
           <h4 className='title d-inline'>Incomes</h4>
-          <Link to='#' onClick={toggle}>
-            <i
-              title='Please, set how many incomes should be presented per page'
-              className='tim-icons icon-settings-gear-63'
-              style={{ float: 'right', marginLeft: '20px', fontSize: '1.5em' }}
-            />
-          </Link>
-          <Link to='#' onClick={toggleAddIncome}>
-            {/* <span style={{ float: 'right', fontSize: '1.5em' }}>+</span> */}
-            <i
-              title='Register a new interest income'
-              // className='tim-icons icon-simple-add'
-              className='fas fa-plus'
-              style={{ float: 'right', marginLeft: '20px', fontSize: '1.5em' }}
-            />
-          </Link>
-          <Link to='#' onClick={toggleAddFunds}>
-            {/* <span style={{ float: 'right', fontSize: '1.5em' }}>+</span> */}
-            <i
-              title='Register a funds Receipt'
-              className='fas fa-hand-holding-usd'
-              style={{ float: 'right', fontSize: '1.5em' }}
-            />
-          </Link>
+          {!investment.invest.isArchived ? (
+            <>
+              <Link to='#' onClick={toggle}>
+                <i
+                  title='Please, set how many incomes should be presented per page'
+                  className='tim-icons icon-settings-gear-63'
+                  style={{
+                    float: 'right',
+                    marginLeft: '20px',
+                    fontSize: '1.5em',
+                  }}
+                />
+              </Link>
+              <Link to='#' onClick={toggleAddIncome}>
+                {/* <span style={{ float: 'right', fontSize: '1.5em' }}>+</span> */}
+                <i
+                  title='Register a new interest income'
+                  // className='tim-icons icon-simple-add'
+                  className='fas fa-plus'
+                  style={{
+                    float: 'right',
+                    marginLeft: '20px',
+                    fontSize: '1.5em',
+                  }}
+                />
+              </Link>
+              <Link to='#' onClick={toggleAddFunds}>
+                {/* <span style={{ float: 'right', fontSize: '1.5em' }}>+</span> */}
+                <i
+                  title='Register a funds Receipt'
+                  className='fas fa-hand-holding-usd'
+                  style={{ float: 'right', fontSize: '1.5em' }}
+                />
+              </Link>
+            </>
+          ) : null}
         </CardHeader>
         <CardBody>
           <Table className='tablesorter'>
@@ -872,6 +915,7 @@ const Incomes = ({
                 {incomes.map((key, index) => (
                   <td key={index}>
                     <span
+                      transaction={key[1]?.transaction}
                       tax-value={key[1]?.tax}
                       id={
                         key[1]?.value < 0
@@ -900,6 +944,9 @@ const Incomes = ({
                                   100
                                 ).toFixed(2)
                               )
+                            );
+                            setTransactionEl(
+                              e.target.getAttribute('transaction')
                             );
                             const date = format(
                               parse(

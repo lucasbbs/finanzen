@@ -19,6 +19,15 @@ export function reverseFormatNumber(val, locale = 'pt-BR') {
   return Number.isNaN(reversedVal) ? 0 : Number(reversedVal);
 }
 
+export function ISODateFormat(d) {
+  d = new Date(d);
+  const pad = (n) => (n < 10 ? '0' + n : n);
+  //prettier-ignore
+  return (new Date(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate())
+    // d.getUTCFullYear()+'-'+pad(d.getUTCMonth()+1)+'-'+pad(d.getUTCDate())+'T'+pad(d.getUTCHours())+':'+pad(d.getUTCMinutes())+':'+pad(d.getUTCSeconds())+'Z'
+    );
+}
+
 export function currencyFormat(label, currency = 'BRL') {
   let formatCurrency = new Intl.NumberFormat('pt-BR', {
     style: 'currency',
@@ -64,15 +73,54 @@ export function rainbowStop(h) {
 export function generateRandomColors(n) {
   const m = 1 / n;
   let percentage = 0;
-  const returns = [];
+  const colors = [];
   for (let i = 0; i < n; i++) {
     percentage += m;
-    returns.push(rainbowStop(percentage));
+    colors.push(rainbowStop(percentage));
   }
-  return returns;
+  return colors;
 }
 
-export const getDataForTotalTaxes = (income) => {
+export const getDataForTheInvestmentProjectChart = (
+  initialAmount,
+  monthlyInflow,
+  lenghtOfMonths,
+  rate
+) => {
+  const calculateMonthlyIcomes = (item) => {
+    const array = [];
+    let amount = initialAmount;
+    [...Array(item).keys()].forEach((element) => {
+      if (element > 0) {
+        amount += monthlyInflow + array[element - 1];
+      }
+      array.push((amount * rate) / 100);
+    });
+    array.unshift(0);
+    return array;
+  };
+  const months = [...Array(lenghtOfMonths + 1).keys()];
+  return months.reduce(
+    (obj, item) => [
+      ...obj,
+      {
+        deposites: initialAmount + monthlyInflow * item,
+        monthlyIncome: calculateMonthlyIcomes(item)[item],
+        totalMonthlyIncome: calculateMonthlyIcomes(item).reduce(
+          (acc, curr) => acc + curr,
+          0
+        ),
+        accruedValue:
+          initialAmount +
+          monthlyInflow * item +
+          calculateMonthlyIcomes(item).reduce((acc, curr) => acc + curr, 0),
+      },
+    ],
+    []
+  );
+};
+
+export const getDataForTotalTaxes = (income, exchanges, defaultCurrency) => {
   let dates = [];
   const incomesarray = [];
   income.forEach((data) => {
@@ -81,9 +129,14 @@ export const getDataForTotalTaxes = (income) => {
         .filter((key) => Object.values(key)[0].type === 'income')
         .map((key) => Object.keys(key)[0]),
     ]);
-    incomesarray.push(...data.incomes.map((value) => Object.entries(value)[0]));
-  });
 
+    incomesarray.push(
+      ...data.incomes.map((value) => [
+        ...Object.entries(value)[0],
+        data.broker.currency,
+      ])
+    );
+  });
   let datesSet = new Set(dates);
   datesSet = [...datesSet].sort();
   datesSet = datesSet.map((date) =>
@@ -98,7 +151,13 @@ export const getDataForTotalTaxes = (income) => {
       )
     );
     taxes.push(
-      el.map((value) => value[1].tax).reduce((acc, curr) => acc + curr, 0)
+      el
+        .map((value) => ({ tax: value[1].tax, currency: value[2] }))
+        .reduce(
+          (acc, curr) =>
+            acc + curr.tax * exchanges[`${curr.currency}_${defaultCurrency}`],
+          0
+        )
     );
   });
   return [labels, taxes];
@@ -209,19 +268,22 @@ export const geometricMeanReturnInvestments = (investments) => {
 };
 
 //prettier-ignore
-export const getHowMuchMoneyToFinancialFreedom = (value, investments,currency,  exchangeRates) => {
-
+export const getHowMuchMoneyToFinancialFreedom = (value, investments, currency, exchangeRates, accounts) => {
+  if (accounts){
   return value - (investments.length !== 0 ? investments.filter(inv=> {
     return inv.isArchived === false}).map((investment) =>  (investment.initial_amount + investment.accrued_income)*exchangeRates[`${investment.broker.currency}_${currency}`])
     .reduce((acc, curr) => acc + curr, 0):
-    0)
+    0) - accounts.reduce((acc, curr)=> acc + (curr.initialAmmount + curr.balance)*exchangeRates[`${curr.currency}_${currency}`], 0)}
 };
 
 export const getDataForTheFirstChart = (
   income,
   firstPeriod = undefined,
-  lastPeriod = undefined
+  lastPeriod = undefined,
+  exchangeRates,
+  currency
 ) => {
+  console.log(income, exchangeRates, currency);
   // var isInitialUndefined = false;
   let dates = [];
   const incomesarray = [];
@@ -231,7 +293,12 @@ export const getDataForTheFirstChart = (
         .filter((key) => Object.values(key)[0].type === 'income')
         .map((key) => Object.keys(key)[0]),
     ]);
-    incomesarray.push(...data.incomes.map((value) => Object.entries(value)[0]));
+    incomesarray.push(
+      ...data.incomes.map((value) => [
+        ...Object.entries(value)[0],
+        data.broker.currency,
+      ])
+    );
   });
 
   let datesSet = new Set(dates);
@@ -263,19 +330,18 @@ export const getDataForTheFirstChart = (
       ...new Set(
         el.map((date) =>
           format(
-            addDays(
-              new Date(date[0].replace('income', '').replace('fund', '')),
-              1
-            ),
+            ISODateFormat(date[0].replace('income', '').replace('fund', '')),
             'MMM/yyyy',
             { locale: ptBR }
           )
         )
       )
     );
-    values.push(
-      el
-        .map((value) => value[1].value - value[1].tax)
+
+    //prettier-ignore
+    values.push(el.map((value) => (value[1].value - value[1].tax)
+    *exchangeRates[`${value[2]}_${currency}`]
+        )
         .reduce((acc, curr) => acc + curr, 0)
     );
   });

@@ -99,16 +99,30 @@ export const GlobalProvider = ({ children }) => {
         `${Config.SERVER_ADDRESS}/api/accounts`,
         config
       );
-      dispatch({ type: 'GET_ACCOUNTS', payload: res.data.accounts });
+      dispatch({ type: 'GET_ACCOUNTS', payload: res?.data.accounts });
     } catch (err) {
-      dispatch({ type: 'INVESTMENTS_ERROR', payload: err.response.data.error });
+      dispatch({
+        type: 'GET_ACCOUNTS',
+        payload: err.response?.data.error,
+      });
     }
   };
-  const updateAccounts = (accounts) => {
-    dispatch({
-      type: 'UPDATE_ACCOUNTS',
-      payload: accounts,
-    });
+  const updateAccounts = async (accounts) => {
+    try {
+      const config = {
+        headers: {
+          Authorization: `Bearer ${login.token}`,
+        },
+      };
+
+      const res = await axios.get(
+        `${Config.SERVER_ADDRESS}/api/accounts`,
+        config
+      );
+      dispatch({ type: 'UPDATE_ACCOUNTS', payload: res.data.accounts });
+    } catch (err) {
+      dispatch({ type: 'UPDATE_ACCOUNTS', payload: err.response?.data.error });
+    }
   };
 
   // const getAccounts = () => {
