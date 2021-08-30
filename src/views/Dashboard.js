@@ -155,7 +155,10 @@ const Dashboard = () => {
         );
 
         const config = {
-          headers: { Authorization: `Bearer ${login.token}` },
+          headers: {
+            Authorization: `Bearer ${login.token}`,
+            'Content-Type': 'application/json',
+          },
         };
 
         const locationsForLoop = new Set();
@@ -164,7 +167,8 @@ const Dashboard = () => {
         Object.values(accounts).forEach((location) =>
           locationsForLoop.add(location.currency)
         );
-        console.log(Array.from(locationsForLoop));
+
+        locationsForLoop.add(login.currency);
 
         // for (const location of locationsForLoop) {
         // if (
@@ -172,77 +176,86 @@ const Dashboard = () => {
         //   !(`${location}_${login.currency}` in currencyExhangeRates)
         // ) {
         // try {
-        const res = await axios.post(
-          `${Config.SERVER_ADDRESS}/api/exchanges/`,
-          {
-            currencies: Array.from(currencyExhangeRates),
-            localCurrency: login.currency,
-          },
-          config
-        );
-        setCurrencyExhangeRates(res.data);
-
+        if (Object.keys(currencyExhangeRates).length === 0) {
+          axios
+            .post(
+              `${Config.SERVER_ADDRESS}/api/exchanges`,
+              {
+                currencies: Array.from(locationsForLoop),
+                localCurrency: login.currency,
+              },
+              config
+            )
+            .then((res) => {
+              console.log(res.data);
+              setCurrencyExhangeRates(res.data);
+            });
+        }
         // } catch (error) {
         //   currencyExhangeRates[`${location}_${login.currency}`] = 1.5;
         // }
-        for (const location of Array.from(currencyExhangeRates)) {
-          console.log(location);
-          mapdata[location[0]] = mapdata[location[0]] || 0;
-          mapdata[location[0]] += location[2] * Object.values(location)[0];
+        if (Object.keys(currencyExhangeRates).length !== 0) {
+          for (const location of Array.from(currencyExhangeRates)) {
+            console.log(location);
+            mapdata[location[0]] = mapdata[location[0]] || 0;
+            mapdata[location[0]] += location[2] * Object.values(location)[0];
+          }
+          console.log(topLocations);
+          topLocations.sort((a, b) => b[2] - a[2]);
+          setdataForInvestmentsTopLocation(topLocations);
+          const mapdata = {};
+          topLocations.forEach((location) => {
+            mapdata[location[0]] = mapdata[location[0]] || 0;
+            mapdata[location[0]] +=
+              currencyExhangeRates[`${location[1]}_${login.currency}`] *
+              location[2];
+          });
+          setMapData(mapdata);
         }
-        console.log(topLocations);
+
         // } else {
         //   if (!(`${location}_${login.currency}` in currencyExhangeRates)) {
         //     currencyExhangeRates[`${location}_${login.currency}`] = 1;
         //   }
         // }
         // }
-        topLocations.sort((a, b) => b[2] - a[2]);
-        setdataForInvestmentsTopLocation(topLocations);
-        const mapdata = {};
-        topLocations.forEach((location) => {
-          mapdata[location[0]] = mapdata[location[0]] || 0;
-          mapdata[location[0]] +=
-            currencyExhangeRates[`${location[1]}_${login.currency}`] *
-            location[2];
-        });
-        setMapData(mapdata);
       }
-      const dataForTheFirstChart = getDataForTheFirstChart(
-        investment,
-        undefined,
-        undefined,
-        currencyExhangeRates,
-        login.currency
-      );
-      setIncomes(dataForTheFirstChart);
-      setInvestmentsToBeDisplayed(dataForTheFirstChart);
-
-      const brokers = [
-        ...new Set(
-          currentInvestments.investments.map((invest) => invest.broker.name)
-        ),
-      ];
-      const somas = [];
-      for (let i = 0; i < brokers.length; i++) {
-        let soma = 0;
-        for (let j = 0; j < currentInvestments.investments.length; j++) {
-          if (currentInvestments.investments[j].broker.name === brokers[i]) {
-            soma +=
-              currentInvestments.investments[j].broker.currency !==
-              login.currency
-                ? (currentInvestments.investments[j].initial_amount +
-                    currentInvestments.investments[j].accrued_income) *
-                  currencyExhangeRates[
-                    `${currentInvestments.investments[j].broker.currency}_${login.currency}`
-                  ]
-                : currentInvestments.investments[j].initial_amount +
-                  currentInvestments.investments[j].accrued_income;
+      if (Object.keys(currencyExhangeRates).length !== 0) {
+        const dataForTheFirstChart = getDataForTheFirstChart(
+          investment,
+          undefined,
+          undefined,
+          currencyExhangeRates,
+          login.currency
+        );
+        setIncomes(dataForTheFirstChart);
+        setInvestmentsToBeDisplayed(dataForTheFirstChart);
+        const brokers = [
+          ...new Set(
+            currentInvestments.investments.map((invest) => invest.broker.name)
+          ),
+        ];
+        const somas = [];
+        for (let i = 0; i < brokers.length; i++) {
+          let soma = 0;
+          for (let j = 0; j < currentInvestments.investments.length; j++) {
+            if (currentInvestments.investments[j].broker.name === brokers[i]) {
+              soma +=
+                currentInvestments.investments[j].broker.currency !==
+                login.currency
+                  ? (currentInvestments.investments[j].initial_amount +
+                      currentInvestments.investments[j].accrued_income) *
+                    currencyExhangeRates[
+                      `${currentInvestments.investments[j].broker.currency}_${login.currency}`
+                    ]
+                  : currentInvestments.investments[j].initial_amount +
+                    currentInvestments.investments[j].accrued_income;
+            }
           }
+          somas.push(soma);
         }
-        somas.push(soma);
+        setDataChartInvetmentsPerartBrokers([[...somas], [...brokers]]);
       }
-      setDataChartInvetmentsPerartBrokers([[...somas], [...brokers]]);
     };
     if (dataChartInvetmentsPerBrokers.length === 0) {
       getInvestments();
