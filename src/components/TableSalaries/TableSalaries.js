@@ -14,7 +14,7 @@ import Config from '../../config.json';
 import NumberFormat from 'react-number-format';
 import { reverseFormatNumber } from 'helpers/functions';
 
-const TableSalaries = ({ handleCurrentMoney }) => {
+const TableSalaries = ({ handleCurrentMoney, handleTransactions }) => {
   const [id, setId] = useState('');
   const [salaries, setSalaries] = useState([]);
   const [modal, setModal] = useState(false);
@@ -54,9 +54,11 @@ const TableSalaries = ({ handleCurrentMoney }) => {
           { salary: removeSalary.salary },
           config
         )
-        .then(async (res) => {
+        .then(async ({ data }) => {
+          console.log(data);
           setSalaries(filtered);
           handleCurrentMoney(removeSalary.salary);
+          handleTransactions(data);
         });
     }, 800);
   };

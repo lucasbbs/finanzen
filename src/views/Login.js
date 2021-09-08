@@ -24,14 +24,13 @@ const Login = ({ location }) => {
   const { emptyState } = useContext(GlobalContext);
 
   let history = useHistory();
-
+  const [checkbox, setCheckbox] = useState(false);
   const [fullnameFocus, setfullnameFocus] = useState('');
   const [emailFocus, setemailFocus] = useState('');
   const [passwordFocus, setPasswordFocus] = useState('');
   const [confirmPasswordFocus, setConfirmPasswordFocus] = useState('');
   const [container, setContainer] = useState();
-  const [match, setMatch] = useState(true);
-  const [password, setPassword] = useState(null);
+
   const [registerEmailState, setregisterEmailState] = useState('');
   const [registerEmailForgetState, setregisterEmailForgetState] = useState('');
   const [registerEmailForget, setregisterEmailForget] = useState('');
@@ -49,6 +48,7 @@ const Login = ({ location }) => {
       ? JSON.parse(localStorage.getItem('userInfo'))
       : null
   );
+  const [selected, setSelected] = useState(false);
 
   const redirect = location.search ? location.search.split('=')[1] : '/';
   useEffect(() => {
@@ -64,10 +64,12 @@ const Login = ({ location }) => {
 
   useEffect(() => {
     if (userInfoParam === '?userInfo') {
-      const userInfoFromOauth = atob(
+      let userInfoFromOauth = atob(
         location.search.split('userInfo=').slice(1).join()
       );
-      localStorage.setItem('userInfo', userInfoFromOauth);
+      userInfoFromOauth = JSON.parse(userInfoFromOauth);
+      delete userInfoFromOauth.password;
+      localStorage.setItem('userInfo', JSON.stringify(userInfoFromOauth));
       notify('You are now logged in, redirecting you...');
       setTimeout(function () {
         setLogin(userInfoFromOauth);
@@ -115,7 +117,14 @@ const Login = ({ location }) => {
       });
   };
 
-  const doRegister = async (e, name, email, password, confirmPassword) => {
+  const doRegister = async (
+    e,
+    name,
+    email,
+    password,
+    confirmPassword,
+    termsAndConditions
+  ) => {
     e.preventDefault();
     if (registerEmailState === '') {
       setregisterEmailState('has-danger');
@@ -148,6 +157,13 @@ const Login = ({ location }) => {
     ) {
       return;
     }
+
+    if (!termsAndConditions) {
+      return notify(
+        'You need to accept terms and conditions in order to proceed!',
+        'danger'
+      );
+    }
     e.preventDefault();
     if (password !== confirmPassword) {
       setsourceState('has-danger');
@@ -164,13 +180,14 @@ const Login = ({ location }) => {
             name,
             email,
             password,
+            termsAndConditions,
           },
           config
         )
         .then((res) => {
           // setLogin(JSON.stringify(res.data));
           notify(
-            'You have successfully registered your user, to continue, check the link we forwarded to you through the email you provided'
+            'You have successfully registered your user, to continue, check the link we forwarded through the provided email'
           );
 
           history.push(`/auth/verify/${res.data._id}`);
@@ -217,10 +234,7 @@ const Login = ({ location }) => {
   };
   const verifyEmail = (value) => {
     var emailRex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
-    if (emailRex.test(value)) {
-      return true;
-    }
-    return false;
+    return emailRex.test(value) ? true : false;
   };
   const compare = (string1, string2) => {
     if (string1 === string2) {
@@ -249,14 +263,11 @@ const Login = ({ location }) => {
           stateFunctions['set' + stateNameEqualTo.stateName + 'State'](
             'has-success'
           );
-          setMatch(true);
-          setPassword(event.target.value);
         } else {
           stateFunctions['set' + stateName + 'State']('has-danger');
           stateFunctions['set' + stateNameEqualTo.stateName + 'State'](
             'has-danger'
           );
-          setMatch(false);
         }
         break;
       case 'length':
@@ -271,45 +282,46 @@ const Login = ({ location }) => {
     }
     stateFunctions['set' + stateName](event.target.value);
   };
-  (function () {
-    var CLASSES = {
-      button: 'btn',
-      checkbox: 'toggle__checkbox',
-      container: 'content',
-      form: '[data-toggle="form"]',
-      input: 'inputfield__input',
-      inputfield: 'inputfield',
-    };
-    var CONTAINER_CLASSES = [styles.isAmnesia, styles.isLogin];
-    var CONTAINER = document.getElementById(CLASSES.container);
-    var FORMTOGGLE = document.querySelectorAll('[data-toggle="form"]');
-    [].slice.call(FORMTOGGLE).forEach(function (el) {
-      var $target = document.getElementById(el.getAttribute('data-target'));
-      var $type = 'is-' + el.getAttribute('data-type');
-      el.addEventListener('click', function (e) {
-        if (e) e.preventDefault();
-        if (!$target) return;
-        var children = $target.parentNode.children;
-        Array.prototype.filter.call(children, function (child) {
-          if (child !== $target) {
-            child.classList.remove(styles.isActive);
-          }
-        });
-        if (!$target.classList.contains(styles.isActive)) {
-          $target.classList.add(styles.isActive);
-        }
 
-        CONTAINER_CLASSES.forEach(function (c) {
-          CONTAINER.classList.remove(c);
-        });
-        if ($type === 'is-login') {
-          CONTAINER.classList.add(styles.isLogin);
-        } else {
-          CONTAINER.classList.add(styles.isAmnesia);
-        }
-      });
-    });
-  })();
+  // (function () {
+  //   var CLASSES = {
+  //     button: 'btn',
+  //     checkbox: 'toggle__checkbox',
+  //     container: 'content',
+  //     form: '[data-toggle="form"]',
+  //     input: 'inputfield__input',
+  //     inputfield: 'inputfield',
+  //   };
+  //   var CONTAINER_CLASSES = [styles.isAmnesia, styles.isLogin];
+  //   var CONTAINER = document.getElementById(CLASSES.container);
+  //   var FORMTOGGLE = document.querySelectorAll('[data-toggle="form"]');
+  //   [].slice.call(FORMTOGGLE).forEach(function (el) {
+  //     var $target = document.getElementById(el.getAttribute('data-target'));
+  //     var $type = 'is-' + el.getAttribute('data-type');
+  //     el.addEventListener('click', function (e) {
+  //       if (e) e.preventDefault();
+  //       if (!$target) return;
+  //       var children = $target.parentNode.children;
+  //       Array.prototype.filter.call(children, function (child) {
+  //         if (child !== $target) {
+  //           child.classList.remove(styles.isActive);
+  //         }
+  //       });
+  //       if (!$target.classList.contains(styles.isActive)) {
+  //         $target.classList.add(styles.isActive);
+  //       }
+
+  //       CONTAINER_CLASSES.forEach(function (c) {
+  //         CONTAINER.classList.remove(c);
+  //       });
+  //       if ($type === 'is-login') {
+  //         CONTAINER.classList.add(styles.isLogin);
+  //       } else {
+  //         CONTAINER.classList.add(styles.isAmnesia);
+  //       }
+  //     });
+  //   });
+  // })();
   const handleResetPassword = async () => {
     axios
       .post(`${Config.SERVER_ADDRESS}/api/resetlogin`, {
@@ -328,6 +340,17 @@ const Login = ({ location }) => {
         );
       });
   };
+  const flipBoxClassname = {
+    backgroundColor: 'transparent',
+    width: '768px',
+    height: '500px',
+    perspective: '1000px',
+    position: 'relative',
+    transformStyle: 'preserve-3d',
+    transition: 'transform 1.5s ease-in-out',
+  };
+  flipBoxClassname['transform'] = selected ? '' : 'rotateX( 180deg)';
+
   return (
     <>
       <div className='react-notification-alert-container'>
@@ -339,22 +362,31 @@ const Login = ({ location }) => {
         style={{
           overflow: 'hidden',
           padding: '100px',
-          height: '100%',
-          minHeight: '100%',
+          height: '100vh',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
         }}
       >
-        <Row style={{ alignItems: 'center', justifyContent: 'center' }}>
+        <div className='flip-box' style={flipBoxClassname}>
           <div
             id='amnesiaId'
             style={{
               backgroundColor: '#1e1e2f',
             }}
             className={[styles.containerAmnesia, styles.cardAmnesia].join(' ')}
+            style={{
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+              WebkitBackfaceVisibility: 'hidden',
+              backfaceVisibility: 'hidden',
+            }}
           >
             <div
               className={styles.overlay}
               style={{
-                height: '300px',
+                height: '310px',
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
@@ -381,7 +413,7 @@ const Login = ({ location }) => {
                 classnames(registerEmailForgetState, {
                   'input-group-focus': emailFocus,
                 }),
-                'mt-5',
+                'mt-4',
               ].join(' ')}
             >
               <InputGroupAddon addonType='prepend'>
@@ -428,7 +460,8 @@ const Login = ({ location }) => {
               data-type='login'
               color='danger'
               style={{ float: 'right' }}
-              className={[styles.buttonStyle, 'm-4'].join(' ')}
+              className={[styles.buttonStyle, 'm-4', 'selector'].join(' ')}
+              onClick={() => setSelected(!selected)}
             >
               Cancel
             </Button>
@@ -440,6 +473,14 @@ const Login = ({ location }) => {
               styles.isActive,
             ].join(' ')}
             id='container'
+            style={{
+              position: 'absolute',
+              width: '100%',
+              height: '100%',
+              WebkitBackfaceVisibility: 'hidden',
+              backfaceVisibility: 'hidden',
+              transform: 'rotateX( 180deg)',
+            }}
           >
             <div
               className={[styles.formContainer, styles.signUpContainer].join(
@@ -486,7 +527,7 @@ const Login = ({ location }) => {
                     name='registerName'
                     placeholder='Full Name...'
                     type='text'
-                    onChange={(e) => change(e, 'loginFullName', 'length', 1)}
+                    onChange={(e) => change(e, 'loginFullName', 'length', 3)}
                     onFocus={(e) => setfullnameFocus(true)}
                     onBlur={(e) => setfullnameFocus(false)}
                   />
@@ -618,7 +659,15 @@ const Login = ({ location }) => {
                 ) : null}
                 <FormGroup check>
                   <Label check>
-                    <Input name='optionCheckboxes' type='checkbox' />
+                    <Input
+                      id='terms'
+                      name='optionCheckboxes'
+                      type='checkbox'
+                      checked={checkbox}
+                      onChange={(e) => {
+                        setCheckbox(e.target.checked);
+                      }}
+                    />
                     <span className='form-check-sign' />
                     Accept the terms and conditions
                   </Label>
@@ -632,7 +681,8 @@ const Login = ({ location }) => {
                       document.querySelector('#registerName').value,
                       document.querySelector('#registerEmail').value,
                       document.querySelector('#registerPassword').value,
-                      document.querySelector('#confirm').value
+                      document.querySelector('#confirm').value,
+                      document.querySelector('#terms').checked
                     )
                   }
                 >
@@ -640,7 +690,6 @@ const Login = ({ location }) => {
                 </Button>
               </Form>
             </div>
-
             <div
               className={[styles.formContainer, styles.signInContainer].join(
                 ' '
@@ -735,11 +784,9 @@ const Login = ({ location }) => {
                 </div>
 
                 <a
-                  className={styles.linkStyle}
+                  className={[styles.linkStyle, 'selector'].join(' ')}
                   href='#'
-                  data-toggle='form'
-                  data-target='amnesiaId'
-                  data-type='amnesia'
+                  onClick={() => setSelected(!selected)}
                 >
                   Forgot your password?
                 </a>
@@ -812,7 +859,7 @@ const Login = ({ location }) => {
               </div>
             </div>
           </div>
-        </Row>
+        </div>
       </div>
     </>
   );

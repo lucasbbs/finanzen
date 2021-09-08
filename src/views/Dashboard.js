@@ -15,9 +15,9 @@ import { countries } from './pages/countries';
 
 // core components
 //prettier-ignore
-import {chartExample2,chartExample3,chartExample4,chartDefault} from 'variables/charts.js';
+import {chartDefault} from 'variables/charts.js';
 //prettier-ignore
-import { currencyFormat, percentageFormat, decimalFormat, reverseFormatNumber, geometricMeanReturnInvestments, ISODateFormat } from '../helpers/functions';
+import { currencyFormat, percentageFormat, decimalFormat, geometricMeanReturnInvestments, ISODateFormat } from '../helpers/functions';
 // eslint-disable-next-line
 import TableTopInvestments from '../components/TableTopInvestments/TableTopInvestments';
 import TableSalaries from '../components/TableSalaries/TableSalaries';
@@ -57,12 +57,8 @@ const Dashboard = () => {
       : null
   );
   const { accounts, updateAccounts, getAccounts } = useContext(GlobalContext);
-  useEffect(() => {
-    // if (!accounts && Object.keys(accounts).length === 0) {
-    // getAccounts();
-    // updateAccounts();
-    // }
-  }, []);
+  const [geometricMeane, setGeometricMeane] = useState(0);
+
   // const [loadedCurrencies, setLoadedCurrencies] = useState(false);
   const [equivalentAnnualRate, setEquivalentAnnualRate] = useState(
     '0,0000000000%'
@@ -88,16 +84,16 @@ const Dashboard = () => {
   const [taxes, setTaxes] = useState([]);
   const [taxesToBeDisplayed, setTaxesToBeDisplayed] = useState(0);
   const [filterForTaxes, setFilterForTaxes] = useState('');
+  // const [filterForReturn, setFilterForReturn] = useState('');
   const [filterForGlobalAverage, setFilterForGlobalAverage] = useState('');
-  const [currentMoney, setCurrentMoney] = useState(
-    localStorage.getItem('userInfo')
-      ? JSON.parse(localStorage.getItem('userInfo')).fundsToInvest
-      : 0
-  );
+  // const [currentMoney, setCurrentMoney] = useState(
+  //   localStorage.getItem('userInfo')
+  //     ? JSON.parse(localStorage.getItem('userInfo')).fundsToInvest
+  //     : 0
+  // );
   const [investments, setInvestments] = useState([]);
   const [Incomes, setIncomes] = useState([]);
   const [investmentsToBeDisplayed, setInvestmentsToBeDisplayed] = useState([]);
-
   const [inflations, setInflations] = useState([]);
   const [inflationsToBeDisplayed, setInflationsToBeDisplayed] = useState([]);
   const [inflation12Months, setInflation12Months] = useState([]);
@@ -109,6 +105,10 @@ const Dashboard = () => {
   const [bigChartData, setbigChartData] = useState('data1');
   const setBgChartData = (name) => {
     setbigChartData(name);
+  };
+
+  const handleTransactions = (value) => {
+    setTransactions([...transactions, value]);
   };
 
   useEffect(() => {
@@ -144,7 +144,7 @@ const Dashboard = () => {
   useEffect(() => {
     const getInvestments = async () => {
       const investment = await fetchAllInvestments('', login);
-      geometricMeanReturnInvestments(investment);
+      setGeometricMeane(geometricMeanReturnInvestments(investment));
       const currentInvestments = await fetchInvestments('', login);
 
       setInvestments(investment);
@@ -260,32 +260,20 @@ const Dashboard = () => {
     if (dataChartInvetmentsPerBrokers.length === 0) {
       getInvestments();
     }
-    let newDate = new Date().toISOString();
-    newDate = newDate.split('T');
+    // let newDate = new Date().toISOString();
+    // newDate = newDate.split('T');
     if (Incomes.length !== 0) {
-      let date =
-        Incomes[1].length !== 0
-          ? parse(Incomes[1][Incomes[1].length - 1], 'MMM/yyyy', new Date(), {
-              locale: ptBR,
-            })
-          : new Date();
+      // let date =
+      //   Incomes[1].length !== 0
+      //     ? parse(Incomes[1][Incomes[1].length - 1], 'MMM/yyyy', new Date(), {
+      //         locale: ptBR,
+      //       })
+      //     : new Date();
 
-      setGlobalAverageReturn(
-        percentageFormat(
-          getGlobalAverageReturn(investments, format(date, 'yyyy-MM-dd'))
-        )
-      );
-      setEquivalentAnnualRate(
-        percentageFormat(
-          ((getGlobalAverageReturn(investments, format(date, 'yyyy-MM-dd')) /
-            100 +
-            1) **
-            12 -
-            1) *
-            100
-        )
-      );
-      setFilterForGlobalAverage(format(date, 'yyyy-MM'));
+      setGlobalAverageReturn(percentageFormat(geometricMeane));
+      setEquivalentAnnualRate(percentageFormat((geometricMeane + 1) ** 12 - 1));
+
+      setFilterForGlobalAverage('');
     }
   }, [investments, Incomes]);
   // eslint-disable-next-line
@@ -527,7 +515,7 @@ const Dashboard = () => {
       )
       .then((res) => {
         login['fundsToInvest'] = accounts;
-        setCurrentMoney(accounts);
+        // setCurrentMoney(accounts);
         // setFundsToBeInvested;
         localStorage.setItem('userInfo', JSON.stringify(login));
         updateAccounts(accounts);
@@ -887,9 +875,8 @@ const Dashboard = () => {
                       className='stats table-full-width table-responsive'
                     >
                       <TableSalaries
-                        accounts={accounts}
                         handleCurrentMoney={handleCurrentMoney}
-                        currentMoney={accounts}
+                        handleTransactions={handleTransactions}
                       />
                     </div>
                   </CardFooter>
@@ -941,8 +928,15 @@ const Dashboard = () => {
                         type='month'
                         value={filterForTaxes}
                         onChange={(e) => {
-                          setFilterForTaxes(e.target.value);
-                          handleFilterForTaxes(e.target.value);
+                          if (e.target.value) {
+                            setFilterForTaxes(e.target.value);
+                            handleFilterForTaxes(e.target.value);
+                          } else {
+                            setFilterForTaxes('');
+                            setTaxesToBeDisplayed(
+                              taxes[1].reduce((acc, curr) => acc + curr, 0)
+                            );
+                          }
                         }}
                         max={
                           Incomes[1].length === 0
@@ -1038,12 +1032,38 @@ const Dashboard = () => {
                     >
                       <i className='tim-icons icon-calendar-60' />{' '}
                       <span>Filter Period</span>
+                      <Button
+                        onClick={() => {
+                          setFilterForGlobalAverage('');
+                          setGlobalAverageReturn(
+                            percentageFormat(geometricMeane)
+                          );
+                          setEquivalentAnnualRate(
+                            percentageFormat((geometricMeane + 1) ** 12 - 1)
+                          );
+                        }}
+                        className='btn-link'
+                        color='primary'
+                        style={{ float: 'right', padding: 0, margin: 0 }}
+                      >
+                        Clear Filter &times;
+                      </Button>
                       <Input
                         type='month'
                         value={filterForGlobalAverage}
                         onChange={(e) => {
-                          setFilterForGlobalAverage(e.target.value);
-                          handleFilterForGlobalAverage(e.target.value);
+                          if (e.target.value) {
+                            setFilterForGlobalAverage(e.target.value);
+                            handleFilterForGlobalAverage(e.target.value);
+                          } else {
+                            setFilterForGlobalAverage('');
+                            setGlobalAverageReturn(
+                              percentageFormat(geometricMeane)
+                            );
+                            setEquivalentAnnualRate(
+                              percentageFormat((geometricMeane + 1) ** 12 - 1)
+                            );
+                          }
                         }}
                         max={
                           Incomes[1].length === 0

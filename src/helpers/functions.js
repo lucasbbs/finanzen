@@ -169,33 +169,60 @@ export const getGlobalAverageReturn = (investments, dateInput) => {
   //   return NaN;
   // }
 
-  const currentAmounts = investments
-    .map((investment) => {
-      return {
-        ...investment,
-        incomes: investment.incomes.filter(
-          (income) => Object.values(income)[0].type === 'income'
-        ),
-      };
-    })
-    .filter(
-      (investment) =>
-        new Date(investment.investment_date).getTime() <=
-        new Date(dateInput).getTime()
-    )
-    .map(
-      (investment) =>
-        investment.initial_amount +
-        investment.incomes
-          .filter((income) => {
-            return (
-              new Date(Object.keys(income)[0].replace('income', '')) <=
-              dateInput
-            );
-          })
-          .map((income) => Object.values(income)[0].value)
-          .reduce((acc, curr) => acc + curr, 0)
-    );
+  const currentAmounts =
+    // Number(
+    investments
+      .map((investment) => {
+        return {
+          ...investment,
+          incomes: investment.incomes.filter(
+            (income) => Object.values(income)[0].type === 'income'
+          ),
+        };
+      })
+      .filter(
+        (investment) =>
+          new Date(investment.investment_date).getTime() <=
+          new Date(dateInput).getTime()
+      )
+      .map(
+        (investment) =>
+          investment.initial_amount +
+          investment.incomes
+            .filter((income) => Object.values(income)[0].type === 'income')
+            .filter((income) => {
+              return (
+                new Date(Object.keys(income)[0].replace('income', '')) ===
+                dateInput
+              );
+            })
+            .map((income) => Object.values(income)[0].value)
+            .reduce((acc, curr) => acc + curr, 0)
+      );
+
+  currentAmounts.push(
+    investments
+      .map((investment) => {
+        return {
+          ...investment,
+          incomes: investment.incomes.filter(
+            (income) => Object.values(income)[0].type === 'income'
+          ),
+        };
+      })
+      .map((inv) =>
+        inv.incomes.filter(
+          (income) =>
+            new Date(Object.keys(income)[0].replace('income', '')).getTime() +
+              1 <=
+            new Date(dateInput).getTime()
+        )
+      )
+      .filter((value) => value !== undefined)
+      .map((value) => value.map((obj) => Object.values(obj)[0].value))
+      .flat()
+  );
+
   const incomes = investments
     .filter(
       (investment) =>
@@ -210,9 +237,9 @@ export const getGlobalAverageReturn = (investments, dateInput) => {
     .filter((value) => value !== undefined)
     .map((value) => Object.values(value)[0].value);
 
-  return currentAmounts.length !== 0
+  return currentAmounts.flat().length
     ? incomes.reduce((acc, curr) => acc + curr, 0) /
-        currentAmounts.reduce((acc, curr) => acc + curr, 0)
+        currentAmounts.flat().reduce((acc, curr) => acc + curr, 0)
     : 0;
 };
 
@@ -234,37 +261,44 @@ export const geometricMeanReturnInvestments = (investments) => {
   let datesSet = new Set(dates);
   datesSet = [...datesSet].sort();
   const returns = [];
-  for (const i of datesSet.keys()) {
-    const array = investments
-      .map((invest) => ({
-        initial_amount: invest.initial_amount,
-        incomes: invest.incomes.filter(
-          (date) =>
-            new Date(Object.keys(date)[0].replace('income', '')) <=
-            new Date(datesSet[i])
-        ),
-      }))
-      .filter((entry) => Object.entries(entry)[1][1].length !== 0)
-      .map((rate) => ({
-        current_amount:
-          rate.initial_amount +
-          rate.incomes.reduce(
-            (acc, curr) => acc + Object.values(curr)[0].value,
-            0
-          ),
-        rate:
-          Object.values(rate.incomes[rate.incomes.length - 1])[0].value /
-          (rate.initial_amount +
-            rate.incomes.reduce(
-              (acc, curr) => acc + Object.values(curr)[0].value,
-              0
-            )),
-      }));
 
-    returns.push(array);
+  for (const data of datesSet) {
+    returns.push(getGlobalAverageReturn(investments, data));
   }
-  //prettier-ignore
-  return returns.map((ret) => ret.reduce((acc, curr) => acc + curr.current_amount * curr.rate, 0) / ret.reduce((acc, curr) => acc + curr.current_amount, 0)).map((ret) => ret + 1).reduce((acc, curr) => acc * curr, 1) **(1 / returns.length)
+
+  // for (const i of datesSet.keys()) {
+  //   const array = investments
+  //     .map((invest) => ({
+  //       initial_amount: invest.initial_amount,
+  //       incomes: invest.incomes.filter(
+  //         (date) =>
+  //           new Date(Object.keys(date)[0].replace('income', '')) <=
+  //           new Date(datesSet[i])
+  //       ),
+  //     }))
+  //     .filter((entry) => Object.entries(entry)[1][1].length !== 0)
+  //     .map((rate) => ({
+  //       current_amount:
+  //         rate.initial_amount +
+  //         rate.incomes.reduce(
+  //           (acc, curr) => acc + Object.values(curr)[0].value,
+  //           0
+  //         ),
+  //       rate:
+  //         Object.values(rate.incomes[rate.incomes.length - 1])[0].value /
+  //         (rate.initial_amount +
+  //           rate.incomes.reduce(
+  //             (acc, curr) => acc + Object.values(curr)[0].value,
+  //             0
+  //           )),
+  //     }));
+
+  // returns.push(array);
+  return returns.length
+    ? returns.map((ret) => ret + 1).reduce((acc, curr) => acc * curr, 1) **
+        (1 / returns.length) -
+        1
+    : 0;
 };
 
 //prettier-ignore
@@ -283,7 +317,6 @@ export const getDataForTheFirstChart = (
   exchangeRates,
   currency
 ) => {
-  console.log(income, exchangeRates, currency);
   // var isInitialUndefined = false;
   let dates = [];
   const incomesarray = [];
@@ -531,7 +564,9 @@ export const getDataForTheTopInvestmentsTable = (
       filteredInvestments[i]._id,
       filteredInvestments[i].name,
       Object.values(incomes[i][1][0])[0].value /
-        (filteredInvestments[i].initial_amount + accrued_income[i]),
+        (filteredInvestments[i].initial_amount +
+          accrued_income[i] -
+          Object.values(incomes[i][1][0])[0].value),
       filteredInvestments[i].initial_amount + accrued_income[i],
       filteredInvestments[i].broker.currency,
       Object.values(incomes[i][1][0])[0].value,

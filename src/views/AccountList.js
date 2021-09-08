@@ -226,7 +226,19 @@ const AccountList = () => {
     await axios
       .put(`${Config.SERVER_ADDRESS}/api/accounts/${id}`, objAccount, config)
       .then((res) => {
+        if (
+          currency !== accounts.find((account) => account._id === id).currency
+        ) {
+          login.currency = currency;
+          localStorage.setItem('userInfo', JSON.stringify(login));
+        }
         objAccount['_id'] = id;
+        objAccount['initialAmount'] = amount;
+        objAccount['currency'] = currency;
+        objAccount['balance'] = accounts.find(
+          (account) => account._id === id
+        ).balance;
+
         const objIcon = {};
         objIcon['_id'] = iconId;
         objIcon['Number'] = icon;
@@ -252,6 +264,7 @@ const AccountList = () => {
         );
         toggle();
       });
+    hideAlert();
   };
 
   const warningWithConfirmAndCancelMessage = (id, type = 'archive') => {
@@ -266,6 +279,16 @@ const AccountList = () => {
         onConfirm={() => {
           if (type === 'archive') {
             handleArchive(id);
+          } else if (type === 'edit') {
+            handleUpdate(
+              {
+                name,
+                currency,
+                icon: iconId,
+                initialAmmount: amount,
+              },
+              id
+            );
           } else {
             handleDelete(id);
           }
@@ -273,13 +296,21 @@ const AccountList = () => {
         onCancel={() => cancel()}
         confirmBtnBsStyle='success'
         cancelBtnBsStyle='danger'
-        confirmBtnText={type === 'archive' ? 'Yes, archive!' : 'Yes, delete!'}
+        confirmBtnText={
+          type === 'archive'
+            ? 'Yes, archive!'
+            : type === 'edit'
+            ? 'Yes, proceed!'
+            : 'Yes, delete!'
+        }
         cancelBtnText='Cancel'
         showCancel
         btnSize=''
       >
         {type === 'archive'
           ? 'Do you want to archive this account?'
+          : type === 'edit'
+          ? 'Editing your default currency account will cause your default currency to be changed'
           : 'You will not be able to restore the data for your account again'}
         {/* <FormGroup check>
                   <Label check>
@@ -448,15 +479,22 @@ const AccountList = () => {
                 <Button
                   color='success'
                   onClick={() => {
-                    handleUpdate(
-                      {
-                        name,
-                        currency,
-                        icon: iconId,
-                        initialAmmount: amount,
-                      },
-                      id
-                    );
+                    if (
+                      accounts.find((account) => account._id === id)
+                        .currency === currency
+                    ) {
+                      handleUpdate(
+                        {
+                          name,
+                          currency,
+                          icon: iconId,
+                          initialAmmount: amount,
+                        },
+                        id
+                      );
+                    } else {
+                      warningWithConfirmAndCancelMessage(id, 'edit');
+                    }
                   }}
                 >
                   Save
@@ -623,7 +661,9 @@ const AccountList = () => {
                               setCurrency(filtered.currency);
                               setIcon(filtered.icon.Number);
                               setName(filtered.name);
-                              setAmount(filtered.initialAmmount);
+                              setAmount(
+                                reverseFormatNumber(filtered.initialAmmount)
+                              );
 
                               toggle();
                             }}

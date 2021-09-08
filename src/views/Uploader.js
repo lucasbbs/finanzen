@@ -2,7 +2,7 @@ import axios from 'axios';
 import { format, parse } from 'date-fns';
 import Progressbar from 'components/Progress/Progress';
 import React, { useRef, useState } from 'react';
-import { Button, CustomInput, Input, Label, Row, Table } from 'reactstrap';
+import { Button, Col, CustomInput, Input, Label, Row, Table } from 'reactstrap';
 import Config from '../config.json';
 import { reverseFormatNumber } from '../helpers/functions';
 import { fetchInvestments } from 'services/Investments';
@@ -49,7 +49,9 @@ const Uploader = () => {
           `${format(parse(date, 'yyyy-MM', new Date()), 'yyyy-MM-dd')}income`
         ] = {
           type: 'income',
-          tax: 0,
+          tax: reverseFormatNumber(
+            document.querySelector(`#taxSelector${income.id}`).value
+          ),
           value: reverseFormatNumber(
             document.querySelector(`#selector${income.id}`).value
           ),
@@ -233,7 +235,7 @@ const Uploader = () => {
                 <tr>
                   <th>id</th>
                   <th>Name</th>
-                  <th>Value</th>
+                  <th>Value/Taxes</th>
                 </tr>
               </thead>
               <tbody>
@@ -246,51 +248,150 @@ const Uploader = () => {
                       style={{ paddingTop: '0 !important' }}
                     >
                       <div>
-                        <NumberFormat
-                          disabled={uploading}
-                          type='text'
-                          placeholder='R$0.00'
-                          thousandSeparator={'.'}
-                          decimalSeparator={','}
-                          prefix={'R$'}
-                          customInput={Input}
-                          id={'selector' + invest.id}
-                          defaultValue={
-                            invest[date]
-                              ? Number(invest[date].toFixed(2))
-                              : null
-                          }
-                          onChange={(e) => {
-                            const obj = {};
-                            obj[
-                              `${format(
-                                parse(date, 'yyyy-MM', new Date()),
-                                'yyyy-MM-dd'
-                              )}income`
-                            ] = {
-                              type: 'income',
-                              tax: 0,
-                              value: reverseFormatNumber(e.target.value),
-                            };
-                            incomesArray[invest.id].splice(
-                              incomesArray[invest.id].indexOf(date + '-01'),
-                              1,
-                              obj
-                            );
-                          }}
-                        />
+                        <Row>
+                          <Col md='4'>
+                            <NumberFormat
+                              disabled={uploading}
+                              type='text'
+                              placeholder='R$0.00'
+                              thousandSeparator={'.'}
+                              decimalSeparator={','}
+                              prefix={'R$'}
+                              customInput={Input}
+                              id={'selector' + invest.id}
+                              defaultValue={
+                                invest[date]
+                                  ? Number(invest[date].toFixed(2))
+                                  : null
+                              }
+                              onChange={(e) => {
+                                e.target.id.replace('selector', '');
+                                console.log(incomesArray);
+                                const tax = Object.values(
+                                  incomesArray[
+                                    e.target.id.replace('selector', '')
+                                  ].find(
+                                    (income) =>
+                                      Object.keys(income)[0] ===
+                                      `${format(
+                                        parse(date, 'yyyy-MM', new Date()),
+                                        'yyyy-MM-dd'
+                                      )}income`
+                                  )
+                                )[0].tax;
+                                // incomesArray.find((incomes) => {
+                                //   console.log(incomes);
+                                //   return (
+                                //     Object.keys(incomes)[0] ===
+                                //     e.target.id.replace('selector', '')
+                                //   );
+                                // });
+
+                                const obj = {};
+                                obj[
+                                  `${format(
+                                    parse(date, 'yyyy-MM', new Date()),
+                                    'yyyy-MM-dd'
+                                  )}income`
+                                ] = {
+                                  type: 'income',
+                                  tax: tax,
+                                  value: reverseFormatNumber(e.target.value),
+                                };
+                                incomesArray[invest.id].splice(
+                                  incomesArray[invest.id].indexOf(date + '-01'),
+                                  1,
+                                  obj
+                                );
+                              }}
+                            />
+                          </Col>
+                          <Col md='4'>
+                            <NumberFormat
+                              disabled={uploading}
+                              type='text'
+                              placeholder='R$0.00'
+                              thousandSeparator={'.'}
+                              decimalSeparator={','}
+                              prefix={'R$'}
+                              customInput={Input}
+                              id={'taxSelector' + invest.id}
+                              defaultValue={
+                                invest['taxes']
+                                  ? Number(invest['taxes'].toFixed(2))
+                                  : 0
+                              }
+                              onChange={(e) => {
+                                e.target.id.replace('taxSelector', '');
+                                console.log(incomesArray);
+                                const value = Object.values(
+                                  incomesArray[
+                                    e.target.id.replace('taxSelector', '')
+                                  ].find(
+                                    (income) =>
+                                      Object.keys(income)[0] ===
+                                      `${format(
+                                        parse(date, 'yyyy-MM', new Date()),
+                                        'yyyy-MM-dd'
+                                      )}income`
+                                  )
+                                )[0].value;
+                                // incomesArray.find((incomes) => {
+                                //   console.log(incomes);
+                                //   return (
+                                //     Object.keys(incomes)[0] ===
+                                //     e.target.id.replace('selector', '')
+                                //   );
+                                // });
+
+                                const obj = {};
+                                obj[
+                                  `${format(
+                                    parse(date, 'yyyy-MM', new Date()),
+                                    'yyyy-MM-dd'
+                                  )}income`
+                                ] = {
+                                  type: 'income',
+                                  tax: reverseFormatNumber(e.target.value),
+                                  value: value,
+                                };
+                                incomesArray[invest.id].splice(
+                                  incomesArray[invest.id].indexOf(date + '-01'),
+                                  1,
+                                  obj
+                                );
+                                // const obj = {};
+                                // obj[
+                                //   `${format(
+                                //     parse(date, 'yyyy-MM', new Date()),
+                                //     'yyyy-MM-dd'
+                                //   )}income`
+                                // ] = {
+                                //   type: 'income',
+                                //   tax: 0,
+                                //   value: reverseFormatNumber(e.target.value),
+                                // };
+                                // incomesArray[invest.id].splice(
+                                //   incomesArray[invest.id].indexOf(date + '-01'),
+                                //   1,
+                                //   obj
+                                // );
+                              }}
+                            />
+                          </Col>
+                          <ProgressbarCircle
+                            handleAddIncomeCall={isSubmited}
+                            incomesObj={{ incomes: incomesArray[invest.id] }}
+                            id={invest.id}
+                            setCounting={setCounting}
+                            isTheLastOne={
+                              investmentsBulkUpdate[
+                                investmentsBulkUpdate.length - 1
+                              ].id
+                            }
+                          />
+                        </Row>
                       </div>
-                      <ProgressbarCircle
-                        handleAddIncomeCall={isSubmited}
-                        incomesObj={{ incomes: incomesArray[invest.id] }}
-                        id={invest.id}
-                        setCounting={setCounting}
-                        isTheLastOne={
-                          investmentsBulkUpdate[
-                            investmentsBulkUpdate.length - 1
-                          ].id
-                        }
-                      />
                     </td>
                   </tr>
                 ))}

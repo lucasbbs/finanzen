@@ -17,6 +17,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom';
+import axios from 'axios';
 
 import AuthLayout from 'layouts/Auth/Auth.js';
 import AdminLayout from 'layouts/Admin/Admin.js';
@@ -34,6 +35,8 @@ import {
   isFirtAccess,
 } from './services/auth';
 import { GlobalProvider } from './context/GlobalState';
+
+// axios.defaults.withCredentials = true;
 
 const PrivateRoute = ({ component: Component, ...rest }) => (
   <Route

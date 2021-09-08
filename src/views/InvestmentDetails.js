@@ -462,6 +462,7 @@ const InvestmentDetails = () => {
                         type,
                         rate,
                         indexer,
+                        hasRegisteredInvest: login.hasRegisteredInvest,
                         investment_date: investmentDate,
                         due_date: dueDate,
                         initial_amount: reverseFormatNumber(

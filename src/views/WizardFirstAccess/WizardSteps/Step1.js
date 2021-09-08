@@ -52,7 +52,6 @@ const Step1 = React.forwardRef((props, ref) => {
     stateFunctions['set' + stateName](event.target.value);
   };
   const isValidated = () => {
-    console.log(country, currency);
     if (countryState === 'has-success' && currencyState === 'has-success') {
       return true;
     } else {

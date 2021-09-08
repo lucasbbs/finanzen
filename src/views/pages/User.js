@@ -32,6 +32,13 @@ import {
   Col,
   Label,
   UncontrolledTooltip,
+  Modal,
+  ModalHeader,
+  ModalBody,
+  ModalFooter,
+  InputGroupAddon,
+  InputGroup,
+  InputGroupText,
 } from 'reactstrap';
 import Config from '../../config.json';
 import ReactBSAlert from 'react-bootstrap-sweetalert';
@@ -39,15 +46,19 @@ import { useHistory } from 'react-router-dom';
 import NumberFormat from 'react-number-format';
 import { reverseFormatNumber } from 'helpers/functions';
 import NotificationAlert from 'react-notification-alert';
+import classnames from 'classnames';
 // import DatePicker from 'react-date-picker';
 
 const User = () => {
   let history = useHistory();
   // const [date, setDate] = useState(new Date());
+  const [newEmailFocus, setnewEmailFocus] = useState(false);
+  const [registerNewEmailState, setregisterNewEmailState] = useState('');
+  const [registerNewEmail, setregisterNewEmail] = useState('');
   const [defaultAccount, setDefaultAccount] = useState(
     localStorage.getItem('userInfo')
       ? JSON.parse(localStorage.getItem('userInfo')).defaultAccount
-      : null
+      : ''
   );
   const [accounts, setAccounts] = useState([]);
   const [accountsToFilter, setAccountsToFilter] = useState([]);
@@ -75,6 +86,8 @@ const User = () => {
       ? JSON.parse(localStorage.getItem('userInfo')).email
       : null
   ); // eslint-disable-next-line
+  // const [newEmail, setNewEmail] = useState('');
+  const [code, setCode] = useState('');
   const [hasEmail] = useState(
     JSON.parse(localStorage.getItem('userInfo')).email ? true : false
   ); // eslint-disable-next-line
@@ -84,7 +97,8 @@ const User = () => {
   const [destination, setdestination] = useState('');
   const [sourceState, setsourceState] = useState('');
   const [destinationState, setdestinationState] = useState('');
-
+  const [modal, setModal] = useState(false);
+  const [modalConfirmChangeEmail, setModalConfirmChangeEmail] = useState(false);
   const [isHidden, setIsHidden] = useState(false);
   const [name, setName] = useState(
     localStorage.getItem('userInfo')
@@ -112,7 +126,9 @@ const User = () => {
       ? JSON.parse(localStorage.getItem('userInfo')).currency
       : null
   );
-
+  const toggle = () => setModal(!modal);
+  const toggleModalConfirmChangeEmail = () =>
+    setModalConfirmChangeEmail(!modalConfirmChangeEmail);
   useEffect(() => {
     const getAccounts = async () => {
       const config = {
@@ -149,15 +165,28 @@ const User = () => {
     return false;
   };
 
+  const verifyEmail = (value) => {
+    var emailRex = /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+    return emailRex.test(value) ? true : false;
+  };
   const stateFunctions = {
     setsource: (value) => setsource(value),
     setdestination: (value) => setdestination(value),
     setsourceState: (value) => setsourceState(value),
     setdestinationState: (value) => setdestinationState(value),
     setregisterConfirmPassword: (value) => setregisterConfirmPassword(value),
+    setregisterNewEmailState: (value) => setregisterNewEmailState(value),
+    setregisterNewEmail: (value) => setregisterNewEmail(value),
   };
   const change = (event, stateName, type, stateNameEqualTo, maxValue) => {
     switch (type) {
+      case 'email':
+        if (verifyEmail(event.target.value)) {
+          stateFunctions['set' + stateName + 'State']('has-success');
+        } else {
+          stateFunctions['set' + stateName + 'State']('has-danger');
+        }
+        break;
       case 'equalTo':
         if (compare(event.target.value, stateNameEqualTo.value)) {
           stateFunctions['set' + stateName + 'State']('has-success');
@@ -325,8 +354,180 @@ const User = () => {
     };
     notificationAlertRef.current.notificationAlert(options);
   };
+  const closeBtn = (
+    <button color='danger' className='close' onClick={toggle}>
+      <span style={{ color: 'white' }}>×</span>
+    </button>
+  );
+  const closeBtnModalConfirmChangeEmail = (
+    <button
+      color='danger'
+      className='close'
+      onClick={toggleModalConfirmChangeEmail}
+    >
+      <span style={{ color: 'white' }}>×</span>
+    </button>
+  );
+  const submitChangeEmailHandler = async (e) => {
+    e.preventDefault();
+    if (registerNewEmailState === '') {
+      setregisterNewEmailState('has-danger');
+    }
+
+    if (
+      registerNewEmailState === '' ||
+      registerNewEmailState === 'has-danger'
+    ) {
+      return;
+    }
+    const config = {
+      headers: {
+        'Content-Type': 'application/json',
+        Authorization: `Bearer ${token}`,
+      },
+    };
+
+    await axios
+      .put(
+        `${Config.SERVER_ADDRESS}/api/users/change-email/${userInfo._id}`,
+        { newEmail: registerNewEmail },
+        config
+      )
+      .then((res) => {
+        notify(res.data.message);
+        toggleModalConfirmChangeEmail();
+      })
+      .catch((error) =>
+        notify(
+          error.response && error.response.data.message
+            ? error.response.data.message
+            : error.message,
+          'danger'
+        )
+      );
+  };
+
+  const submitConfirmEmailHandler = async () => {
+    const config = { headers: { Authorization: `Bearer ${token}` } };
+    await axios
+      .put(
+        `${Config.SERVER_ADDRESS}/api/users/confirm-change-email/${code}`,
+        { code },
+        config
+      )
+      .then((res) => {
+        notify('You have successfully updated your email');
+        setEmail(res.data.email);
+        userInfo.email = res.data.email;
+        localStorage.setItem('userInfo', JSON.stringify(userInfo));
+      })
+      .catch((error) =>
+        notify(
+          error.response && error.response.data.message
+            ? error.response.data.message
+            : error.message,
+          'danger'
+        )
+      );
+  };
+
+  const checkAlreadySubmited = async () => {
+    const config = { headers: { Authorization: `Bearer ${token}` } };
+    const { data } = await axios.get(
+      `${Config.SERVER_ADDRESS}/api/register/check-by-user/${userInfo._id}`,
+      config
+    );
+    if (data.found) {
+      toggleModalConfirmChangeEmail();
+    } else {
+      toggle();
+    }
+  };
+
   return (
     <>
+      <Modal modalClassName='modal-black' isOpen={modal} toggle={toggle}>
+        <ModalHeader close={closeBtn} toggle={toggle}>
+          Change e-mail
+        </ModalHeader>
+        <ModalBody>
+          {/* <Input
+            type='email'
+            value={newEmail}
+            onChange={(e) => setNewEmail(e.target.value)}
+            style={{ backgroundColor: 'rgb(43, 53, 83)' }}
+          ></Input> */}
+
+          <InputGroup
+            className={classnames(registerNewEmailState, {
+              'input-group-focus': newEmailFocus,
+            })}
+          >
+            <InputGroupAddon addonType='prepend'>
+              <InputGroupText>
+                <i className='tim-icons icon-email-85' />
+              </InputGroupText>
+            </InputGroupAddon>
+            <Input
+              id='registerNewEmail'
+              name='newEmail'
+              autoComplete='new-password'
+              placeholder='Email...'
+              type='email'
+              onChange={(e) => change(e, 'registerNewEmail', 'email')}
+              onFocus={(e) => setnewEmailFocus(true)}
+              onBlur={(e) => setnewEmailFocus(false)}
+            />
+          </InputGroup>
+          {registerNewEmailState === 'has-danger' ? (
+            <label
+              style={{
+                textAlign: 'right',
+                color: '#ec250d',
+                fontSize: '0.75rem',
+                marginBottom: ' 5px',
+                marginTop: '-10px',
+              }}
+              className='error'
+            >
+              This field is required.
+            </label>
+          ) : null}
+        </ModalBody>
+        <ModalFooter>
+          <Button onClick={submitChangeEmailHandler}>Submit</Button>
+          <Button color='danger' onClick={toggle}>
+            Cancel
+          </Button>
+        </ModalFooter>
+      </Modal>
+
+      <Modal
+        modalClassName='modal-black'
+        isOpen={modalConfirmChangeEmail}
+        toggle={toggleModalConfirmChangeEmail}
+      >
+        <ModalHeader
+          close={closeBtnModalConfirmChangeEmail}
+          toggle={toggleModalConfirmChangeEmail}
+        >
+          Please confirm the code we've sent you in your new e-mail
+        </ModalHeader>
+        <ModalBody>
+          <Input
+            type='text'
+            value={code}
+            onChange={(e) => setCode(e.target.value)}
+            style={{ backgroundColor: 'rgb(43, 53, 83)' }}
+          ></Input>
+        </ModalBody>
+        <ModalFooter>
+          <Button onClick={submitConfirmEmailHandler}>Confirm</Button>
+          <Button color='danger' onClick={toggleModalConfirmChangeEmail}>
+            Cancel
+          </Button>
+        </ModalFooter>
+      </Modal>
       <div className='react-notification-alert-container'>
         <NotificationAlert ref={notificationAlertRef} />
       </div>
@@ -383,6 +584,20 @@ const User = () => {
                           type='email'
                         />
                       </FormGroup>
+                    </Col>
+                    <Col md='2'>
+                      <Button
+                        className='btn-simple '
+                        color='danger'
+                        onClick={(e) => {
+                          e.preventDefault();
+                          checkAlreadySubmited();
+                        }}
+                      >
+                        <span style={{ fontSize: '14px' }}>
+                          Change <br /> e-mail
+                        </span>
+                      </Button>
                     </Col>
                   </Row>
                   {/* <Row>
@@ -607,7 +822,7 @@ const User = () => {
                           className='borderColor'
                           placeholder='password'
                           autoComplete='new-password'
-                          disabled={!hasEmail}
+                          // disabled={!hasEmail}
                           type='password'
                           onChange={(e) => {
                             change(e, 'source', 'password');
@@ -628,7 +843,7 @@ const User = () => {
                           className='borderColor'
                           autoComplete='new-password'
                           placeholder='confirm password'
-                          disabled={!hasEmail}
+                          // disabled={!hasEmail}
                           type='password'
                           onChange={(e) =>
                             change(e, 'destination', 'equalTo', {
@@ -676,6 +891,7 @@ const User = () => {
                       hasRegisteredInvest,
                       monthlySalary,
                       equityObjective,
+                      defaultAccount,
                     });
                   }}
                 >

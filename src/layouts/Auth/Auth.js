@@ -14,24 +14,24 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import React from "react";
-import { Route, Switch, Redirect } from "react-router-dom";
+import React from 'react';
+import { Route, Switch, Redirect } from 'react-router-dom';
 
-import AuthNavbar from "components/Navbars/AuthNavbar.js";
-import Footer from "components/Footer/Footer.js";
+import AuthNavbar from 'components/Navbars/AuthNavbar.js';
+import Footer from 'components/Footer/Footer.js';
 
-import routes from "routes.js";
+import routes from 'routes.js';
 
 const Pages = (props) => {
   React.useEffect(() => {
-    document.documentElement.classList.remove("nav-open");
+    document.documentElement.classList.remove('nav-open');
   });
   const getRoutes = (routes) => {
     return routes.map((prop, key) => {
       if (prop.collapse) {
         return getRoutes(prop.views);
       }
-      if (prop.layout === "/auth") {
+      if (prop.layout === '/auth') {
         return (
           <Route
             path={prop.layout + prop.path}
@@ -45,7 +45,7 @@ const Pages = (props) => {
     });
   };
   const getActiveRoute = (routes) => {
-    let activeRoute = "Default Brand Text";
+    let activeRoute = 'Verify';
     for (let i = 0; i < routes.length; i++) {
       if (routes[i].collapse) {
         let collapseActiveRoute = getActiveRoute(routes[i].views);
@@ -67,26 +67,26 @@ const Pages = (props) => {
   const getFullPageName = (routes) => {
     let pageName = getActiveRoute(routes);
     switch (pageName) {
-      case "Pricing":
-        return "pricing-page";
-      case "Login":
-        return "login-page";
-      case "Register":
-        return "register-page";
-      case "Lock Screen":
-        return "lock-page";
+      case 'Pricing':
+        return 'pricing-page';
+      case 'Login':
+        return 'login-page';
+      case 'Register':
+        return 'register-page';
+      case 'Lock Screen':
+        return 'lock-page';
       default:
-        return "Default Brand Text";
+        return 'Default Brand Text';
     }
   };
   return (
     <>
-      <AuthNavbar brandText={getActiveRoute(routes) + " Page"} />
-      <div className="wrapper wrapper-full-page">
-        <div className={"full-page " + getFullPageName(routes)}>
+      <AuthNavbar brandText={getActiveRoute(routes) + ' Page'} />
+      <div className='wrapper wrapper-full-page'>
+        <div className={'full-page ' + getFullPageName(routes)}>
           <Switch>
             {getRoutes(routes)}
-            <Redirect from="*" to="/auth/login" />
+            <Redirect from='*' to='/auth/login' />
           </Switch>
           <Footer fluid />
         </div>

@@ -113,7 +113,11 @@ const ModalTransactions = ({
 
             res.data['category'] = objCategory;
           }
-          setTransactions([...transactions, res.data]);
+          setTransactions(
+            [...transactions, res.data].sort(
+              (a, b) => new Date(a.date) - new Date(b.date)
+            )
+          );
           toggleModalTransactions();
 
           if (res.data.type === 'Revenue') {

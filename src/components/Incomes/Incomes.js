@@ -304,32 +304,60 @@ const Incomes = ({
           setIsEdit(false);
           setDateIncome('');
           setValueIncome(0.0);
-          notify(
-            `You have successfully updated the income for ${format(
-              parse(
-                dateEl,
-                countChars('-', dateEl) > 1 ? 'yyyy-MM-dd' : 'yyyy-MM',
-                new Date()
-              ),
-              'MMM/yyyy',
-              { locale: ptBR }
-            )}`
-          );
+          if (Object.keys(incomesObj.incomes[0])[0].includes('incomes')) {
+            notify(
+              `You have successfully updated the income for ${format(
+                parse(
+                  dateEl,
+                  countChars('-', dateEl) > 1 ? 'yyyy-MM-dd' : 'yyyy-MM',
+                  new Date()
+                ),
+                'MMM/yyyy',
+                { locale: ptBR }
+              )}`
+            );
+          } else {
+            notify(
+              `You have successfully updated the yield for ${format(
+                parse(
+                  dateEl,
+                  countChars('-', dateEl) > 1 ? 'yyyy-MM-dd' : 'yyyy-MM',
+                  new Date()
+                ),
+                'dd/MMM/yyyy',
+                { locale: ptBR }
+              )}`
+            );
+          }
           updateAccounts();
         } else {
           setDateIncome('');
           setValueIncome(0.0);
-          notify(
-            `You have successfully added the income for ${format(
-              parse(
-                dateEl,
-                countChars('-', dateEl) > 1 ? 'yyyy-MM-dd' : 'yyyy-MM',
-                new Date()
-              ),
-              'MMM/yyyy',
-              { locale: ptBR }
-            )}`
-          );
+          if (Object.keys(incomesObj.incomes[0])[0].includes('incomes')) {
+            notify(
+              `You have successfully added the income for ${format(
+                parse(
+                  dateEl,
+                  countChars('-', dateEl) > 1 ? 'yyyy-MM-dd' : 'yyyy-MM',
+                  new Date()
+                ),
+                'MMM/yyyy',
+                { locale: ptBR }
+              )}`
+            );
+          } else {
+            notify(
+              `You have successfully added the yield for ${format(
+                parse(
+                  dateEl,
+                  countChars('-', dateEl) > 1 ? 'yyyy-MM-dd' : 'yyyy-MM',
+                  new Date()
+                ),
+                'dd/MMM/yyyy',
+                { locale: ptBR }
+              )}`
+            );
+          }
         }
 
         if (index === -1) {
@@ -426,19 +454,27 @@ const Incomes = ({
       )
       .then((response) => {
         setIsLoading(false);
-        notify(
-          `You have successfully deleted the income for the period ${format(
-            ISODateFormat(
-              Object.keys(removido[0])[0]
-                .replace('income', '')
-                .replace('fund', '')
-            ),
-            'MMM/yyyy',
-            {
-              locale: ptBR,
-            }
-          )}`
-        );
+        if (Object.keys(removido[0])[0].includes('income')) {
+          notify(
+            `You have successfully deleted the income for the period ${format(
+              ISODateFormat(Object.keys(removido[0])[0].replace('income', '')),
+              'MMM/yyyy',
+              {
+                locale: ptBR,
+              }
+            )}`
+          );
+        } else {
+          notify(
+            `You have successfully deleted the yield for the period ${format(
+              ISODateFormat(Object.keys(removido[0])[0].replace('fund', '')),
+              'dd/MMM/yyyy',
+              {
+                locale: ptBR,
+              }
+            )}`
+          );
+        }
 
         updateAccounts();
       })
