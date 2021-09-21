@@ -17,7 +17,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom';
-import axios from 'axios';
 
 import AuthLayout from 'layouts/Auth/Auth.js';
 import AdminLayout from 'layouts/Admin/Admin.js';
@@ -40,6 +39,7 @@ import { GlobalProvider } from './context/GlobalState';
 
 const PrivateRoute = ({ component: Component, ...rest }) => (
   <Route
+    key={Date.now()}
     {...rest}
     render={(props) =>
       isAuthenticated() ? (
@@ -82,7 +82,6 @@ ReactDOM.render(
           path='/verify/users/:token'
           render={(props) => <VerifyLayout {...props} />}
         />
-        {/* <Route path='/admin' render={(props) => <AdminLayout {...props} />} /> */}
         <Route path='/rtl' render={(props) => <RTLLayout {...props} />} />
         <Redirect from='/' to='/admin/dashboard' />
       </Switch>

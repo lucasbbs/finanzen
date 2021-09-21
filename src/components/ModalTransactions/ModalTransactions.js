@@ -46,6 +46,9 @@ const ModalTransactions = ({
   setFormerAmount,
   date,
   setDate,
+  oldAmount,
+  isEditing,
+  setIsEditing,
 }) => {
   const {
     // accounts: accountsFromContext,
@@ -148,7 +151,8 @@ const ModalTransactions = ({
           config
         )
         .then((res) => {
-          notify('You have successfully registered a new transaction');
+          notify('You have successfully updated the transaction');
+
           if (res.data.type === 'Transfer') {
             const objDueFromAccount = accounts.find(
               (account) => account._id === res.data.dueFromAccount
@@ -170,6 +174,21 @@ const ModalTransactions = ({
             transactions.sort((a, b) => new Date(a.date) - new Date(b.date))
           );
           toggleModalTransactions();
+          console.log(amount, oldAmount, accountAmount, res.data.ammount);
+          if (res.data.type === 'Revenue') {
+            setAccountAmount(
+              Number((accountAmount + res.data.ammount - oldAmount).toFixed(2))
+            );
+          } else if (res.data.type === 'Expense') {
+            setAccountAmount(
+              Number((accountAmount - res.data.ammount + oldAmount).toFixed(2))
+            );
+          } else {
+            setAccountAmount(
+              Number((accountAmount - res.data.ammount + oldAmount).toFixed(2))
+            );
+          }
+          setIsEditing(false);
           getAccounts();
         })
         .catch((error) => {
@@ -206,13 +225,16 @@ const ModalTransactions = ({
         <NotificationAlert ref={notificationAlertRef} />
       </div>
       <Modal modalClassName='modal-black' isOpen={modalTransactions}>
-        <ModalHeader close={closeBtn}>Register a new Transaction</ModalHeader>
+        <ModalHeader close={closeBtn}>
+          {isEditing ? 'Update the Transaction' : 'Register a new Transaction'}
+        </ModalHeader>
         <ModalBody>
           <ButtonGroup>
             <Button
               color='primary'
               onClick={() => setSelected('Revenue')}
               active={selected === 'Revenue'}
+              disabled={isEditing}
             >
               Revenue
             </Button>
@@ -220,6 +242,7 @@ const ModalTransactions = ({
               color='primary'
               onClick={() => setSelected('Expense')}
               active={selected === 'Expense'}
+              disabled={isEditing}
             >
               Expense
             </Button>
@@ -235,6 +258,7 @@ const ModalTransactions = ({
                 );
               }}
               active={selected === 'Transfer'}
+              disabled={isEditing}
             >
               Transfer
             </Button>
@@ -246,6 +270,7 @@ const ModalTransactions = ({
                 Destination Account
               </Label>
               <Input
+                disabled={isEditing}
                 type='select'
                 style={{ backgroundColor: '#2b3553' }}
                 id='destinationAccountId'

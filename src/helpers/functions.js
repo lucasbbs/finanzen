@@ -1,6 +1,7 @@
 import { addDays } from 'date-fns';
 import format from 'date-fns/format';
 import ptBR from 'date-fns/locale/pt-BR';
+import BigNumber from 'bignumber.js';
 
 export function reverseFormatNumber(val, locale = 'pt-BR') {
   if (!isNaN(val)) return val;
@@ -23,9 +24,9 @@ export function ISODateFormat(d) {
   d = new Date(d);
   const pad = (n) => (n < 10 ? '0' + n : n);
   //prettier-ignore
-  return (new Date(d.getUTCFullYear(),d.getUTCMonth(),d.getUTCDate())
+  return (new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())
     // d.getUTCFullYear()+'-'+pad(d.getUTCMonth()+1)+'-'+pad(d.getUTCDate())+'T'+pad(d.getUTCHours())+':'+pad(d.getUTCMinutes())+':'+pad(d.getUTCSeconds())+'Z'
-    );
+  );
 }
 
 export function currencyFormat(label, currency = 'BRL') {
@@ -152,7 +153,10 @@ export const getDataForTotalTaxes = (income, exchanges, defaultCurrency) => {
     );
     taxes.push(
       el
-        .map((value) => ({ tax: value[1].tax, currency: value[2] }))
+        .map((value) => ({
+          tax: value[1].tax,
+          currency: value[2],
+        }))
         .reduce(
           (acc, curr) =>
             acc + curr.tax * exchanges[`${curr.currency}_${defaultCurrency}`],
@@ -303,11 +307,13 @@ export const geometricMeanReturnInvestments = (investments) => {
 
 //prettier-ignore
 export const getHowMuchMoneyToFinancialFreedom = (value, investments, currency, exchangeRates, accounts) => {
-  if (accounts){
-  return value - (investments.length !== 0 ? investments.filter(inv=> {
-    return inv.isArchived === false}).map((investment) =>  (investment.initial_amount + investment.accrued_income)*exchangeRates[`${investment.broker.currency}_${currency}`])
-    .reduce((acc, curr) => acc + curr, 0):
-    0) - accounts.reduce((acc, curr)=> acc + (curr.initialAmmount + curr.balance)*exchangeRates[`${curr.currency}_${currency}`], 0)}
+  if (accounts) {
+    return value - (investments.length !== 0 ? investments.filter(inv => {
+        return inv.isArchived === false
+      }).map((investment) => (investment.initial_amount + investment.accrued_income) * exchangeRates[`${investment.broker.currency}_${currency}`])
+      .reduce((acc, curr) => acc + curr, 0) :
+      0) - accounts.reduce((acc, curr) => acc + (curr.initialAmmount + curr.balance) * exchangeRates[`${curr.currency}_${currency}`], 0)
+  }
 };
 
 export const getDataForTheFirstChart = (
@@ -365,17 +371,19 @@ export const getDataForTheFirstChart = (
           format(
             ISODateFormat(date[0].replace('income', '').replace('fund', '')),
             'MMM/yyyy',
-            { locale: ptBR }
+            {
+              locale: ptBR,
+            }
           )
         )
       )
     );
 
     //prettier-ignore
-    values.push(el.map((value) => (value[1].value - value[1].tax)
-    *exchangeRates[`${value[2]}_${currency}`]
-        )
-        .reduce((acc, curr) => acc + curr, 0)
+    values.push(el.map((value) => (value[1].value - value[1].tax) *
+        exchangeRates[`${value[2]}_${currency}`]
+      )
+      .reduce((acc, curr) => acc + curr, 0)
     );
   });
 
@@ -392,15 +400,21 @@ export const handleSlicesOfInvestments = (
 ) => {
   const initialSlice =
     investments[1].indexOf(
-      format(new Date(initialDate), 'MMM/yyyy', { locale: ptBR })
+      format(new Date(initialDate), 'MMM/yyyy', {
+        locale: ptBR,
+      })
     ) === -1
       ? 0
       : investments[1].indexOf(
-          format(new Date(initialDate), 'MMM/yyyy', { locale: ptBR })
+          format(new Date(initialDate), 'MMM/yyyy', {
+            locale: ptBR,
+          })
         );
   const finalSlice =
     investments[1].indexOf(
-      format(new Date(finalDate), 'MMM/yyyy', { locale: ptBR })
+      format(new Date(finalDate), 'MMM/yyyy', {
+        locale: ptBR,
+      })
     ) + 1;
 
   return initialSlice !== -2 && finalSlice !== 0
@@ -409,6 +423,40 @@ export const handleSlicesOfInvestments = (
         investments[1].slice(initialSlice, finalSlice),
       ]
     : investments;
+};
+
+export const getDataForTheAverageYearlyBasisInflation = (
+  inflation,
+  firstPeriod = undefined,
+  lastPeriod = undefined
+) => {
+  if (firstPeriod === undefined || firstPeriod === '-01') {
+    firstPeriod = inflation[0].data;
+  }
+  if (lastPeriod === undefined || lastPeriod === '-01') {
+    lastPeriod = inflation[inflation.length - 1].data;
+  }
+
+  let inflations = inflation.slice(
+    Math.max(inflation.map((e) => e.data).indexOf(firstPeriod) - 11, 0),
+    inflation.map((e) => e.data).indexOf(lastPeriod) + 1
+  );
+
+  inflations = getSimpleMovingAverageGeometricMean(inflations).slice(
+    Math.min(inflation.map((e) => e.data).indexOf(firstPeriod), 11)
+  );
+
+  const labels = [];
+  const values = [];
+  inflations.forEach((e) => {
+    labels.push(
+      format(addDays(new Date(e.data), 1), 'MMM/yyyy', {
+        locale: ptBR,
+      })
+    );
+    values.push(e.valor);
+  });
+  return [values, labels];
 };
 
 export const getDataForTheInflationChart = (
@@ -427,6 +475,7 @@ export const getDataForTheInflationChart = (
     Math.max(inflation.map((e) => e.data).indexOf(firstPeriod) - 11, 0),
     inflation.map((e) => e.data).indexOf(lastPeriod) + 1
   );
+
   inflations = getSimpleMovingAverage(inflations);
   inflations = inflations.slice(
     Math.min(inflation.map((e) => e.data).indexOf(firstPeriod), 11)
@@ -435,12 +484,74 @@ export const getDataForTheInflationChart = (
   const values = [];
   inflations.forEach((e) => {
     labels.push(
-      format(addDays(new Date(e.data), 1), 'MMM/yyyy', { locale: ptBR })
+      format(addDays(new Date(e.data), 1), 'MMM/yyyy', {
+        locale: ptBR,
+      })
     );
     values.push(e.valor);
   });
   return [values, labels];
 };
+
+const handleBigNumber = (array, index) => {
+  let N = 1;
+  // let INDEX = BigInt(index);
+  array = array.slice(0, index + 1);
+
+  array.forEach((element) => {
+    // element = new BigNumber(element);
+    N *= element;
+  });
+  return N ** (1 / (index + 1)) - 1;
+  // (acc, curr) => acc * curr.valor
+
+  // .map((infl, index) => ({
+  //   data: infl.data,
+  //   valor: (infl.valor)**(1/(index+1)) - 1,
+};
+export const getDataForTheAverageInflationAllThePeriod = (
+  inflation,
+  firstPeriod = undefined,
+  lastPeriod = undefined
+) => {
+  if (firstPeriod === undefined || firstPeriod === '-01') {
+    firstPeriod = inflation[0].data;
+  }
+  if (lastPeriod === undefined || lastPeriod === '-01') {
+    lastPeriod = inflation[inflation.length - 1].data;
+  }
+  let inflations = inflation.slice(
+    inflation.map((e) => e.data).indexOf(firstPeriod),
+    inflation.map((e) => e.data).indexOf(lastPeriod) + 1
+  );
+  const cumulativeProduct = ((product) => (value) => (product *= value))(1);
+
+  let N = new BigNumber('1');
+  //prettier-ignore
+  inflations = inflations.map((inf, index) => ({
+    data: inf.data,
+    valor: cumulativeProduct(inf.valor) }))
+      .map((value, index, array) =>({
+        data:value.data,
+       valor: handleBigNumber(array.map(arr=> arr.valor), index)
+      }));
+
+  // ** (1 / (index + 1)) - 1
+
+  console.log(N, inflations);
+  const labels = [];
+  const values = [];
+  inflations.forEach((e) => {
+    labels.push(
+      format(addDays(new Date(e.data), 1), 'MMM/yyyy', {
+        locale: ptBR,
+      })
+    );
+    values.push(e.valor);
+  });
+  return [values, labels];
+};
+
 export const getDataForTheInflationChartTotalPeriod = (
   inflation,
   firstPeriod = undefined,
@@ -462,7 +573,7 @@ export const getDataForTheInflationChartTotalPeriod = (
   inflations = inflations.map((inf) => {
     return {
       data: inf.data,
-      valor: (cumulativeProduct(inf.valor) - 1) * 100,
+      valor: cumulativeProduct(inf.valor) - 1,
     };
   });
 
@@ -470,7 +581,9 @@ export const getDataForTheInflationChartTotalPeriod = (
   const values = [];
   inflations.forEach((e) => {
     labels.push(
-      format(addDays(new Date(e.data), 1), 'MMM/yyyy', { locale: ptBR })
+      format(addDays(new Date(e.data), 1), 'MMM/yyyy', {
+        locale: ptBR,
+      })
     );
     values.push(e.valor);
   });
@@ -511,13 +624,62 @@ export const getTopInvestmentsByLocation = (investments) => {
 //prettier-ignore
 export const getSimpleMovingAverage = (inflations) => {
 
-  const initialPeriodInflations = inflations.slice(0, 11).map((infl, index, array)=> 
-  ({data: infl.data, valor: array.slice(0, index +1).reduce((acc, curr) => acc * curr.valor, 1)})).map((infl) => ({ data: infl.data, valor: (infl.valor - 1) * 100 }));
-  const remainingInflations =  inflations
-    .map((inf, index, array) => 
-       ({ data: inf.data, valor: array.slice(index - 12 + 1, index + 1).reduce((acc, curr) => acc * curr.valor, 1)})).map((infl) => ({ data: infl.data, valor: (infl.valor - 1) * 100 }));
-
+  const initialPeriodInflations = inflations.slice(0, 11).map((infl, index, array) =>
+    ({
+      data: infl.data,
+      valor: array.slice(0, index + 1).reduce((acc, curr) => acc * curr.valor, 1)
+    })).map((infl) => ({
+    data: infl.data,
+    valor: (infl.valor - 1)
+  }));
+  const remainingInflations = inflations
+    .map((inf, index, array) =>
+      ({
+        data: inf.data,
+        valor: array.slice(index - 12 + 1, index + 1).reduce((acc, curr) => acc * curr.valor, 1)
+      })).map((infl) => ({
+      data: infl.data,
+      valor: (infl.valor - 1)
+    }));
+  console.log([...initialPeriodInflations, ...remainingInflations.slice(11)])
   return [...initialPeriodInflations, ...remainingInflations.slice(11)]
+};
+
+export const getSimpleMovingAverageGeometricMean = (inflations) => {
+  console.log(inflations, getSimpleMovingAverage(inflations));
+  const initialPeriodInflations = getSimpleMovingAverage(inflations)
+    .map((value) => ({
+      data: value.data,
+      valor: value.valor + 1,
+    }))
+    .slice(0, 11)
+    .map((infl, index, array) => ({
+      data: infl.data,
+      valor: array
+        .slice(0, index + 1)
+        .reduce((acc, curr) => acc * curr.valor, 1),
+    }))
+    .map((infl, index) => ({
+      data: infl.data,
+      valor: infl.valor ** (1 / (index + 1)) - 1,
+    }));
+  const remainingInflations = getSimpleMovingAverage(inflations)
+    .map((value) => ({
+      data: value.data,
+      valor: value.valor + 1,
+    }))
+    .map((inf, index, array) => ({
+      data: inf.data,
+      valor: array
+        .slice(index - 12 + 1, index + 1)
+        .reduce((acc, curr) => acc * curr.valor, 1),
+    }))
+    .map((infl, index) => ({
+      data: infl.data,
+      valor: infl.valor ** (1 / 12) - 1,
+    }));
+
+  return [...initialPeriodInflations, ...remainingInflations.slice(11)];
 };
 
 export const getDataForTheTopInvestmentsTable = (
@@ -528,11 +690,14 @@ export const getDataForTheTopInvestmentsTable = (
 
   let incomes = investments.map((investment) => [
     investment.name,
-    investment.incomes.filter(
-      (date) =>
-        Object.entries(date)[0][0].replace('income', '').replace('fund', '') ===
-        currentMonth
-    ),
+    investment.incomes
+      .filter((key) => Object.values(key)[0].type === 'income')
+      .filter(
+        (date) =>
+          Object.entries(date)[0][0]
+            .replace('income', '')
+            .replace('fund', '') === currentMonth
+      ),
   ]);
 
   const indexes = [];

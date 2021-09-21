@@ -5,7 +5,7 @@ import React, { useContext, useEffect, useRef, useState } from 'react';
 import NumberFormat from 'react-number-format';
 import { Link } from 'react-router-dom';
 import NotificationAlert from 'react-notification-alert';
-
+import ReactBSAlert from 'react-bootstrap-sweetalert';
 import {
   Button,
   Card,
@@ -46,7 +46,6 @@ const Incomes = ({
   currency,
   investment,
 }) => {
-  console.log(investment);
   const { updateAccounts } = useContext(GlobalContext);
 
   const notificationAlertRef = useRef(null);
@@ -65,6 +64,7 @@ const Incomes = ({
     };
     notificationAlertRef.current.notificationAlert(options);
   };
+  const [alert, setAlert] = useState(null);
   const [notUpdate, setNotUpdate] = useState(false);
   const [tax, setTax] = useState(0);
   const [taxRate, setTaxRate] = useState(0);
@@ -242,6 +242,34 @@ const Incomes = ({
       });
   };
   const handleFunds = () => {
+    if (dateIncome === '') {
+      toggleAddFunds();
+      setIsEdit(false);
+      return notify(
+        'Firstly you need to choose a date and then a value for the fund',
+        'danger'
+      );
+    }
+    if (valueEl === '' || valueEl === 0) {
+      toggleAddFunds();
+      setIsEdit(false);
+      return notify(
+        'You need to set a non-zero value for both incomes and yields',
+        'danger'
+      );
+    }
+
+    const tranasactionSelected = updatedIncome.find(
+      (income) => Object.keys(income)[0] === `${dateIncome}fund`
+    );
+    let transaction;
+    try {
+      transaction =
+        tranasactionSelected[Object.keys(tranasactionSelected)[0]].transaction;
+    } catch (error) {
+      transaction = undefined;
+    }
+
     setIsLoading(true);
     if (isEdit) {
       setDateEl(document.querySelector('#FundDate').value);
@@ -255,10 +283,9 @@ const Incomes = ({
     ] = {
       value: -1 * reverseFormatNumber(valueEl),
       type: 'fund',
-      transaction: transactionEl,
+      transaction: transactionEl ? transactionEl : transaction,
       isSubmited: true,
     };
-
     const index = updatedIncome
       .map((key) => Object.keys(key)[0])
       .indexOf(Object.keys(fundObject)[0]);
@@ -266,8 +293,6 @@ const Incomes = ({
     handleCurrentMoney(reverseFormatNumber(valueEl));
     if (index !== -1) {
       updatedIncome.splice(index, 1);
-      try {
-      } catch (error) {}
       setUpdatedIncome(
         [...updatedIncome, fundObject].sort((a, b) =>
           Object.keys(a)[0].localeCompare(Object.keys(b)[0])
@@ -275,10 +300,9 @@ const Incomes = ({
       );
     } else {
       setUpdatedIncome(
-        [...updatedIncome, fundObject].sort((a, b) => {
-          console.log(a, b);
-          return Object.keys(a)[0].localeCompare(Object.keys(b)[0]);
-        })
+        [...updatedIncome, fundObject].sort((a, b) =>
+          Object.keys(a)[0].localeCompare(Object.keys(b)[0])
+        )
       );
     }
 
@@ -415,8 +439,15 @@ const Incomes = ({
           )
         );
         updateAccounts();
+        setTransactionEl('');
       })
       .catch((error) => {
+        updatedIncome.forEach((income) => {
+          if (income[Object.keys(income)[0]].isSubmited) {
+            delete income[Object.keys(income)[0]].isSubmited;
+          }
+        });
+        console.log(updatedIncome);
         setIsLoading(false);
         console.error(error);
         notify(
@@ -426,14 +457,12 @@ const Incomes = ({
           'danger'
         );
       });
-    setTransactionEl('');
     // if (index === -1) {
     // }
     setNotUpdate(false);
   };
 
   const handleRemoveIncome = async (input, removido, formerValues) => {
-    console.log(input);
     if (Object.values(removido[0])[0].value < 0) {
       handleDeleteMoney(formerValues);
     }
@@ -542,6 +571,85 @@ const Incomes = ({
       <span style={{ color: 'white' }}>×</span>
     </button>
   );
+
+  const warningWithConfirmAndCancelMessage = (e) => {
+    setAlert(
+      <ReactBSAlert
+        warning
+        style={{
+          display: 'block',
+          marginTop: '-100px',
+        }}
+        title='Are you sure?'
+        onConfirm={() => deleteIncome(e)}
+        onCancel={() => cancel()}
+        confirmBtnBsStyle='success'
+        cancelBtnBsStyle='danger'
+        confirmBtnText={'Yes, delete!'}
+        cancelBtnText='Cancel'
+        showCancel
+        btnSize=''
+      ></ReactBSAlert>
+    );
+  };
+
+  const cancel = () => {
+    setAlert(
+      <ReactBSAlert
+        danger
+        style={{
+          display: 'block',
+          marginTop: '-100px',
+        }}
+        title='Cancelled'
+        onConfirm={() => hideAlert()}
+        onCancel={() => hideAlert()}
+        confirmBtnText='Ok'
+        confirmBtnBsStyle='success'
+        btnSize=''
+      ></ReactBSAlert>
+    );
+  };
+  const hideAlert = () => {
+    setAlert(null);
+  };
+
+  const deleteIncome = (e) => {
+    const index = updatedIncome
+      .map((key) => Object.keys(key)[0])
+      .indexOf(
+        `${format(
+          parse(
+            e.target.id,
+            e.target.id.includes('$') ? 'dd/MM/yyyy$' : 'dd/MM/yyyy',
+            new Date()
+          ),
+          'yyyy-MM-dd'
+        )}${e.target.innerHTML.includes('-') ? 'fund' : 'income'}`
+      );
+
+    try {
+      if (index !== -1) {
+        const removido = updatedIncome.splice(index, 1);
+        handleRemoveIncome(
+          updatedIncome,
+          removido,
+          reverseFormatNumber(e.target.innerHTML)
+        );
+      } else {
+        throw new Error('Erro');
+      }
+    } catch (error) {
+      console.error(error);
+      notify(
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message,
+        'danger'
+      );
+    }
+    hideAlert();
+  };
   return (
     // eslint-disable
     <>
@@ -728,6 +836,7 @@ const Incomes = ({
           </Button>
         </ModalFooter>
       </Modal>
+
       <Modal
         isOpen={modalAddFunds}
         toggle={() => toggleAddFunds(null, 'voltar')}
@@ -890,6 +999,7 @@ const Incomes = ({
           </Button>
         </ModalFooter>
       </Modal>
+      {alert}
       <Card style={{ marginTop: '25px' }}>
         <CardHeader
           stlye={{
@@ -901,38 +1011,64 @@ const Incomes = ({
           <h4 className='title d-inline'>Incomes</h4>
           {!investment.invest.isArchived ? (
             <>
-              <Link to='#' onClick={toggle}>
+              <Button
+                className='btn-primary btn-sm btn-link'
+                onClick={toggle}
+                style={{
+                  float: 'right',
+                  marginLeft: '20px',
+                  padding: 0,
+                  marginTop: 0,
+                  color: '#ba54f5',
+                }}
+              >
                 <i
                   title='Please, set how many incomes should be presented per page'
                   className='tim-icons icon-settings-gear-63'
                   style={{
                     float: 'right',
-                    marginLeft: '20px',
                     fontSize: '1.5em',
                   }}
                 />
-              </Link>
-              <Link to='#' onClick={toggleAddIncome}>
-                {/* <span style={{ float: 'right', fontSize: '1.5em' }}>+</span> */}
+              </Button>
+              <Button
+                className='btn-primary btn-sm btn-link'
+                onClick={toggleAddIncome}
+                style={{
+                  float: 'right',
+                  marginLeft: '20px',
+                  padding: 0,
+                  marginTop: 0,
+                  color: '#ba54f5',
+                }}
+              >
                 <i
                   title='Register a new interest income'
                   // className='tim-icons icon-simple-add'
                   className='fas fa-plus'
                   style={{
                     float: 'right',
-                    marginLeft: '20px',
                     fontSize: '1.5em',
                   }}
                 />
-              </Link>
-              <Link to='#' onClick={toggleAddFunds}>
-                {/* <span style={{ float: 'right', fontSize: '1.5em' }}>+</span> */}
+              </Button>
+              <Button
+                className='btn-primary btn-sm btn-link'
+                onClick={toggleAddFunds}
+                style={{
+                  float: 'right',
+                  marginLeft: '20px',
+                  padding: 0,
+                  marginTop: 0,
+                  color: '#ba54f5',
+                }}
+              >
                 <i
                   title='Register a funds Receipt'
                   className='fas fa-hand-holding-usd'
                   style={{ float: 'right', fontSize: '1.5em' }}
                 />
-              </Link>
+              </Button>
             </>
           ) : null}
         </CardHeader>
@@ -1032,70 +1168,30 @@ const Incomes = ({
                               toggleAddIncome();
                             }
                           } else {
-                            if (
-                              window.confirm(
-                                'Você tem certeza de que deseja apagar essa receita?'
-                              )
-                            ) {
-                              // console.log(
-                              //   `${
-                              //     e.target.innerHTML.includes('-')
-                              //       ? 'fund'
-                              //       : 'income'
-                              //   }${format(
-                              //     parse(
-                              //       e.target.id,
-                              //       e.target.id.includes('$')
-                              //         ? 'dd/MM/yyyy$'
-                              //         : 'dd/MM/yyyy',
-                              //       new Date()
-                              //     ),
-                              //     'yyyy-MM-dd'
-                              //   )}`
-                              // );
-                              const index = updatedIncome
-                                .map((key) => Object.keys(key)[0])
-                                .indexOf(
-                                  `${format(
-                                    parse(
-                                      e.target.id,
-                                      e.target.id.includes('$')
-                                        ? 'dd/MM/yyyy$'
-                                        : 'dd/MM/yyyy',
-                                      new Date()
-                                    ),
-                                    'yyyy-MM-dd'
-                                  )}${
-                                    e.target.innerHTML.includes('-')
-                                      ? 'fund'
-                                      : 'income'
-                                  }`
-                                );
+                            warningWithConfirmAndCancelMessage(e);
+                            // if (
+                            //   window.confirm(
+                            //     'Você tem certeza de que deseja apagar essa receita?'
+                            //   )
+                            // ) {
+                            //   // console.log(
+                            //   //   `${
+                            //   //     e.target.innerHTML.includes('-')
+                            //   //       ? 'fund'
+                            //   //       : 'income'
+                            //   //   }${format(
+                            //   //     parse(
+                            //   //       e.target.id,
+                            //   //       e.target.id.includes('$')
+                            //   //         ? 'dd/MM/yyyy$'
+                            //   //         : 'dd/MM/yyyy',
+                            //   //       new Date()
+                            //   //     ),
+                            //   //     'yyyy-MM-dd'
+                            //   //   )}`
+                            //   // );
 
-                              try {
-                                if (index !== -1) {
-                                  const removido = updatedIncome.splice(
-                                    index,
-                                    1
-                                  );
-                                  handleRemoveIncome(
-                                    updatedIncome,
-                                    removido,
-                                    reverseFormatNumber(e.target.innerHTML)
-                                  );
-                                } else {
-                                  throw new Error('Erro');
-                                }
-                              } catch (error) {
-                                console.error(error);
-                                notify(
-                                  error.response && error.response.data.message
-                                    ? error.response.data.message
-                                    : error.message,
-                                  'danger'
-                                );
-                              }
-                            }
+                            // }
                           }
                         }
                       }}

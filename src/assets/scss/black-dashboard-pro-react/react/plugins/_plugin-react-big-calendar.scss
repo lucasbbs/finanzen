@@ -1,3 +1,229 @@
+@import url('https://use.fontawesome.com/releases/v5.10.2/css/all.css');
+// .fc-daygrid-dot-event:before {
+//   content: '\25cf';
+//   color: green;
+//   font-family: 'FontAwesome';
+//   box-sizing: border-box;
+// }
+.fc-timegrid-slot-label-cushion,
+.fc-timegrid-axis-cushion {
+  color: white;
+}
+.fc-daygrid-dot-event {
+  display: flex;
+  justify-content: flex-start;
+}
+.fc-event-title {
+  flex-grow: 0 !important;
+}
+.fc-popover .fc-event-title {
+  margin-left: 15px;
+}
+.fc-popover,
+.fc-popover-header,
+.fc-popover-body {
+  background-color: #ddd !important;
+}
+.fc-popover-body .fc-daygrid-dot-event {
+  color: black;
+}
+.fc-daygrid-event-harness {
+  background-color: transparent;
+}
+.fc-list-day > *,
+.fc-list-day-cushion {
+  background-color: rgba(0, 0, 0, 0.125) !important;
+}
+.fc-list-table {
+  table-layout: auto !important;
+  width: 100% !important;
+}
+.fc-event:hover {
+  color: inherit !important;
+}
+.fc-daygrid-event-harness > .fc-daygrid-dot-event:hover:before {
+  content: '\f2ed';
+
+  font-family: 'Font Awesome 5 Free';
+  color: white;
+  position: absolute;
+  top: 0;
+  left: 3px;
+  background-color: #27293d;
+  z-index: 9;
+}
+.fc-event-time {
+  margin-left: 15px;
+}
+.fc-list-event-time:hover:before {
+  content: '\f2ed';
+
+  font-family: 'Font Awesome 5 Free';
+  color: black;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0;
+  pointer-events: all;
+}
+.fc-timegrid-event-harness > .fc-v-event:hover:before {
+  content: '\f2ed';
+
+  font-family: 'Font Awesome 5 Free';
+  color: white;
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 0;
+  pointer-events: all;
+}
+.fc-daygrid-dot-event {
+  position: relative;
+}
+.fc-daygrid-event-harness > .fc-h-event:hover:before {
+  content: '\f2ed';
+  font-family: 'Font Awesome 5 Free';
+  color: white;
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: all;
+  // background-color: #3788d8 !important;
+}
+.fc-daygrid-event-harness > .fc-h-event,
+.fc-timegrid-event-harness > .fc-v-event,
+.fc-list-event-time,
+.fc-daygrid-event-harness > .fc-daygrid-dot-event {
+  cursor: pointer;
+}
+.fc-list-event-time {
+  text-align: left;
+  width: 100px !important;
+}
+.fc-list-event {
+  position: relative;
+  display: table-row !important;
+  width: 100%;
+  background-color: transparent !important;
+}
+.fc-list-event-title {
+  width: 95% !important;
+}
+.fc-list-event > * {
+  text-align: left !important;
+}
+.fc-list-empty {
+  background-color: transparent !important;
+}
+.fc-event:hover {
+  color: black;
+}
+.fc-daygrid-event {
+  background-color: inherit;
+}
+.card-calendar .fc td:last-child {
+  border-right: 1px solid var(--fc-border-color, #ddd) !important;
+}
+.fc .fc-daygrid-day-number {
+  font-size: 20px;
+  position: relative;
+  z-index: 4;
+  padding: 4px;
+}
+.fc .fc-day-other .fc-daygrid-day-top {
+  opacity: 1 !important;
+}
+.fc-col-header-cell {
+  font-weight: 900;
+  background-color: rgba(0, 0, 0, 0.25);
+}
+.fc-col-header-cell-cushion {
+  font-weight: 900 !important;
+}
+.fc-day-today {
+  background-color: #1e1e2f !important;
+}
+.rbc-addons-dnd .rbc-addons-dnd-row-body {
+  position: relative;
+}
+
+.rbc-addons-dnd .rbc-addons-dnd-drag-row {
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+}
+
+.rbc-addons-dnd .rbc-addons-dnd-over {
+  background-color: rgba(0, 0, 0, 0.3);
+}
+
+.rbc-addons-dnd .rbc-event {
+  transition: opacity 150ms;
+}
+.rbc-addons-dnd .rbc-event:hover .rbc-addons-dnd-resize-ns-icon,
+.rbc-addons-dnd .rbc-event:hover .rbc-addons-dnd-resize-ew-icon {
+  display: block;
+}
+
+.rbc-addons-dnd .rbc-addons-dnd-dragged-event {
+  opacity: 0;
+}
+
+.rbc-addons-dnd.rbc-addons-dnd-is-dragging
+  .rbc-event:not(.rbc-addons-dnd-dragged-event):not(.rbc-addons-dnd-drag-preview) {
+  opacity: 0.5;
+}
+
+.rbc-addons-dnd .rbc-addons-dnd-resizable {
+  position: relative;
+  width: 100%;
+  height: 100%;
+}
+
+.rbc-addons-dnd .rbc-addons-dnd-resize-ns-anchor {
+  width: 100%;
+  text-align: center;
+  position: absolute;
+}
+.rbc-addons-dnd .rbc-addons-dnd-resize-ns-anchor:first-child {
+  top: 0;
+}
+.rbc-addons-dnd .rbc-addons-dnd-resize-ns-anchor:last-child {
+  bottom: 0;
+}
+.rbc-addons-dnd
+  .rbc-addons-dnd-resize-ns-anchor
+  .rbc-addons-dnd-resize-ns-icon {
+  display: none;
+  border-top: 3px double;
+  margin: 0 auto;
+  width: 10px;
+  cursor: ns-resize;
+}
+
+.rbc-addons-dnd .rbc-addons-dnd-resize-ew-anchor {
+  position: absolute;
+  top: 4px;
+  bottom: 0;
+}
+.rbc-addons-dnd .rbc-addons-dnd-resize-ew-anchor:first-child {
+  left: 0;
+}
+.rbc-addons-dnd .rbc-addons-dnd-resize-ew-anchor:last-child {
+  right: 0;
+}
+.rbc-addons-dnd
+  .rbc-addons-dnd-resize-ew-anchor
+  .rbc-addons-dnd-resize-ew-icon {
+  display: none;
+  border-left: 3px double;
+  margin-top: auto;
+  margin-bottom: auto;
+  height: 10px;
+  cursor: ew-resize !important;
+}
+
 .rbc-btn {
   color: inherit;
   font: inherit;
@@ -403,10 +629,10 @@ button.rbc-input::-moz-focus-inner {
   color: rgba(255, 255, 255, 0.6);
 }
 .rbc-agenda-time-cell .rbc-continues-after:after {
-  content: " »";
+  content: ' »';
 }
 .rbc-agenda-time-cell .rbc-continues-prior:before {
-  content: "« ";
+  content: '« ';
 }
 .rbc-agenda-date-cell {
   color: rgba(255, 255, 255, 0.8);

@@ -10,14 +10,14 @@ import { Line, Bar, Pie } from 'react-chartjs-2';
 import { VectorMap } from 'react-jvectormap';
 // reactstrap components
 //prettier-ignore
-import {Button,ButtonGroup,Card,CardHeader,CardBody,CardFooter,CardTitle,DropdownToggle,DropdownMenu,DropdownItem,UncontrolledDropdown,Label,FormGroup,Input,Table,Row,Col,Form,Modal, ModalHeader,ModalBody,ModalFooter} from 'reactstrap';
+import { Button, ButtonGroup, Card, CardHeader, CardBody, CardFooter, CardTitle, DropdownToggle, DropdownMenu, DropdownItem, UncontrolledDropdown, Label, FormGroup, Input, Table, Row, Col, Form, Modal, ModalHeader, ModalBody, ModalFooter } from 'reactstrap';
 import { countries } from './pages/countries';
 
 // core components
 //prettier-ignore
-import {chartDefault} from 'variables/charts.js';
+import { chartDefault } from 'variables/charts.js';
 //prettier-ignore
-import { currencyFormat, percentageFormat, decimalFormat, geometricMeanReturnInvestments, ISODateFormat } from '../helpers/functions';
+import { currencyFormat, percentageFormat, decimalFormat, ISODateFormat, getDataForTheAverageInflationAllThePeriod, getDataForTheAverageYearlyBasisInflation } from '../helpers/functions';
 // eslint-disable-next-line
 import TableTopInvestments from '../components/TableTopInvestments/TableTopInvestments';
 import TableSalaries from '../components/TableSalaries/TableSalaries';
@@ -31,6 +31,7 @@ import {
   getHowMuchMoneyToFinancialFreedom,
   getDataForTheInflationChartTotalPeriod,
   getTopInvestmentsByLocation,
+  geometricMeanReturnInvestments,
 } from '../helpers/functions';
 import { fetchInflationsFromLocalAPI } from '../services/Inflation';
 import Spinner from '../components/Spinner/Spinner';
@@ -96,6 +97,10 @@ const Dashboard = () => {
   const [investmentsToBeDisplayed, setInvestmentsToBeDisplayed] = useState([]);
   const [inflations, setInflations] = useState([]);
   const [inflationsToBeDisplayed, setInflationsToBeDisplayed] = useState([]);
+  const [
+    inflationsAverageToBeDisplayed,
+    setInflationsAverageToBeDisplayed,
+  ] = useState([]);
   const [inflation12Months, setInflation12Months] = useState([]);
   const [
     dataChartInvetmentsPerBrokers,
@@ -135,10 +140,17 @@ const Dashboard = () => {
       setInflations(inflation);
       setInflation12Months(getDataForTheInflationChart(inflation));
       setInflationsToBeDisplayed(getDataForTheInflationChart(inflation));
+
+      getDataForTheInflationChartTotalPeriod(inflation);
+
+      setInflationsAverageToBeDisplayed(
+        getDataForTheAverageYearlyBasisInflation(inflation)
+      );
       setInflationsForTheTotalPeriod(
         getDataForTheInflationChartTotalPeriod(inflation)
       );
     };
+
     getInflations();
   }, []);
   useEffect(() => {
@@ -338,20 +350,27 @@ const Dashboard = () => {
       callbacks: {
         label: function (tooltipItem, data) {
           var indice = tooltipItem.index;
-
+          var label = data.datasets[tooltipItem.datasetIndex].label + ': ';
           return bigChartData === 'data1'
             ? `${data.labels[indice]}:  ${currencyFormat(
                 data.datasets[0].data[indice],
                 login.currency
               )}`
-            : `${data.labels[indice]}:  ${(
-                data.datasets[0].data[indice] / 100
-              ).toLocaleString('pt-br', {
+            : (label += new Intl.NumberFormat('pt-BR', {
                 style: 'percent',
                 minimumFractionDigits: 2,
-              })}
-          `;
+              }).format(tooltipItem.value));
+
+          // console.log(data.datasets[context.datasetIndex]); //[context.dataseIndex]);
         },
+
+        // `${data.labels[indice]}:  ${(
+        //     data.datasets[0].data[indice] / 100
+        //   ).toLocaleString('pt-br', {
+        //     style: 'percent',
+        //     minimumFractionDigits: 2,
+        //   })}
+        // `;
       },
     },
     responsive: true,
@@ -369,7 +388,7 @@ const Dashboard = () => {
             callback: (label) =>
               bigChartData === 'data1'
                 ? currencyFormat(Number(label), login.currency)
-                : (Number(label) / 100).toLocaleString('pt-br', {
+                : Number(label).toLocaleString('pt-br', {
                     style: 'percent',
                     minimumFractionDigits: 2,
                   }),
@@ -443,9 +462,16 @@ const Dashboard = () => {
 
       let gradientStroke = ctx.createLinearGradient(0, 230, 0, 50);
 
-      gradientStroke.addColorStop(1, 'rgba(237, 248, 29,0.2)');
-      gradientStroke.addColorStop(0.4, 'rgba(237, 248, 29,0.0)');
+      gradientStroke.addColorStop(1, 'rgba(237, 248, 29,0.3)');
+      gradientStroke.addColorStop(0.4, 'rgba(237, 248, 29,0.1)');
       gradientStroke.addColorStop(0, 'rgba(237, 248, 29,0)'); //yellow colors
+
+      let redColor = ctx.createLinearGradient(0, 230, 0, 50);
+
+      redColor.addColorStop(1, 'rgba(255, 68, 36,0.3)');
+      redColor.addColorStop(0.4, 'rgba(255, 68, 36,0.1)');
+
+      redColor.addColorStop(0, 'rgba(255, 68, 36,0.0)'); //red colors
 
       return {
         gradientStroke,
@@ -468,6 +494,23 @@ const Dashboard = () => {
             pointRadius: 4,
             data: inflationsToBeDisplayed[0], //
           },
+          {
+            label: 'Average Inflation',
+            fill: true,
+            backgroundColor: redColor,
+            borderColor: 'rgba(255, 68, 36)',
+            borderWidth: 2,
+            borderDash: [],
+            borderDashOffset: 0.0,
+            pointBackgroundColor: 'rgba(255, 68, 36)',
+            pointBorderColor: 'rgba(255,255,255,0)',
+            pointHoverBackgroundColor: 'rgba(255, 68, 36)',
+            pointBorderWidth: 20,
+            pointHoverRadius: 4,
+            pointHoverBorderWidth: 15,
+            pointRadius: 4,
+            data: inflationsAverageToBeDisplayed[0], //
+          },
         ],
       };
     },
@@ -488,9 +531,23 @@ const Dashboard = () => {
           finalDate + '-01'
         )
       );
+      setInflationsAverageToBeDisplayed(
+        getDataForTheAverageYearlyBasisInflation(
+          inflations,
+          initialDate + '-01',
+          finalDate + '-01'
+        )
+      );
     } else {
       setInflationsToBeDisplayed(
         getDataForTheInflationChartTotalPeriod(
+          inflations,
+          initialDate + '-01',
+          finalDate + '-01'
+        )
+      );
+      setInflationsAverageToBeDisplayed(
+        getDataForTheAverageInflationAllThePeriod(
           inflations,
           initialDate + '-01',
           finalDate + '-01'
@@ -660,7 +717,7 @@ const Dashboard = () => {
                                   )}
                                   max={
                                     //prettier-ignore
-                                    format(ISODateFormat(inflations[inflations.length - 1]['data']),'yyyy-MM',{ locale: ptBR })
+                                    format(ISODateFormat(inflations[inflations.length - 1]['data']), 'yyyy-MM', { locale: ptBR })
                                   }
                                 />
                               </Col>
@@ -723,6 +780,15 @@ const Dashboard = () => {
                                       '-01'
                                   )
                                 );
+                                setInflationsAverageToBeDisplayed(
+                                  getDataForTheAverageYearlyBasisInflation(
+                                    inflations,
+                                    document.querySelector('#InitialDate')
+                                      .value + '-01',
+                                    document.querySelector('#FinalDate').value +
+                                      '-01'
+                                  )
+                                );
                               }}
                             >
                               <span className='d-none d-sm-block d-md-block d-lg-block d-xl-block'>
@@ -744,6 +810,15 @@ const Dashboard = () => {
                                 setKindOfInflation('totalPeriod');
                                 setInflationsToBeDisplayed(
                                   getDataForTheInflationChartTotalPeriod(
+                                    inflations,
+                                    document.querySelector('#InitialDate')
+                                      .value + '-01',
+                                    document.querySelector('#FinalDate').value +
+                                      '-01'
+                                  )
+                                );
+                                setInflationsAverageToBeDisplayed(
+                                  getDataForTheAverageInflationAllThePeriod(
                                     inflations,
                                     document.querySelector('#InitialDate')
                                       .value + '-01',

@@ -36,6 +36,7 @@ import { GlobalContext } from 'context/GlobalState';
 const AccountDetails = () => {
   const { getAccounts, updateAccounts } = useContext(GlobalContext);
   const history = useHistory();
+  const [isEditing, setIsEditing] = useState(false);
   const [alert, setAlert] = useState(null);
   const [transactionId, setTransactionId] = useState('');
   const [modalTransactions, setModalTransactions] = useState(false);
@@ -45,6 +46,7 @@ const AccountDetails = () => {
   const [modalIcons, setModalIcons] = useState(false);
   const [icon, setIcon] = useState('');
   const [amount, setAmount] = useState(0);
+  const [oldAmount, setOldAmount] = useState(0);
   const [formerAmount, setFormerAmount] = useState(0);
   const [amountTransactions, setAmountTransactions] = useState(0);
   const [iconId, setIconId] = useState('');
@@ -79,6 +81,7 @@ const AccountDetails = () => {
       setAccountId('');
       setAmountTransaction(0);
       setDate('');
+      setIsEditing(false);
     }
 
     setModalTransactions(!modalTransactions);
@@ -291,7 +294,6 @@ const AccountDetails = () => {
             : error.message,
           'danger'
         );
-        toggleModalTransactions();
       });
   };
   const hideAlert = () => {
@@ -368,6 +370,8 @@ const AccountDetails = () => {
         ) : (
           <>
             <ModalTransactions
+              isEditing={isEditing}
+              setIsEditing={setIsEditing}
               formerAmount={formerAmount}
               setFormerAmount={setFormerAmount}
               toggleModalTransactions={toggleModalTransactions}
@@ -390,6 +394,7 @@ const AccountDetails = () => {
               observation={observation}
               setObservation={setObservation}
               amount={amountTransaction}
+              oldAmount={oldAmount}
               setAmount={setAmountTransaction}
               setAccountAmount={setAmount}
               accountAmount={amount}
@@ -685,10 +690,7 @@ const AccountDetails = () => {
                               <td>
                                 {!account?.isArchived &&
                                 trans.type !== 'Initial Amount' &&
-                                trans.category.name !== 'Investimento' &&
-                                trans.category.name !== 'Receita de Juros' &&
-                                trans.category.name !==
-                                  'Vencimento de Investimento' &&
+                                !trans.systemGenerated &&
                                 trans.dueFromAccount !== id ? (
                                   <>
                                     <MyTooltip
@@ -719,6 +721,7 @@ const AccountDetails = () => {
                                           setAmountTransaction(
                                             filtered.ammount
                                           );
+                                          setOldAmount(filtered.ammount);
                                           setDate(filtered.date.slice(0, 10));
                                           setTransactionId(filtered._id);
                                           setCategory(filtered.category.name);
@@ -731,6 +734,7 @@ const AccountDetails = () => {
                                             filtered.dueFromAccount?.name
                                           );
                                           setFormerAmount(filtered.ammount);
+                                          setIsEditing(true);
                                           // setId(filtered._id);
                                           // setCurrency(filtered.currency);
                                           // setIcon(filtered.icon.Number);

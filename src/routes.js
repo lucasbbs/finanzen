@@ -578,15 +578,15 @@ const routes = [
   //   component: Charts,
   //   layout: '/admin',
   // },
-  // {
-  //   isVisible: true,
-  //   path: '/calendar',
-  //   name: 'Calendar',
-  //   rtlName: 'التقويم',
-  //   icon: 'tim-icons icon-time-alarm',
-  //   component: Calendar,
-  //   layout: '/admin',
-  // },
+  {
+    isVisible: true,
+    path: '/calendar',
+    name: 'Calendar',
+    rtlName: 'التقويم',
+    icon: 'tim-icons icon-time-alarm',
+    component: Calendar,
+    layout: '/admin',
+  },
 ];
 
 export default routes;

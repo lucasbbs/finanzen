@@ -11,8 +11,10 @@ import { useEffect } from 'react';
 import Spinner from '../components/Spinner/Spinner';
 import NumberFormat from 'react-number-format';
 import NotificationAlert from 'react-notification-alert';
+import ReactBSAlert from 'react-bootstrap-sweetalert';
 
 const Uploader = () => {
+  const [alert, setAlert] = useState(null);
   const [isSubmited, setIsSubmited] = useState(false);
   const [date, setDate] = useState('');
   const [file, setFile] = useState('');
@@ -147,12 +149,72 @@ const Uploader = () => {
     };
     notificationAlertRef.current.notificationAlert(options);
   };
+
+  const hideAlert = () => {
+    setAlert(null);
+  };
+  const success = () => {
+    setAlert(
+      <ReactBSAlert
+        success
+        style={{ display: 'block', marginTop: '-100px' }}
+        title={'Done'}
+        onConfirm={() => hideAlert()}
+        onCancel={() => hideAlert()}
+        confirmBtnBsStyle='success'
+        btnSize=''
+      ></ReactBSAlert>
+    );
+  };
+  const cancel = () => {
+    setAlert(
+      <ReactBSAlert
+        danger
+        style={{
+          display: 'block',
+          marginTop: '-100px',
+        }}
+        title='Cancelled'
+        onConfirm={() => hideAlert()}
+        onCancel={() => hideAlert()}
+        confirmBtnText='Ok'
+        confirmBtnBsStyle='success'
+        btnSize=''
+      ></ReactBSAlert>
+    );
+  };
+  const warningWithConfirmAndCancelMessage = (e) => {
+    setAlert(
+      <ReactBSAlert
+        warning
+        style={{
+          display: 'block',
+          marginTop: '-100px',
+        }}
+        title='Are you sure?'
+        onConfirm={() => {
+          setHasChosdenDate(true);
+          success();
+        }}
+        onCancel={() => cancel()}
+        confirmBtnBsStyle='success'
+        cancelBtnBsStyle='danger'
+        confirmBtnText={'Yes'}
+        cancelBtnText='Cancel'
+        showCancel
+        btnSize=''
+      >
+        {}
+      </ReactBSAlert>
+    );
+  };
   return (
     <>
       <div className='react-notification-alert-container'>
         <NotificationAlert ref={notificationAlertRef} />
       </div>
       <div className='content'>
+        {alert}
         <h1>
           <i className='fas fa-cloud-upload-alt'></i> Upload
         </h1>
@@ -177,14 +239,8 @@ const Uploader = () => {
                 fontSize: '1.6875rem',
               }}
               onChange={(e) => {
-                if (
-                  window.confirm(
-                    'Você tem certeza de que deseja escolher esas data?'
-                  )
-                ) {
-                  setDate(e.target.value);
-                  setHasChosdenDate(true);
-                }
+                setDate(e.target.value);
+                warningWithConfirmAndCancelMessage(e);
               }}
               value={date}
             />

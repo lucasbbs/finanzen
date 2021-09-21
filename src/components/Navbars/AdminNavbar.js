@@ -375,7 +375,6 @@ const AdminNavbar = (props) => {
                   >
                     <Link
                       to={`/admin/account/${fund._id}`}
-                      target='_blank'
                       rel='noopener noreferrer'
                     >
                       <span style={{ marginBottom: 0 }}>{fund.name}</span>
@@ -512,9 +511,11 @@ const AdminNavbar = (props) => {
         modalClassName='modal-search modal-black'
         isOpen={modalSearch}
         toggle={toggleModalSearch}
+        autoFocus={false}
       >
         <div className='modal-header'>
           <Input
+            autoFocus={true}
             id='inlineFormInputGroup'
             placeholder='SEARCH'
             type='text'

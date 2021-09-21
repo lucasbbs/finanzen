@@ -155,7 +155,6 @@ const AccountList = () => {
         //   response.data.invest.accrued_income +
         //   response.data.invest.initial_amount;
         // localStorage.setItem('userInfo', JSON.stringify(login));
-        updateAccounts();
         // });
       })
       .catch((error) => {

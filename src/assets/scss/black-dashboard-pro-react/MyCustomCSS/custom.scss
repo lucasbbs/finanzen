@@ -631,6 +631,10 @@ button.react-calendar__navigation__arrow {
   height: 20px !important;
 }
 
+::-webkit-calendar-picker-indicator {
+  margin-left: 0px;
+}
+
 .account-class {
   margin-left: 15px;
   color: white;
@@ -682,4 +686,8 @@ button.react-calendar__navigation__arrow {
 
 .sidebar-wrapper > ul.nav > li > div > ul.nav {
   background-color: #27293d;
+}
+
+.btn-link:hover {
+  color: #e14eca !important;
 }

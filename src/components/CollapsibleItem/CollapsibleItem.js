@@ -1,6 +1,6 @@
+import PaginationUI from 'components/Pagination/Pagination';
 import { format } from 'date-fns';
-import { ISODateFormat } from 'helpers/functions';
-import { currencyFormat } from 'helpers/functions';
+import { currencyFormat, ISODateFormat } from 'helpers/functions';
 import { useEffect, useState } from 'react';
 import { Card, CardBody, CardHeader, Collapse, Table } from 'reactstrap';
 
@@ -13,6 +13,8 @@ const CollapsibleItem = ({
   icon,
   transactions,
 }) => {
+  const [currentPage, setCurrentPage] = useState(1);
+  const [statementsPerPage] = useState(3);
   const [
     transactionsForTheComponent,
     setTransactionsForTheComponent,
@@ -44,6 +46,19 @@ const CollapsibleItem = ({
     Transfer: '#0084D9',
     'Initial Amount': '#F0E68C',
   };
+
+  const indexOfLastStatement = currentPage * statementsPerPage;
+
+  const indexOfFirstPost = indexOfLastStatement - statementsPerPage;
+
+  const currentStatements = transactionsForTheComponent.slice(
+    indexOfFirstPost,
+    indexOfLastStatement
+  );
+
+  const paginate = (pageNumber) => {
+    setCurrentPage(pageNumber);
+  };
   return (
     <Card className='card-plain'>
       <CardHeader role='tab'>
@@ -58,31 +73,42 @@ const CollapsibleItem = ({
             setopenedCollapse(!openedCollapse);
           }}
         >
-          {[name, currency].join(', ')}
-
-          <i className='tim-icons icon-minimal-down' />
+          <div className='col row justify-content-between align-items-center'>
+            <div className='row align-items-center'>
+              <span className='mx-2' style={{ fontSize: '35px' }}>
+                <i
+                  style={{ float: 'none' }}
+                  className={`icomoon-${icon.Number}`}
+                ></i>
+              </span>
+              <div className='col row flex-column'>
+                <span>{[name, currency].join(', ')}</span>
+                <small>
+                  Balance: {currencyFormat(initialAmmount + balance, currency)}
+                </small>
+              </div>
+            </div>
+            <i className='tim-icons icon-minimal-down' />
+          </div>
         </a>
       </CardHeader>
       <Collapse role='tabpanel' isOpen={openedCollapse}>
         <CardBody style={{ padding: 0 }}>
-          {
-            <span style={{ fontSize: '35px' }}>
-              <i className={`icomoon-${icon.Number}`}></i>
-            </span>
-          }
-
           <Table>
+            <colgroup>
+              <col span='1' style={{ width: '15%' }} />
+            </colgroup>
             <thead>
               <tr>
                 <th style={{ textAlign: 'center' }}>Type</th>
-                <th>Date</th>
+                <th style={{ textAlign: 'center' }}>Date</th>
                 <th style={{ textAlign: 'center' }}>Category</th>
-                <th>Observation</th>
-                <th>Amount</th>
+                <th style={{ textAlign: 'center' }}>Observation</th>
+                <th style={{ textAlign: 'center' }}>Amount</th>
               </tr>
             </thead>
             <tbody>
-              {transactionsForTheComponent.map((trans) => (
+              {currentStatements.map((trans) => (
                 <tr id={trans._id} key={trans._id}>
                   <td style={{ textAlign: 'center' }}>
                     <span
@@ -96,15 +122,17 @@ const CollapsibleItem = ({
                       {<i className={`icomoon-${type[trans.type]}`} />}
                     </span>
                     <br />
-                    {trans.type === 'Transfer'
-                      ? trans.dueToAccount._id === id
-                        ? 'Outgoing transfer'
-                        : 'Incoming transfer'
-                      : trans.type}
+                    <span>
+                      {trans.type === 'Transfer'
+                        ? trans.dueToAccount._id === id
+                          ? 'Outgoing transfer'
+                          : 'Incoming transfer'
+                        : trans.type}
+                    </span>
                   </td>
-                  <td>
+                  <td style={{ textAlign: 'center' }}>
                     {trans.date
-                      ? format(ISODateFormat(trans.date), 'dd/MMM/yyyy')
+                      ? format(ISODateFormat(trans.date), 'dd/MM/yy')
                       : null}
                   </td>
                   <td style={{ textAlign: 'center' }}>
@@ -167,6 +195,14 @@ const CollapsibleItem = ({
               ))}
             </tbody>
           </Table>
+          <div className='row justify-content-center'>
+            <PaginationUI
+              incomesPerPage={statementsPerPage}
+              totalIncomes={transactionsForTheComponent.length}
+              paginate={paginate}
+              currentPageNumber={currentPage}
+            />
+          </div>
         </CardBody>
       </Collapse>
     </Card>
