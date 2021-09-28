@@ -34,6 +34,7 @@ import {
   isFirtAccess,
 } from './services/auth';
 import { GlobalProvider } from './context/GlobalState';
+import registerServiceWorker from 'registerServiceWorker';
 
 // axios.defaults.withCredentials = true;
 
@@ -89,3 +90,4 @@ ReactDOM.render(
   </GlobalProvider>,
   document.getElementById('root')
 );
+registerServiceWorker();

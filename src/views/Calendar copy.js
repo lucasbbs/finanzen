@@ -34,12 +34,12 @@ export function createEventId() {
 }
 
 const Calendar = () => {
-  const [until, setUntil] = useState('');
   const [login] = useState(
     localStorage.getItem('userInfo')
       ? JSON.parse(localStorage.getItem('userInfo'))
       : null
   );
+  const [until, setUntil] = useState('');
   const [selectedCalendar, setSelectedCalendar] = useState('');
   const [calendars, setCalendars] = useState([]);
   const [interval, setInterval] = useState(0);

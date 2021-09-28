@@ -463,8 +463,14 @@ const InvestmentDetails = () => {
                         rate,
                         indexer,
                         hasRegisteredInvest: login.hasRegisteredInvest,
-                        investment_date: investmentDate,
-                        due_date: dueDate,
+                        investment_date: new Date(
+                          new Date(investmentDate).getTime() +
+                            new Date().getTimezoneOffset() * 60000
+                        ),
+                        due_date: new Date(
+                          new Date(dueDate).getTime() +
+                            new Date().getTimezoneOffset() * 60000
+                        ),
                         initial_amount: reverseFormatNumber(
                           initialAmount,
                           'pt-BR'

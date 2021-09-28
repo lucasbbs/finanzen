@@ -689,5 +689,17 @@ button.react-calendar__navigation__arrow {
 }
 
 .btn-link:hover {
-  color: #e14eca !important;
+  color: #ebd1e7 !important;
+}
+.eventListenerClass {
+  cursor: pointer;
+}
+.eventListenerClass:hover:before {
+  content: '\f2ed';
+  font-family: 'Font Awesome 5 Free';
+  color: white;
+  position: absolute;
+  top: 0;
+  left: 0;
+  pointer-events: all;
 }

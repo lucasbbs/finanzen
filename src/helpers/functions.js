@@ -3,6 +3,44 @@ import format from 'date-fns/format';
 import ptBR from 'date-fns/locale/pt-BR';
 import BigNumber from 'bignumber.js';
 
+export const contrast = (rgb1, rgb2) => {
+  const luminance = (r, g, b) => {
+    const a = [r, g, b].map((v) => {
+      v /= 255;
+      return v <= 0.03928 ? v / 12.92 : Math.pow((v + 0.055) / 1.055, 2.4);
+    });
+    return a[0] * 0.2126 + a[1] * 0.7152 + a[2] * 0.0722;
+  };
+  const lum1 = luminance(rgb1[0], rgb1[1], rgb1[2]);
+  const lum2 = luminance(rgb2[0], rgb2[1], rgb2[2]);
+  const brightest = Math.max(lum1, lum2);
+  const darkest = Math.min(lum1, lum2);
+  return (brightest + 0.05) / (darkest + 0.05);
+};
+
+export const hexAToRGBA = (h) => {
+  if (h) {
+    let [r, g, b, a] = h.match(/\w\w/g).map((x) => parseInt(x, 16));
+    a = +(a / 255).toFixed(3);
+
+    return { r, g, b, a };
+  }
+};
+
+export const RGBAToHexA = (r, g, b, a) => {
+  r = r.toString(16);
+  g = g.toString(16);
+  b = b.toString(16);
+  a = Math.round(a * 255).toString(16);
+
+  if (r.length == 1) r = '0' + r;
+  if (g.length == 1) g = '0' + g;
+  if (b.length == 1) b = '0' + b;
+  if (a.length == 1) a = '0' + a;
+
+  return '#' + r + g + b + a;
+};
+
 export function reverseFormatNumber(val, locale = 'pt-BR') {
   if (!isNaN(val)) return val;
 
@@ -27,6 +65,28 @@ export function ISODateFormat(d) {
   return (new Date(d.getUTCFullYear(), d.getUTCMonth(), d.getUTCDate())
     // d.getUTCFullYear()+'-'+pad(d.getUTCMonth()+1)+'-'+pad(d.getUTCDate())+'T'+pad(d.getUTCHours())+':'+pad(d.getUTCMinutes())+':'+pad(d.getUTCSeconds())+'Z'
   );
+}
+
+export function urlBase64ToUint8Array(base64String) {
+  var padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  var base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
+
+  var rawData = window.atob(base64);
+  var outputArray = new Uint8Array(rawData.length);
+
+  for (var i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+export function createDateString(dateStr) {
+  //  Take a Date value, and turn it into a "2005-05-26T11:37:42" string
+  const tzoffset = new Date().getTimezoneOffset() * 60000; //offset in milliseconds
+  const currentDate = new Date(dateStr);
+  const withTimezone = new Date(currentDate.getTime() - tzoffset);
+  const localISOTime = withTimezone.toISOString().slice(0, 19).replace('Z', '');
+  return localISOTime;
 }
 
 export function currencyFormat(label, currency = 'BRL') {
