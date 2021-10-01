@@ -703,3 +703,43 @@ button.react-calendar__navigation__arrow {
   left: 0;
   pointer-events: all;
 }
+
+.custom-switch .custom-control-input:checked ~ .custom-control-label::before {
+  background: -moz-radial-gradient(
+    center,
+    ellipse cover,
+    rgba(85, 15, 94, 1) 0%,
+    rgba(37, 20, 73, 1) 100%
+  ) !important;
+  background: -webkit-radial-gradient(
+    center,
+    ellipse cover,
+    rgba(85, 15, 94, 1) 0%,
+    rgba(37, 20, 73, 1) 100%
+  ) !important;
+  background: -o-radial-gradient(
+    center,
+    ellipse cover,
+    rgba(85, 15, 94, 1) 0%,
+    rgba(37, 20, 73, 1) 100%
+  ) !important;
+  background: -ms-radial-gradient(
+    center,
+    ellipse cover,
+    rgba(85, 15, 94, 1) 0%,
+    rgba(37, 20, 73, 1) 100%
+  ) !important;
+  background: radial-gradient(
+    ellipse at center,
+    rgba(85, 15, 94, 1) 0%,
+    rgba(37, 20, 73, 1) 100%
+  ) !important;
+}
+
+.form-check input[type='checkbox'][disabled]:checked + .form-check-sign::before,
+.form-check
+  input[type='checkbox'][disabled]:checked
+  + .form-check-sign::before {
+  border: none;
+  background-color: #aaa;
+}

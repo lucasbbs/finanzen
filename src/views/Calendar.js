@@ -47,11 +47,13 @@ import {
   hexAToRGBA,
   createDateString,
 } from 'helpers/functions';
+import ReactBSAlert from 'react-bootstrap-sweetalert';
 
 const localizer = momentLocalizer(moment);
 // const DnDCalendar = withDragAndDrop(BigCalendar);
 
 const Calendar = () => {
+  const [isEditable, setIsEditable] = useState(true);
   const [displayColorPicker, setDisplayColorPicker] = useState(false);
   const [color, setColor] = useState(undefined);
   const [login] = useState(
@@ -71,7 +73,7 @@ const Calendar = () => {
   const [until, setUntil] = useState('');
   const [selectedCalendar, setSelectedCalendar] = useState('');
   const [calendars, setCalendars] = useState([]);
-  const [interval, setInterval] = useState(0);
+  const [interval, setIntervalo] = useState(0);
   const [recurrence, setRecurrence] = useState('');
   const [isRecurringEvent, setIsRecurringEvent] = useState(false);
   const [description, setDescription] = useState('');
@@ -82,16 +84,16 @@ const Calendar = () => {
   const [modal, setModal] = useState(false);
 
   const selectedEvent = (event, pointerEvent) => {
-    console.log(event);
     if (pointerEvent.nativeEvent.offsetX <= 13) {
-      deleteEvent(event._id);
+      warningWithConfirmAndCancelMessage(event);
     } else {
+      setIsEditable(!event.investment);
       setDescription(event.description);
       if (event.until) {
         setUntil(event.until.slice(0, 10));
       }
       setSelectedCalendar(event.calendar);
-      setInterval(event.interval);
+      setIntervalo(event.interval);
       setRecurrence(event.freq);
       setSelectedCalendar(event.calendar);
       setAllDay(event.allDay);
@@ -351,7 +353,7 @@ const Calendar = () => {
         handleEvents();
         toggle();
         notify(
-          `You have successfully added the event ${obj.title} for ${obj.start}-${obj.end}`
+          `You have successfully updated the event ${obj.title} for ${obj.start}-${obj.end}`
         );
       } catch (error) {
         notify(
@@ -444,14 +446,87 @@ const Calendar = () => {
     notificationAlertRef.current.notificationAlert(options);
   };
 
+  const deleteSingleEvent = async (event) => {
+    const config = { headers: { Authorization: `Bearer ${login.token}` } };
+    const exceptions = recurringEvents.find((evt) => evt._id === event._id)
+      .exceptions;
+    exceptions.push(event.start);
+    const obj = {
+      exceptions: exceptions,
+    };
+    try {
+      const { data } = await axios.put(
+        `${Config.SERVER_ADDRESS}/api/eventCalendars/${event._id}`,
+        obj,
+        config
+      );
+      const selectedIndex = recurringEvents.findIndex(
+        (evt) => evt._id === event._id
+      );
+      if (selectedIndex === -1) {
+        recurringEvents.push(
+          new RecurringEvent(
+            data.start,
+            data.freq,
+            data.interval,
+            data.end,
+            data.title,
+            data.allDay,
+            data.color,
+            data.until,
+            data.exceptions,
+            data._id,
+            data.description,
+            data.calendar
+          )
+        );
+      } else {
+        recurringEvents[selectedIndex] = new RecurringEvent(
+          data.start,
+          data.freq,
+          data.interval,
+          data.end,
+          data.title,
+          data.allDay,
+          data.color,
+          data.until,
+          data.exceptions,
+          data._id,
+          data.description,
+          data.calendar
+        );
+      }
+
+      setRecurringEvents([...recurringEvents]);
+      success();
+    } catch (error) {
+      notify(
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message,
+        'danger'
+      );
+    }
+  };
   const deleteEvent = async (id) => {
     const config = { headers: { Authorization: `Bearer ${login.token}` } };
-    await axios.delete(
-      `${Config.SERVER_ADDRESS}/api/eventCalendars/${id}`,
-      config
-    );
-    setCalendarEvents(calendarEvents.filter((evt) => evt._id !== id));
-    setRecurringEvents(recurringEvents.filter((evt) => evt._id !== id));
+    try {
+      await axios.delete(
+        `${Config.SERVER_ADDRESS}/api/eventCalendars/${id}`,
+        config
+      );
+      setCalendarEvents(calendarEvents.filter((evt) => evt._id !== id));
+      setRecurringEvents(recurringEvents.filter((evt) => evt._id !== id));
+      successDeleteRecurring();
+      notify('You have successfully deleted the event in your calendar');
+    } catch (error) {
+      notify(
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message,
+        'danger'
+      );
+    }
   };
 
   const eventColors = (event, start, end, isSelected) => {
@@ -508,6 +583,7 @@ const Calendar = () => {
       setIsRecurringEvent(false);
       setTitle('');
       setSelectedCalendar('');
+      setIsEditable(true);
     }
   };
 
@@ -524,6 +600,100 @@ const Calendar = () => {
   };
   const handleClick = () => {
     setDisplayColorPicker(!displayColorPicker);
+  };
+
+  const successDeleteRecurring = () => {
+    setAlert(
+      <ReactBSAlert
+        success
+        style={{ display: 'block', marginTop: '-100px' }}
+        title='Deleted'
+        onConfirm={() => {
+          hideAlert();
+        }}
+        onCancel={() => hideAlert()}
+        confirmBtnBsStyle='success'
+        btnSize=''
+      >
+        Your recurring event was deleted...
+      </ReactBSAlert>
+    );
+  };
+  const success = () => {
+    setAlert(
+      <ReactBSAlert
+        success
+        style={{ display: 'block', marginTop: '-100px' }}
+        title='Deleted'
+        onConfirm={() => {
+          hideAlert();
+        }}
+        onCancel={() => hideAlert()}
+        confirmBtnBsStyle='success'
+        btnSize=''
+      >
+        Your event was deleted...
+      </ReactBSAlert>
+    );
+  };
+  const cancelDelete = () => {
+    setAlert(
+      <ReactBSAlert
+        danger
+        style={{ display: 'block', marginTop: '-100px' }}
+        title='Cancelled'
+        onConfirm={() => hideAlert()}
+        onCancel={() => hideAlert()}
+        confirmBtnText='Ok'
+        confirmBtnBsStyle='success'
+        btnSize=''
+      ></ReactBSAlert>
+    );
+  };
+  const warningWithConfirmAndCancelMessage = (event) => {
+    setAlert(
+      <ReactBSAlert
+        warning
+        style={{ display: 'block', marginTop: '-100px' }}
+        title='Are you sure?'
+        onConfirm={() => {
+          try {
+            handleDelete();
+          } catch (error) {}
+        }}
+        onCancel={() => cancelDelete()}
+        confirmBtnBsStyle='success'
+        cancelBtnBsStyle='danger'
+        confirmBtnText='Yes, delete!'
+        customButtons={
+          <>
+            <Button color='danger' onClick={() => cancelDelete()}>
+              Cancel
+            </Button>
+
+            <Button color='success' onClick={() => deleteEvent(event._id)}>
+              {event.recurrent
+                ? 'Delete all the event for this recurrence'
+                : 'Delete'}
+            </Button>
+
+            {event.recurrent ? (
+              <Button onClick={() => deleteSingleEvent(event)}>
+                Delete only this event
+              </Button>
+            ) : null}
+          </>
+        }
+        cancelBtnText='Cancel'
+        showCancel
+        btnSize=''
+      >
+        you will not be able to restore this event data
+      </ReactBSAlert>
+    );
+  };
+  const hideAlert = () => {
+    setAlert(null);
   };
 
   return (
@@ -543,8 +713,9 @@ const Calendar = () => {
           <ModalBody>
             <Label>Calendar</Label>
             <Input
+              disabled={!isEditable}
               type='select'
-              autoFocus={true}
+              autoFocus={isEditable}
               style={{ backgroundColor: '#27293d' }}
               value={selectedCalendar}
               onChange={(e) => setSelectedCalendar(e.target.value)}
@@ -560,6 +731,7 @@ const Calendar = () => {
             </Input>
             <Label htmlFor='titleId'>Title</Label>
             <Input
+              autoFocus={!isEditable}
               id='titleId'
               style={{ backgroundColor: '#27293d' }}
               value={title}
@@ -580,6 +752,7 @@ const Calendar = () => {
               </Label>
               <Label check>
                 <Input
+                  disabled={!isEditable}
                   id='allDay'
                   style={{ backgroundColor: '#27293d' }}
                   checked={allDay}
@@ -595,6 +768,7 @@ const Calendar = () => {
             </FormGroup>
             <Label htmlFor='startFromId'>Start From:</Label>
             <Input
+              disabled={!isEditable}
               id='startFromId'
               style={{ backgroundColor: '#27293d' }}
               type={!allDay ? 'datetime-local' : 'date'}
@@ -603,6 +777,7 @@ const Calendar = () => {
             />
             <Label htmlFor='endAtId'>End At:</Label>
             <Input
+              disabled={!isEditable}
               id='endAtId'
               style={{ backgroundColor: '#27293d' }}
               type={!allDay ? 'datetime-local' : 'date'}
@@ -663,6 +838,7 @@ const Calendar = () => {
               </Label>
               <Label check>
                 <Input
+                  disabled={!isEditable}
                   id='recurringEventsId'
                   style={{ backgroundColor: '#27293d' }}
                   checked={isRecurringEvent}
@@ -702,7 +878,7 @@ const Calendar = () => {
                     id='intervalId'
                     style={{ backgroundColor: '#27293d' }}
                     value={interval}
-                    onChange={(e) => setInterval(e.target.value)}
+                    onChange={(e) => setIntervalo(e.target.value)}
                   />
                 </Col>
                 <Col md='4'>

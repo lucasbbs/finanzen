@@ -14,6 +14,7 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
+import { getGPUTier } from 'detect-gpu';
 import React, { useState, useEffect, useRef } from 'react';
 import axios from 'axios';
 import { currencies } from './currencies';
@@ -39,6 +40,7 @@ import {
   InputGroupAddon,
   InputGroup,
   InputGroupText,
+  CustomInput,
 } from 'reactstrap';
 import Config from '../../config.json';
 import ReactBSAlert from 'react-bootstrap-sweetalert';
@@ -47,11 +49,34 @@ import NumberFormat from 'react-number-format';
 import { reverseFormatNumber } from 'helpers/functions';
 import NotificationAlert from 'react-notification-alert';
 import classnames from 'classnames';
+import { urlBase64ToUint8Array } from 'helpers/functions';
+import { getOperatingSystemName } from 'helpers/functions';
 // import DatePicker from 'react-date-picker';
 
 const User = () => {
   let history = useHistory();
   // const [date, setDate] = useState(new Date());
+  const [
+    checkboxSendPushNotifications,
+    setCheckboxSendPushNotifications,
+  ] = useState(
+    localStorage.getItem('userInfo')
+      ? JSON.parse(localStorage.getItem('userInfo'))
+          .isSendNotificationsActivated
+      : false
+  );
+  const [checkboxBondYieldDates, setCheckboxBondYieldDates] = useState(
+    localStorage.getItem('userInfo')
+      ? JSON.parse(localStorage.getItem('userInfo'))
+          .isSendBondYieldDatesNotificationsActivated
+      : true
+  );
+  const [checkboxDueDate, setCheckboxDueDate] = useState(
+    localStorage.getItem('userInfo')
+      ? JSON.parse(localStorage.getItem('userInfo'))
+          .isSendDueDatesNotificationsActivated
+      : true
+  );
   const [newEmailFocus, setnewEmailFocus] = useState(false);
   const [registerNewEmailState, setregisterNewEmailState] = useState('');
   const [registerNewEmail, setregisterNewEmail] = useState('');
@@ -242,6 +267,14 @@ const User = () => {
             userInfo['monthlySalary'] = monthlySalary;
             userInfo['equityObjective'] = equityObjective;
             userInfo['email'] = email;
+            userInfo[
+              'isSendNotificationsActivated'
+            ] = checkboxSendPushNotifications;
+            userInfo['isSendDueDatesNotificationsActivated'] = checkboxDueDate;
+            userInfo[
+              'isSendBondYieldDatesNotificationsActivated'
+            ] = checkboxBondYieldDates;
+
             localStorage.setItem('userInfo', JSON.stringify(userInfo));
           })
           .catch((error) =>
@@ -443,7 +476,124 @@ const User = () => {
       toggle();
     }
   };
+  const askForNotificationPermission = () => {
+    Notification.requestPermission(function (result) {
+      console.log('User Choice', result);
+      if (result !== 'granted') {
+        console.log('No notification permission granted!');
+      } else {
+        configurePushSub();
+        // displayConfirmNotification();
+      }
+    });
+  };
 
+  function configurePushSub() {
+    if (!('serviceWorker' in navigator)) {
+      return;
+    }
+
+    var reg;
+    navigator.serviceWorker.ready
+      .then(function (swreg) {
+        reg = swreg;
+        return swreg.pushManager.getSubscription();
+      })
+      .then(function (sub) {
+        if (sub === null) {
+          // Create a new subscription
+          var vapidPublicKey =
+            'BOChVD1tKTc0Of3c-0JplT1y5FPOm6oijP_4stWBXwoQe6xI4GGt6cnpdu4JLwt_Znj23bj_hku8OSois1y9fLE';
+          var convertedVapidPublicKey = urlBase64ToUint8Array(vapidPublicKey);
+          return reg.pushManager.subscribe({
+            userVisibleOnly: true,
+            applicationServerKey: convertedVapidPublicKey,
+          });
+        } else {
+          // We have a subscription
+        }
+      })
+      .then(async function (newSub) {
+        // fazer chamada ao backend para salvar no banco de dados
+        let key;
+        let authSecret;
+        let endPoint;
+        if (newSub) {
+          const rawKey = newSub.getKey ? newSub.getKey('p256dh') : '';
+          key = rawKey
+            ? btoa(String.fromCharCode.apply(null, new Uint8Array(rawKey)))
+            : '';
+          var rawAuthSecret = newSub.getKey ? newSub.getKey('auth') : '';
+          authSecret = rawAuthSecret
+            ? btoa(
+                String.fromCharCode.apply(null, new Uint8Array(rawAuthSecret))
+              )
+            : '';
+
+          endPoint = newSub.endpoint;
+          const config = {
+            headers: {
+              'Content-Type': 'application/json',
+              Authorization: `Bearer ${token}`,
+            },
+          };
+          const gpuTier = await getGPUTier();
+          const info = getOperatingSystemName(this);
+          console.log(info);
+          await axios.post(
+            `${Config.SERVER_ADDRESS}/api/pushNotifications/`,
+            {
+              endpoint: endPoint,
+              key,
+              auth: authSecret,
+              gpu: gpuTier.gpu,
+              operating_system: `${info.os} ${info.osVersion}`,
+              device: info.mobile ? 'mobile' : 'desktop',
+              browser: `${info.browser} ${info.browserMajorVersion}`,
+              operating_system_architecture: info.arch,
+            },
+            config
+          );
+        }
+      })
+      .then(function (res) {
+        displayConfirmNotification();
+      })
+      .catch(function (err) {
+        console.log(err);
+      });
+  }
+  function displayConfirmNotification() {
+    if ('serviceWorker' in navigator) {
+      var options = {
+        body: 'You successfully subscribed to our Notification service!',
+        icon: 'https://i.ibb.co/XCJJ8K7/logo.png',
+        image: 'https://i.ibb.co/2k3XBDy/purple-heavy-dollar-sign.png',
+        dir: 'ltr',
+        data: { url: 'http://localhost:3000' },
+        lang: 'en-US', // BCP 47,
+        vibrate: [100, 50, 200],
+        badge: 'https://i.ibb.co/2k3XBDy/purple-heavy-dollar-sign.png',
+        tag: 'confirm-notification',
+        renotify: true,
+        actions: [
+          {
+            action: 'confirm',
+            title: 'Okay',
+            icon: 'https://i.ibb.co/2k3XBDy/purple-heavy-dollar-sign.png',
+          },
+          {
+            action: 'cancel',
+            title: 'Cancel',
+            icon: 'https://i.ibb.co/2k3XBDy/purple-heavy-dollar-sign.png',
+          },
+        ],
+      };
+      navigator.serviceWorker.ready.then(function (swreg) {
+        swreg.showNotification('Successfully subscribed!', options);
+      });
+    }
+  }
   return (
     <>
       <Modal modalClassName='modal-black' isOpen={modal} toggle={toggle}>
@@ -718,6 +868,95 @@ const User = () => {
                         ))}
                       </Input>
                     </Col>
+                    <Col md='5'>
+                      <div
+                        style={{
+                          backgroundColor: '#fff',
+                          boxShadow: '0 1px 4px 0',
+                          position: 'relative',
+                          height: '80px',
+                          gridTemplateRows: '24px auto 24px',
+                          gridTemplateColumns: '96px auto',
+                          margin: '20px',
+                          width: '360px',
+                          display: 'grid',
+                          boxSizing: 'border-box',
+                        }}
+                        tabIndex='0'
+                        aria-label='Imagem de notificação na área de trabalho'
+                      >
+                        <div
+                          style={{
+                            gridRow: 1,
+                            gridColumn: 2,
+                            alignSelf: 'end',
+                            fontSize: '14px',
+                            color: '#333',
+                          }}
+                        >
+                          {name}
+                        </div>
+                        <div
+                          style={{
+                            gridRow: 2,
+                            gridColumn: 2,
+                            alignSelf: 'start',
+                            fontSize: '12px',
+                            color: '#333',
+                          }}
+                        >
+                          Invitation for a future event
+                        </div>
+                        <div
+                          style={{
+                            gridRow: 3,
+                            gridColumn: 2,
+                            alignSelf: 'start',
+                            fontSize: '11px',
+                            color: '#333',
+                          }}
+                        >
+                          {Config.SERVER_ADDRESS}
+                        </div>
+                        <img
+                          style={{
+                            backgroundSize: 'contain',
+                            backgroundRepeat: 'no-repeat',
+                            display: 'none',
+                          }}
+                          src='//outlook-1.cdn.office.net/owamail/20210920004.10/resources/images/webpush-mock/chrome.png'
+                        />
+                        <img
+                          style={{
+                            marginLeft: '14px',
+                            gridRow: '1/span 3',
+                            gridColumn: 1,
+                            alignSelf: 'center',
+                            backgroundSize: 'contain',
+                            backgroundRepeat: 'no-repeat',
+                            maxHeight: '48px',
+                            width: '60px',
+                          }}
+                          src={require('assets/img/logo.png').default}
+                        />
+                        <img
+                          style={{
+                            position: 'absolute',
+                            top: 0,
+                            right: 0,
+                            content: '',
+                            width: '59px',
+                            height: '32px',
+                            margin: 0,
+                            padding: 0,
+                            border: 0,
+                            font: 'inherit',
+                            verticalAlign: 'baseline',
+                          }}
+                          src='//outlook-1.cdn.office.net/owamail/20210920004.10/resources/images/webpush-mock/chrome_icons.png'
+                        />
+                      </div>
+                    </Col>
                   </Row>
                   <Row>
                     <Col md='3' style={{ paddingRight: '0' }}>
@@ -755,6 +994,74 @@ const User = () => {
                         prefix={currencies[currency]?.symbol_native}
                         customInput={Input}
                       />
+                    </Col>
+                    <Col md='6'>
+                      <CustomInput
+                        type='switch'
+                        id='switch-4'
+                        label='Send me desktop notifications'
+                        checked={checkboxSendPushNotifications}
+                        onChange={(e) => {
+                          setCheckboxSendPushNotifications(e.target.checked);
+                          if (e.target.checked) {
+                            askForNotificationPermission();
+                          }
+                        }}
+                      />
+                      <FormGroup check>
+                        <Col>
+                          <Row>
+                            <Label check>
+                              <Input
+                                id='DueDatesId'
+                                disabled={!checkboxSendPushNotifications}
+                                checked={checkboxDueDate}
+                                onChange={(e) =>
+                                  setCheckboxDueDate(e.target.checked)
+                                }
+                                type='checkbox'
+                                label='Some label goes here'
+                              />
+                              <span className='form-check-sign'>
+                                <span className='check' />
+                              </span>
+                            </Label>
+                            <Label
+                              htmlFor='DueDatesId'
+                              style={{ marginBottom: 0, marginRight: '10px' }}
+                            >
+                              Due dates investment
+                            </Label>
+                          </Row>
+                        </Col>
+                      </FormGroup>
+                      <FormGroup check>
+                        <Col>
+                          <Row>
+                            <Label check>
+                              <Input
+                                id='BondYieldDatesId'
+                                checked={checkboxBondYieldDates}
+                                disabled={!checkboxSendPushNotifications}
+                                type='checkbox'
+                                label='Some label goes here'
+                                onChange={(e) =>
+                                  setCheckboxBondYieldDates(e.target.checked)
+                                }
+                              />
+                              <span className='form-check-sign'>
+                                <span className='check' />
+                              </span>
+                            </Label>
+                            <Label
+                              htmlFor='BondYieldDatesId'
+                              style={{ marginBottom: 0, marginRight: '10px' }}
+                            >
+                              Bond yields dates
+                            </Label>
+                          </Row>
+                        </Col>
+                      </FormGroup>
                     </Col>
                   </Row>
                   <Row>
@@ -892,6 +1199,9 @@ const User = () => {
                       monthlySalary,
                       equityObjective,
                       defaultAccount,
+                      isSendNotificationsActivated: checkboxSendPushNotifications,
+                      isSendDueDatesNotificationsActivated: checkboxDueDate,
+                      isSendBondYieldDatesNotificationsActivated: checkboxBondYieldDates,
                     });
                   }}
                 >
