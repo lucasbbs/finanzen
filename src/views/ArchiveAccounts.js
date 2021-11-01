@@ -49,8 +49,8 @@ const ArchiveAccounts = () => {
   const [icon, setIcon] = useState(0);
   const [currency, setCurrency] = useState('');
   const [amount, setAmount] = useState(0);
-  const [initialAmount, setInitialAmount] = useState(0);
-  const [hasChanged, setHasChanged] = useState(false);
+  // const [initialAmount, setInitialAmount] = useState(0);
+  // const [hasChanged, setHasChanged] = useState(false);
 
   const [accounts, setAccounts] = useState([]);
 
@@ -63,12 +63,15 @@ const ArchiveAccounts = () => {
     };
     await axios
       .put(`${Config.SERVER_ADDRESS}/api/accounts/${id}`, objAccount, config)
-      .then((res) => {
+      .then(({ data }) => {
+        console.log(data);
         objAccount['_id'] = id;
+        objAccount['balance'] = data.balance;
         const objIcon = {};
         objIcon['_id'] = iconId;
         objIcon['Number'] = icon;
         objAccount['icon'] = objIcon;
+        console.log(objAccount);
         accounts.splice(
           accounts.findIndex((account) => account._id === id),
           1,
@@ -294,8 +297,11 @@ const ArchiveAccounts = () => {
               >
                 <Row style={{ marginBottom: '10px' }}>
                   <Col md='4'>
-                    <Label>Icon</Label>
+                    <Label htmlFor='iconId'>
+                      Icon <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
                     <Button
+                      id='iconId'
                       style={{
                         color: 'hsla(0,0%,100%,.8)',
                         marginLeft: '20px',
@@ -313,7 +319,9 @@ const ArchiveAccounts = () => {
                     </Button>
                   </Col>
                   <Col md='8'>
-                    <Label htmlFor='nameID'>Name</Label>
+                    <Label htmlFor='nameID'>
+                      Name <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
                     <Input
                       id='nameID'
                       required
@@ -326,7 +334,9 @@ const ArchiveAccounts = () => {
                     />
                   </Col>
                   <Col md='6' style={{ paddingRight: '0' }}>
-                    <Label htmlFor='currencyID'>Currency</Label>
+                    <Label htmlFor='currencyID'>
+                      Currency <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
                     <Input
                       id='currencyID'
                       style={{ backgroundColor: '#2b3553' }}

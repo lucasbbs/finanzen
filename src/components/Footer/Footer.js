@@ -19,7 +19,7 @@ import React from 'react';
 import { Container, Row } from 'reactstrap';
 // used for making the prop types of this component
 import PropTypes from 'prop-types';
-import { useHistory } from 'react-router-dom';
+import { Link, useHistory } from 'react-router-dom';
 const Footer = (props) => {
   let history = useHistory();
   window.addEventListener('storage', () => {
@@ -52,7 +52,10 @@ const Footer = (props) => {
         {/* </ul> */}
         <div className='copyright'>
           © {new Date().getFullYear()} made with{' '}
-          <i className='tim-icons icon-heart-2' /> by <a href='#'>lucasbbs</a>{' '}
+          <i className='tim-icons icon-heart-2' /> by{' '}
+          <Link to='#' onClick={(e) => e.preventDefault()}>
+            lucasbbs
+          </Link>{' '}
           for your financial freedom.
         </div>
       </Container>

@@ -55,6 +55,7 @@ const InvestmentDetails = () => {
   const [investment, setInvestment] = useState([]);
   const [incomes, setIncomes] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [code, setCode] = useState('');
   const [login] = useState(
     localStorage.getItem('userInfo')
       ? JSON.parse(localStorage.getItem('userInfo'))
@@ -170,27 +171,10 @@ const InvestmentDetails = () => {
       .post(`${Config.SERVER_ADDRESS}/api/investments`, investmentObj, config)
       .then(async (response) => {
         notify(`${response.data.name} successfully investment registered`);
-        if (login.hasRegisteredInvest) {
-          login.fundsToInvest[currency] -= response.data.initial_amount;
-          const config = {
-            headers: { Authorization: `Bearer ${login.token}` },
-          };
-
-          updateAccounts();
-          await axios
-            .put(
-              `${Config.SERVER_ADDRESS}/api/users/${login._id}`,
-              {
-                fundsToInvest: login.fundsToInvest,
-                hasRegisteredInvest: login.hasRegisteredInvest,
-              },
-              config
-            )
-            .then((res) => {
-              localStorage.setItem('userInfo', JSON.stringify(login));
-            });
-        }
-        history.push(`/admin/investment/${response.data._id}`);
+        updateAccounts();
+        setTimeout(() => {
+          history.push(`/admin/investment/${response.data._id}`);
+        }, 1800);
       })
       .catch((error) => {
         console.log(error);
@@ -240,8 +224,11 @@ const InvestmentDetails = () => {
               <Col md='10'>
                 <Row style={{ marginBottom: '10px' }}>
                   <Col md='6' style={{ paddingRight: '0' }}>
-                    <Label>Name</Label>
+                    <Label htmlFor='nameId'>
+                      Name <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
                     <Input
+                      id='nameId'
                       required
                       style={{ backgroundColor: '#2b3553' }}
                       type='text'
@@ -252,8 +239,11 @@ const InvestmentDetails = () => {
                     />
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
-                    <Label>Broker</Label>
+                    <Label htmlFor='brokerId'>
+                      Broker <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
                     <Input
+                      id='brokerId'
                       required
                       style={{ backgroundColor: '#2b3553' }}
                       type='select'
@@ -290,8 +280,12 @@ const InvestmentDetails = () => {
                     </Input>
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
-                    <Label>Type</Label>
+                    <Label htmlFor='typeId'>
+                      Type <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
                     <Input
+                      required
+                      id='typeId'
                       style={{ backgroundColor: '#2b3553' }}
                       type='select'
                       value={type}
@@ -307,8 +301,12 @@ const InvestmentDetails = () => {
                     </Input>
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
-                    <Label>Rate</Label>
+                    <Label htmlFor='rateId'>
+                      Rate <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
                     <Input
+                      required
+                      id='rateId'
                       style={{ backgroundColor: '#2b3553' }}
                       type='text'
                       value={rate}
@@ -316,10 +314,13 @@ const InvestmentDetails = () => {
                     />
                   </Col>
                 </Row>
-                <Row>
+                <Row style={{ marginBottom: '10px' }}>
                   <Col md='2' style={{ paddingRight: '0' }}>
-                    <Label>Indexer</Label>
+                    <Label htmlFor='indexerId'>
+                      Indexer <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
                     <Input
+                      id='indexerId'
                       required
                       style={{ backgroundColor: '#2b3553' }}
                       type='select'
@@ -335,8 +336,11 @@ const InvestmentDetails = () => {
                     </Input>
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
-                    <Label>Account</Label>
+                    <Label htmlFor='accountId'>
+                      Account <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
                     <Input
+                      id='accountId'
                       required
                       value={account}
                       onChange={(e) => {
@@ -356,8 +360,12 @@ const InvestmentDetails = () => {
                     </Input>
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
-                    <Label>Investment date</Label>
+                    <Label htmlFor='investmentDateId'>
+                      Investment date <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
                     <Input
+                      required
+                      id='investmentDateId'
                       style={{ backgroundColor: '#2b3553' }}
                       type='date'
                       value={investmentDate.slice(0, 10)}
@@ -367,8 +375,12 @@ const InvestmentDetails = () => {
                     />
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
-                    <Label>Due date</Label>
+                    <Label htmlFor='dueDateId'>
+                      Due date <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
                     <Input
+                      required
+                      id='dueDateId'
                       style={{ backgroundColor: '#2b3553' }}
                       type='date'
                       value={dueDate.slice(0, 10)}
@@ -376,8 +388,11 @@ const InvestmentDetails = () => {
                     />
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
-                    <Label>Initial amount</Label>
+                    <Label htmlFor='initialAmountId'>
+                      Initial amount <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
                     <NumberFormat
+                      id='initialAmountId'
                       style={{ backgroundColor: '#2b3553' }}
                       onChange={(e) => setInitialAmount(e.target.value)}
                       type='text'
@@ -402,8 +417,9 @@ const InvestmentDetails = () => {
                     />
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
-                    <Label>Accrued income</Label>
+                    <Label htmlFor='accruedIncomeId'>Accrued income</Label>
                     <NumberFormat
+                      id='accruedIncomeId'
                       readOnly
                       style={{
                         backgroundColor: '#2b3553',
@@ -417,6 +433,29 @@ const InvestmentDetails = () => {
                       prefix={currencies[currency]?.symbol_native}
                       customInput={Input}
                     />
+                  </Col>
+                </Row>
+                <Row
+                  style={{
+                    display:
+                      currency === 'BRL' && type === 'Debênture'
+                        ? 'block'
+                        : 'none',
+                  }}
+                >
+                  <Col md='2'>
+                    <Label htmlFor='codeId'>
+                      Code <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
+                    <Input
+                      id='codeId'
+                      style={{
+                        backgroundColor: '#2b3553',
+                        color: 'rgba(255, 255, 255, 0.8)',
+                      }}
+                      value={code}
+                      onChange={(e) => setCode(e.target.value)}
+                    ></Input>
                   </Col>
                 </Row>
               </Col>
@@ -462,6 +501,7 @@ const InvestmentDetails = () => {
                         type,
                         rate,
                         indexer,
+                        code,
                         hasRegisteredInvest: login.hasRegisteredInvest,
                         investment_date: new Date(
                           new Date(investmentDate).getTime() +

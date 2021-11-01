@@ -190,8 +190,23 @@ const BrokersList = () => {
 
               setImage(null);
             })
-            .catch((error) => console.log(error));
+            .catch((error) => {
+              notify(
+                error.response && error.response.data.message
+                  ? error.response.data.message
+                  : error.message,
+                'danger'
+              );
+            });
           toggle();
+        })
+        .catch((error) => {
+          notify(
+            error.response && error.response.data.message
+              ? error.response.data.message
+              : error.message,
+            'danger'
+          );
         });
     } else {
       const config = {
@@ -215,7 +230,14 @@ const BrokersList = () => {
 
           setImage(null);
         })
-        .catch((error) => console.log(error));
+        .catch((error) => {
+          notify(
+            error.response && error.response.data.message
+              ? error.response.data.message
+              : error.message,
+            'danger'
+          );
+        });
       toggle();
     }
   };
@@ -260,10 +282,6 @@ const BrokersList = () => {
       .catch((error) => {
         hideAlert();
         console.log(error, error.response.data.message);
-        // notify(
-        //   'Não é possível deletar uma corretora com investimentos ativos',
-        //   'danger'
-        // );
         notify(
           error.response && error.response.data.message
             ? error.response.data.message
@@ -327,8 +345,11 @@ const BrokersList = () => {
               >
                 <Row className='mb-10 align-items-center justify-content-center '>
                   <Col md='4' className='pr-0'>
-                    <Label>Name</Label>
+                    <Label htmlFor='nameId'>
+                      Name <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
                     <Input
+                      id='nameId'
                       required
                       style={{ backgroundColor: '#2b3553' }}
                       type='text'
@@ -340,8 +361,11 @@ const BrokersList = () => {
                   </Col>
 
                   <Col md='4' className='pr-0'>
-                    <Label>Country</Label>
+                    <Label htmlFor='countryId'>
+                      Country <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
                     <Input
+                      id='countryId'
                       required
                       style={{ backgroundColor: '#2b3553' }}
                       type='select'
@@ -366,8 +390,11 @@ const BrokersList = () => {
                     </Input>
                   </Col>
                   <Col md='4' className='pr-0'>
-                    <Label>Currency</Label>
+                    <Label htmlFor='currencyId'>
+                      Currency <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
                     <Input
+                      id='currencyId'
                       required
                       style={{ backgroundColor: '#2b3553' }}
                       type='select'

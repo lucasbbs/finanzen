@@ -284,19 +284,19 @@ const ExtendedForms = () => {
                           <DropdownMenu aria-labelledby='dropdownMenuButton'>
                             <DropdownItem header>Dropdown header</DropdownItem>
                             <DropdownItem
-                              href='#pablo'
+                              href='#'
                               onClick={(e) => e.preventDefault()}
                             >
                               Action
                             </DropdownItem>
                             <DropdownItem
-                              href='#pablo'
+                              href='#'
                               onClick={(e) => e.preventDefault()}
                             >
                               Another action
                             </DropdownItem>
                             <DropdownItem
-                              href='#pablo'
+                              href='#'
                               onClick={(e) => e.preventDefault()}
                             >
                               Something else here
@@ -318,19 +318,19 @@ const ExtendedForms = () => {
                           <DropdownMenu>
                             <DropdownItem header>Dropdown header</DropdownItem>
                             <DropdownItem
-                              href='#pablo'
+                              href='#'
                               onClick={(e) => e.preventDefault()}
                             >
                               Action
                             </DropdownItem>
                             <DropdownItem
-                              href='#pablo'
+                              href='#'
                               onClick={(e) => e.preventDefault()}
                             >
                               Another action
                             </DropdownItem>
                             <DropdownItem
-                              href='#pablo'
+                              href='#'
                               onClick={(e) => e.preventDefault()}
                             >
                               Something else here

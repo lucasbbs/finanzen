@@ -1,7 +1,6 @@
 import { addDays } from 'date-fns';
 import format from 'date-fns/format';
 import ptBR from 'date-fns/locale/pt-BR';
-import BigNumber from 'bignumber.js';
 
 export const contrast = (rgb1, rgb2) => {
   const luminance = (r, g, b) => {
@@ -319,11 +318,11 @@ export function percentageFormat(label, digits = 10) {
   return formatPercentage.format(label);
 }
 
-export function decimalFormat(label) {
+export function decimalFormat(label, digits = 4) {
   let formatPercentage = new Intl.NumberFormat('pt-BR', {
     style: 'decimal',
-    maximumFractionDigits: 4,
-    minimumFractionDigits: 4,
+    maximumFractionDigits: digits,
+    minimumFractionDigits: digits,
   });
   return formatPercentage.format(label);
 }
@@ -642,18 +641,15 @@ export const getDataForTheFirstChart = (
         el.map((date) =>
           format(
             ISODateFormat(date[0].replace('income', '').replace('fund', '')),
-            'MMM/yyyy',
-            {
-              locale: ptBR,
-            }
+            'MMM/yyyy'
           )
         )
       )
     );
 
     //prettier-ignore
-    values.push(el.map((value) => (value[1].value - value[1].tax) *
-        exchangeRates[`${value[2]}_${currency}`]
+    values.push(el.map((value) => Number(((value[1].value - value[1].tax) *
+        exchangeRates[`${value[2]}_${currency}`]).toFixed(2))
       )
       .reduce((acc, curr) => acc + curr, 0)
     );
@@ -672,21 +668,33 @@ export const handleSlicesOfInvestments = (
 ) => {
   const initialSlice =
     investments[1].indexOf(
-      format(new Date(initialDate), 'MMM/yyyy', {
-        locale: ptBR,
-      })
+      format(
+        new Date(initialDate),
+        'MMM/yyyy'
+        // {
+        //   locale: ptBR,
+        // }
+      )
     ) === -1
       ? 0
       : investments[1].indexOf(
-          format(new Date(initialDate), 'MMM/yyyy', {
-            locale: ptBR,
-          })
+          format(
+            new Date(initialDate),
+            'MMM/yyyy'
+            // {
+            //   locale: ptBR,
+            // }
+          )
         );
   const finalSlice =
     investments[1].indexOf(
-      format(new Date(finalDate), 'MMM/yyyy', {
-        locale: ptBR,
-      })
+      format(
+        new Date(finalDate),
+        'MMM/yyyy'
+        // {
+        //   locale: ptBR,
+        // }
+      )
     ) + 1;
 
   return initialSlice !== -2 && finalSlice !== 0
@@ -722,9 +730,13 @@ export const getDataForTheAverageYearlyBasisInflation = (
   const values = [];
   inflations.forEach((e) => {
     labels.push(
-      format(addDays(new Date(e.data), 1), 'MMM/yyyy', {
-        locale: ptBR,
-      })
+      format(
+        addDays(new Date(e.data), 1),
+        'MMM/yyyy'
+        // {
+        //   locale: ptBR,
+        // }
+      )
     );
     values.push(e.valor);
   });
@@ -756,9 +768,13 @@ export const getDataForTheInflationChart = (
   const values = [];
   inflations.forEach((e) => {
     labels.push(
-      format(addDays(new Date(e.data), 1), 'MMM/yyyy', {
-        locale: ptBR,
-      })
+      format(
+        addDays(new Date(e.data), 1),
+        'MMM/yyyy'
+        // {
+        //   locale: ptBR,
+        // }
+      )
     );
     values.push(e.valor);
   });
@@ -767,20 +783,60 @@ export const getDataForTheInflationChart = (
 
 const handleBigNumber = (array, index) => {
   let N = 1;
-  // let INDEX = BigInt(index);
   array = array.slice(0, index + 1);
 
   array.forEach((element) => {
-    // element = new BigNumber(element);
     N *= element;
   });
   return N ** (1 / (index + 1)) - 1;
-  // (acc, curr) => acc * curr.valor
-
-  // .map((infl, index) => ({
-  //   data: infl.data,
-  //   valor: (infl.valor)**(1/(index+1)) - 1,
 };
+
+/** 
+const handleBigNumber = (array, index) => {
+  const power = (base, exponent) => {
+    let result = BigInt(1);
+    for (let count = 0; count < exponent; count++) {
+      console.log(result);
+      result *= base;
+    }
+    return result;
+  };
+  function iroot(base, root) {
+    if (typeof base !== 'bigint' || typeof root !== 'bigint')
+      throw new Error('Arguments must be bigints.');
+
+    let s = base + 1n;
+    let k1 = root - 1n;
+    console.log(s, k1);
+    let u = base;
+    while (u < s) {
+      s = u;
+      u = u * k1;
+      (u * k1 + base / power(u, k1)) / root;
+    }
+    return s;
+  }
+  const countDecimals = function (value) {
+    if (value % 1 != 0) {
+      return value.toString().split('.')[1].length;
+    }
+    return 0;
+  };
+  let N = BigInt(1);
+  array = array.slice(0, index + 1);
+  var sumOfDecimals = BigInt(0);
+  array.forEach((element) => {
+    const currentCount = countDecimals(element);
+    sumOfDecimals += BigInt(currentCount);
+    element = BigInt(element * 10 ** currentCount);
+    N *= element;
+  });
+  console.log(N, sumOfDecimals);
+  return iroot(BigInt(index + 1), N) / iroot(BigInt(index + 1), sumOfDecimals);
+};
+*
+*/
+
 export const getDataForTheAverageInflationAllThePeriod = (
   inflation,
   firstPeriod = undefined,
@@ -797,8 +853,6 @@ export const getDataForTheAverageInflationAllThePeriod = (
     inflation.map((e) => e.data).indexOf(lastPeriod) + 1
   );
   const cumulativeProduct = ((product) => (value) => (product *= value))(1);
-
-  let N = new BigNumber('1');
   //prettier-ignore
   inflations = inflations.map((inf, index) => ({
     data: inf.data,
@@ -810,14 +864,17 @@ export const getDataForTheAverageInflationAllThePeriod = (
 
   // ** (1 / (index + 1)) - 1
 
-  console.log(N, inflations);
   const labels = [];
   const values = [];
   inflations.forEach((e) => {
     labels.push(
-      format(addDays(new Date(e.data), 1), 'MMM/yyyy', {
-        locale: ptBR,
-      })
+      format(
+        addDays(new Date(e.data), 1),
+        'MMM/yyyy'
+        // {
+        //   locale: ptBR,
+        // }
+      )
     );
     values.push(e.valor);
   });
@@ -853,9 +910,13 @@ export const getDataForTheInflationChartTotalPeriod = (
   const values = [];
   inflations.forEach((e) => {
     labels.push(
-      format(addDays(new Date(e.data), 1), 'MMM/yyyy', {
-        locale: ptBR,
-      })
+      format(
+        addDays(new Date(e.data), 1),
+        'MMM/yyyy'
+        //  {
+        //   locale: ptBR,
+        // }
+      )
     );
     values.push(e.valor);
   });
@@ -913,12 +974,12 @@ export const getSimpleMovingAverage = (inflations) => {
       data: infl.data,
       valor: (infl.valor - 1)
     }));
-  console.log([...initialPeriodInflations, ...remainingInflations.slice(11)])
+  // console.log([...initialPeriodInflations, ...remainingInflations.slice(11)])
   return [...initialPeriodInflations, ...remainingInflations.slice(11)]
 };
 
 export const getSimpleMovingAverageGeometricMean = (inflations) => {
-  console.log(inflations, getSimpleMovingAverage(inflations));
+  // console.log(inflations, getSimpleMovingAverage(inflations));
   const initialPeriodInflations = getSimpleMovingAverage(inflations)
     .map((value) => ({
       data: value.data,
@@ -1013,3 +1074,269 @@ export const getDataForTheTopInvestmentsTable = (
 };
 // Codigo usado para representar numero como percentuais
 // .toLocaleString('pt-br', { style: 'percent', minimumFractionDigits: 2 }
+
+export function setDataAccountsSpendingCategories(accounts, transactions) {
+  const groupBy = function (xs, key) {
+    return xs.reduce(function (rv, x) {
+      (rv[x[key]] = rv[x[key]] || []).push(x);
+      return rv;
+    }, {});
+  };
+  const expenses = transactions
+    .filter(
+      (transact) =>
+        transact.type === 'Expense' && transact.category.name !== 'Investimento'
+    )
+    .filter((transact) => transact.dueToAccount._id === accounts._id)
+    .map((transact) => ({ ...transact, category: transact.category.name }));
+
+  let data = Object.entries(groupBy(expenses, 'category'))
+    .map((dat) => [
+      dat[0],
+      Number(dat[1].reduce((acc, curr) => acc + curr.ammount, 0).toFixed(2)),
+    ])
+    .sort((a, b) => b[1] - a[1])
+    .slice(0, 10);
+
+  const labels = data.map((dat) => dat[0]);
+
+  data = data.map((dat) => dat[1]);
+
+  return [data, labels];
+}
+
+export function setDataAccountsTotalExpensesAndRevenues(
+  accounts,
+  transactions
+) {
+  transactions = transactions.filter(
+    (transact) =>
+      transact.dueToAccount._id === accounts._id &&
+      transact.category.name !== 'Investimento'
+  );
+  const setGroups = (data) => {
+    const groups = data.reduce((groups, transaction) => {
+      const date = transaction.date.slice(0, 7);
+      if (!groups[date]) {
+        groups[date] = [];
+      }
+      groups[date].push(transaction);
+      return groups;
+    }, {});
+
+    const groupArrays = Object.keys(groups).map((date) => {
+      return {
+        date,
+        transactions: groups[date],
+      };
+    });
+    return groupArrays;
+  };
+  const revenue = setGroups(
+    transactions.filter((transact) => transact.type === 'Revenue')
+  ).map((dat) => ({
+    ...dat,
+    transactions: Number(
+      dat.transactions.reduce((acc, curr) => acc + curr.ammount, 0).toFixed(2)
+    ),
+  }));
+
+  const expense = setGroups(
+    transactions.filter(
+      (transact) =>
+        transact.type === 'Expense' && transact.category.name !== 'Investimento'
+    )
+  ).map((dat) => ({
+    ...dat,
+    transactions: Number(
+      dat.transactions.reduce((acc, curr) => acc + curr.ammount, 0).toFixed(2)
+    ),
+  }));
+
+  const dates = setGroups(transactions).map((transact) => transact.date);
+
+  const revenuesArray = [];
+  const expensesArray = [];
+
+  for (const date of dates) {
+    let found = false;
+    for (const iterator of revenue) {
+      if (iterator.date === date) {
+        revenuesArray.push({
+          date: iterator.date,
+          transactions: iterator.transactions,
+        });
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      revenuesArray.push({
+        date: date,
+        transactions: 0,
+      });
+    }
+    found = false;
+    for (const iterator of expense) {
+      if (iterator.date === date) {
+        expensesArray.push({
+          date: iterator.date,
+          transactions: iterator.transactions,
+        });
+        found = true;
+        break;
+      }
+    }
+    if (!found) {
+      expensesArray.push({
+        date: date,
+        transactions: 0,
+      });
+    }
+  }
+
+  const balance = setGroups(
+    transactions.filter(
+      (transact) =>
+        transact.type !== 'Transfer' &&
+        transact.category.name !== 'Investimento'
+    )
+  ).map((trans) => ({
+    ...trans,
+    transactions: Number(
+      (
+        trans.transactions
+          .filter((elm) => elm.type === 'Revenue')
+          .reduce((acc, curr) => acc + curr.ammount, 0) -
+        trans.transactions
+          .filter((elm) => elm.type === 'Expense')
+          .reduce((acc, curr) => acc + curr.ammount, 0)
+      ).toFixed(2)
+    ),
+  }));
+
+  const returns = (data) => {
+    return [data.map((dat) => dat.transactions), data.map((dat) => dat.date)];
+  };
+  return [returns(expensesArray), returns(revenuesArray), returns(balance)];
+}
+
+export function setDataAccountsSumExpesesGroupedByMonth(
+  accounts,
+  transactions
+) {
+  transactions = transactions.filter(
+    (transact) =>
+      transact.dueToAccount._id === accounts._id &&
+      transact.category.name !== 'Investimento' &&
+      transact.type !== 'Transfer' &&
+      transact.type !== 'Revenue'
+  );
+
+  const set = new Set();
+  for (const iterator of transactions) {
+    set.add(iterator.date.slice(0, 7));
+  }
+  const dates = [...set];
+
+  const setGroups = (data) => {
+    const groups = data.reduce((groups, transaction) => {
+      const category = transaction.category.name;
+      if (!groups[category]) {
+        groups[category] = [];
+      }
+      groups[category].push(transaction);
+      return groups;
+    }, {});
+
+    const groupArrays = Object.keys(groups).map((category) => {
+      return {
+        category,
+        transactions: groups[category],
+      };
+    });
+    return groupArrays;
+  };
+  const setGroupsDate = (data) => {
+    const groups = data.reduce((groups, transaction) => {
+      const date = transaction.date.slice(0, 7);
+      if (!groups[date]) {
+        groups[date] = [];
+      }
+      groups[date].push(transaction);
+      return groups;
+    }, {});
+
+    const groupArrays = Object.keys(groups).map((date) => {
+      return {
+        date,
+        transactions: groups[date],
+      };
+    });
+    return groupArrays;
+  };
+
+  const setTransactions = (transactions) => {
+    const array = [];
+    for (const date of dates) {
+      let found = false;
+      for (const iterator of transactions) {
+        if (iterator.date === date) {
+          array.push(
+            Number(
+              iterator.transactions
+                .reduce((acc, curr) => acc + curr.ammount, 0)
+                .toFixed(2)
+            )
+          );
+          found = true;
+          break;
+        }
+      }
+      if (!found) {
+        array.push(null);
+      }
+    }
+    return array;
+  };
+
+  return [
+    dates,
+    setGroups(transactions).map((el) => ({
+      ...el,
+      transactions: setTransactions(setGroupsDate(el.transactions)),
+    })),
+  ];
+}
+
+export function setDataForModalMonthlyPermformanceInvestments(
+  investments,
+  dateInput
+) {
+  let dates = new Set();
+  investments = investments
+    .map((investment) => ({
+      ...investment,
+      incomes: investment.incomes.filter(
+        (income) => Object.values(income)[0].type === 'income'
+      ),
+    }))
+    .map((incom, idx) => ({ ...incom }));
+
+  investments.forEach((investment) => {
+    investment.incomes.forEach((income) => {
+      dates.add(Object.keys(income)[0].replace('income', ''));
+    });
+  });
+  dates = [...dates].sort();
+
+  const incomes = [];
+  investments.forEach((investment) => {
+    investment.incomes.forEach((income) => {
+      if (Object.keys(income)[0].replace('income', '') === dateInput) {
+        incomes.push([investment, Object.values(income)].flat());
+      }
+    });
+  });
+  return incomes;
+}

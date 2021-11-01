@@ -483,7 +483,6 @@ const User = () => {
         console.log('No notification permission granted!');
       } else {
         configurePushSub();
-        // displayConfirmNotification();
       }
     });
   };
@@ -492,29 +491,41 @@ const User = () => {
     if (!('serviceWorker' in navigator)) {
       return;
     }
-
+    let hasUnsubscribed;
     var reg;
+    console.log(
+      'running',
+      navigator.serviceWorker,
+      navigator.serviceWorker.ready
+    );
     navigator.serviceWorker.ready
       .then(function (swreg) {
+        console.log(swreg, 'navigator has loaded');
         reg = swreg;
         return swreg.pushManager.getSubscription();
       })
-      .then(function (sub) {
-        if (sub === null) {
-          // Create a new subscription
-          var vapidPublicKey =
-            'BOChVD1tKTc0Of3c-0JplT1y5FPOm6oijP_4stWBXwoQe6xI4GGt6cnpdu4JLwt_Znj23bj_hku8OSois1y9fLE';
-          var convertedVapidPublicKey = urlBase64ToUint8Array(vapidPublicKey);
-          return reg.pushManager.subscribe({
-            userVisibleOnly: true,
-            applicationServerKey: convertedVapidPublicKey,
+      .then((sub) => {
+        if (!!sub) {
+          return sub.unsubscribe().then(function (s) {
+            console.log('has unsubscribed 1,2,3');
+            hasUnsubscribed = true;
+            return navigator.serviceWorker.ready;
           });
-        } else {
-          // We have a subscription
         }
+        return navigator.serviceWorker.ready;
+      })
+      .then(function (sub) {
+        var vapidPublicKey =
+          'BOChVD1tKTc0Of3c-0JplT1y5FPOm6oijP_4stWBXwoQe6xI4GGt6cnpdu4JLwt_Znj23bj_hku8OSois1y9fLE';
+
+        var convertedVapidPublicKey = urlBase64ToUint8Array(vapidPublicKey);
+
+        return reg.pushManager.subscribe({
+          userVisibleOnly: true,
+          applicationServerKey: convertedVapidPublicKey,
+        });
       })
       .then(async function (newSub) {
-        // fazer chamada ao backend para salvar no banco de dados
         let key;
         let authSecret;
         let endPoint;
@@ -540,20 +551,37 @@ const User = () => {
           const gpuTier = await getGPUTier();
           const info = getOperatingSystemName(this);
           console.log(info);
-          await axios.post(
-            `${Config.SERVER_ADDRESS}/api/pushNotifications/`,
-            {
-              endpoint: endPoint,
-              key,
-              auth: authSecret,
-              gpu: gpuTier.gpu,
-              operating_system: `${info.os} ${info.osVersion}`,
-              device: info.mobile ? 'mobile' : 'desktop',
-              browser: `${info.browser} ${info.browserMajorVersion}`,
-              operating_system_architecture: info.arch,
-            },
-            config
-          );
+          if (hasUnsubscribed) {
+            await axios.put(
+              `${Config.SERVER_ADDRESS}/api/pushNotifications/id`,
+              {
+                endpoint: endPoint,
+                key,
+                auth: authSecret,
+                gpu: gpuTier.gpu,
+                operating_system: `${info.os} ${info.osVersion}`,
+                device: info.mobile ? 'mobile' : 'desktop',
+                browser: `${info.browser} ${info.browserMajorVersion}`,
+                operating_system_architecture: info.arch,
+              },
+              config
+            );
+          } else {
+            await axios.post(
+              `${Config.SERVER_ADDRESS}/api/pushNotifications/`,
+              {
+                endpoint: endPoint,
+                key,
+                auth: authSecret,
+                gpu: gpuTier.gpu,
+                operating_system: `${info.os} ${info.osVersion}`,
+                device: info.mobile ? 'mobile' : 'desktop',
+                browser: `${info.browser} ${info.browserMajorVersion}`,
+                operating_system_architecture: info.arch,
+              },
+              config
+            );
+          }
         }
       })
       .then(function (res) {
@@ -570,7 +598,7 @@ const User = () => {
         icon: 'https://i.ibb.co/XCJJ8K7/logo.png',
         image: 'https://i.ibb.co/2k3XBDy/purple-heavy-dollar-sign.png',
         dir: 'ltr',
-        data: { url: 'http://localhost:3000' },
+        data: { url: 'https://finanzen-app.netlify.app/' },
         lang: 'en-US', // BCP 47,
         vibrate: [100, 50, 200],
         badge: 'https://i.ibb.co/2k3XBDy/purple-heavy-dollar-sign.png',
@@ -594,6 +622,34 @@ const User = () => {
       });
     }
   }
+
+  const handleDeleteAllNotifications = async () => {
+    const config = {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    };
+    try {
+      await axios.delete(
+        `${Config.SERVER_ADDRESS}/api/pushNotifications/`,
+        config
+      );
+      notify(
+        'You have successfully deleted the push notifications in all of your devices!'
+      );
+      const registration = await navigator.serviceWorker.ready;
+      const subscription = await registration.pushManager.getSubscription();
+      await subscription.unsubscribe();
+    } catch (error) {
+      notify(
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message,
+        'danger'
+      );
+    }
+  };
+
   return (
     <>
       <Modal modalClassName='modal-black' isOpen={modal} toggle={toggle}>
@@ -1062,6 +1118,13 @@ const User = () => {
                           </Row>
                         </Col>
                       </FormGroup>
+                      <Button
+                        color='primary'
+                        onClick={() => handleDeleteAllNotifications()}
+                        className='btn-link'
+                      >
+                        Turn off desktop notifications on all devices
+                      </Button>
                     </Col>
                   </Row>
                   <Row>
@@ -1227,7 +1290,7 @@ const User = () => {
                   <div className='block block-two' />
                   <div className='block block-three' />
                   <div className='block block-four' />
-                  <a href='#pablo' onClick={(e) => e.preventDefault()}>
+                  <a href='#' onClick={(e) => e.preventDefault()}>
                     <img
                       alt='...'
                       className='avatar'

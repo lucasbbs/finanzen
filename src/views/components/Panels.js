@@ -75,7 +75,7 @@ const Panels = () => {
                   <NavItem>
                     <NavLink
                       data-toggle='tab'
-                      href='#pablo'
+                      href='#'
                       className={horizontalTabs === 'profile' ? 'active' : ''}
                       onClick={(e) =>
                         changeActiveTab(e, 'horizontalTabs', 'profile')
@@ -87,7 +87,7 @@ const Panels = () => {
                   <NavItem>
                     <NavLink
                       data-toggle='tab'
-                      href='#pablo'
+                      href='#'
                       className={horizontalTabs === 'settings' ? 'active' : ''}
                       onClick={(e) =>
                         changeActiveTab(e, 'horizontalTabs', 'settings')
@@ -99,7 +99,7 @@ const Panels = () => {
                   <NavItem>
                     <NavLink
                       data-toggle='tab'
-                      href='#pablo'
+                      href='#'
                       className={horizontalTabs === 'options' ? 'active' : ''}
                       onClick={(e) =>
                         changeActiveTab(e, 'horizontalTabs', 'options')
@@ -151,7 +151,7 @@ const Panels = () => {
                       <NavItem>
                         <NavLink
                           data-toggle='tab'
-                          href='#pablo'
+                          href='#'
                           className={verticalTabs === 'profile' ? 'active' : ''}
                           onClick={(e) =>
                             changeActiveTab(e, 'verticalTabs', 'profile')
@@ -163,7 +163,7 @@ const Panels = () => {
                       <NavItem>
                         <NavLink
                           data-toggle='tab'
-                          href='#pablo'
+                          href='#'
                           className={
                             verticalTabs === 'settings' ? 'active' : ''
                           }
@@ -177,7 +177,7 @@ const Panels = () => {
                       <NavItem>
                         <NavLink
                           data-toggle='tab'
-                          href='#pablo'
+                          href='#'
                           className={verticalTabs === 'options' ? 'active' : ''}
                           onClick={(e) =>
                             changeActiveTab(e, 'verticalTabs', 'options')
@@ -238,7 +238,7 @@ const Panels = () => {
                   <CardHeader role='tab'>
                     <a
                       aria-expanded={openedCollapseOne}
-                      href='#pablo'
+                      href='#'
                       data-parent='#accordion'
                       data-toggle='collapse'
                       onClick={(e) => {
@@ -270,7 +270,7 @@ const Panels = () => {
                   <CardHeader role='tab'>
                     <a
                       aria-expanded={openedCollapseTwo}
-                      href='#pablo'
+                      href='#'
                       data-parent='#accordion'
                       data-toggle='collapse'
                       onClick={(e) => {
@@ -302,7 +302,7 @@ const Panels = () => {
                   <CardHeader role='tab'>
                     <a
                       aria-expanded={openedCollapseThree}
-                      href='#pablo'
+                      href='#'
                       data-parent='#accordion'
                       data-toggle='collapse'
                       onClick={(e) => {
@@ -350,7 +350,7 @@ const Panels = () => {
                       <NavItem>
                         <NavLink
                           data-toggle='tab'
-                          href='#pablo'
+                          href='#'
                           className={
                             verticalTabsIcons === 'home' ? 'active' : ''
                           }
@@ -365,7 +365,7 @@ const Panels = () => {
                       <NavItem>
                         <NavLink
                           data-toggle='tab'
-                          href='#pablo'
+                          href='#'
                           className={
                             verticalTabsIcons === 'settings' ? 'active' : ''
                           }
@@ -422,7 +422,7 @@ const Panels = () => {
                   <NavItem>
                     <NavLink
                       data-toggle='tab'
-                      href='#pablo'
+                      href='#'
                       className={pageTabs === 'home' ? 'active' : ''}
                       onClick={(e) => changeActiveTab(e, 'pageTabs', 'home')}
                     >
@@ -433,7 +433,7 @@ const Panels = () => {
                   <NavItem>
                     <NavLink
                       data-toggle='tab'
-                      href='#pablo'
+                      href='#'
                       className={pageTabs === 'messages' ? 'active' : ''}
                       onClick={(e) =>
                         changeActiveTab(e, 'pageTabs', 'messages')
@@ -446,7 +446,7 @@ const Panels = () => {
                   <NavItem>
                     <NavLink
                       data-toggle='tab'
-                      href='#pablo'
+                      href='#'
                       className={pageTabs === 'settings' ? 'active' : ''}
                       onClick={(e) =>
                         changeActiveTab(e, 'pageTabs', 'settings')

@@ -17,7 +17,7 @@ import { countries } from './pages/countries';
 //prettier-ignore
 import { chartDefault } from 'variables/charts.js';
 //prettier-ignore
-import { currencyFormat, percentageFormat, decimalFormat, ISODateFormat, getDataForTheAverageInflationAllThePeriod, getDataForTheAverageYearlyBasisInflation } from '../helpers/functions';
+import { currencyFormat, percentageFormat, decimalFormat, ISODateFormat, getDataForTheAverageInflationAllThePeriod, getDataForTheAverageYearlyBasisInflation, setDataAccountsSpendingCategories, setDataAccountsTotalExpensesAndRevenues, setDataAccountsSumExpesesGroupedByMonth, generateRandomColors, setDataForModalMonthlyPermformanceInvestments } from '../helpers/functions';
 // eslint-disable-next-line
 import TableTopInvestments from '../components/TableTopInvestments/TableTopInvestments';
 import TableSalaries from '../components/TableSalaries/TableSalaries';
@@ -39,8 +39,12 @@ import axios from 'axios';
 import Config from '../config.json';
 import { GlobalContext } from 'context/GlobalState';
 import CollapsibleItem from 'components/CollapsibleItem/CollapsibleItem';
+import { chartExample2 } from 'variables/charts';
+import { Link } from 'react-router-dom';
+import MyTooltip from 'components/Tooltip/MyTooltip';
+
 // import { Link } from 'react-router-dom';
-// import { locale } from 'moment';
+import moment from 'moment';
 
 /*eslint-disable*/
 Array.prototype.max = function () {
@@ -52,18 +56,33 @@ Array.prototype.min = function () {
 };
 
 const Dashboard = () => {
+  const { accounts, updateAccounts, getAccounts } = useContext(GlobalContext);
   const [login] = useState(
     localStorage.getItem('userInfo')
       ? JSON.parse(localStorage.getItem('userInfo'))
       : null
   );
-  const { accounts, updateAccounts, getAccounts } = useContext(GlobalContext);
+  const [incomesArray, setIncomesArray] = useState([]);
+  const [dateInput, setDateInput] = useState('');
+  const [selectedAccountId1, setSelectedAccountId1] = useState('');
+  const [selectedAccount1, setSelectedAccount1] = useState('');
+  const [selectedAccountId2, setSelectedAccountId2] = useState('');
+  const [selectedAccount2, setSelectedAccount2] = useState('');
+  const [selectedAccountId3, setSelectedAccountId3] = useState('');
+  const [selectedAccount3, setSelectedAccount3] = useState('');
+  const [revenues, setRevenues] = useState([]);
+  const [expenses, setExpenses] = useState([]);
+  const [balance, setBalance] = useState([]);
+  const [balanceLabels, setBalanceLabels] = useState([]);
+
+  const [lines, setLines] = useState([]);
   const [geometricMeane, setGeometricMeane] = useState(0);
 
   // const [loadedCurrencies, setLoadedCurrencies] = useState(false);
   const [equivalentAnnualRate, setEquivalentAnnualRate] = useState(
     '0,0000000000%'
   );
+  const [topSpendingCategories, setTopSpendingCategories] = useState([]);
   const [dateForTopInvestments, setDateForTopInvestments] = useState(
     `${new Date().toISOString().slice(0, 8)}01`
   );
@@ -82,6 +101,7 @@ const Dashboard = () => {
   const [globalAverageReturn, setGlobalAverageReturn] = useState(
     '0,0000000000%'
   );
+  const [currencies, setCurrencies] = useState([]);
   const [taxes, setTaxes] = useState([]);
   const [taxesToBeDisplayed, setTaxesToBeDisplayed] = useState(0);
   const [filterForTaxes, setFilterForTaxes] = useState('');
@@ -93,7 +113,7 @@ const Dashboard = () => {
   //     : 0
   // );
   const [investments, setInvestments] = useState([]);
-  const [Incomes, setIncomes] = useState([]);
+  const [incomes, setIncomes] = useState([]);
   const [investmentsToBeDisplayed, setInvestmentsToBeDisplayed] = useState([]);
   const [inflations, setInflations] = useState([]);
   const [inflationsToBeDisplayed, setInflationsToBeDisplayed] = useState([]);
@@ -107,7 +127,31 @@ const Dashboard = () => {
     setDataChartInvetmentsPerartBrokers,
   ] = useState([]);
   const [modalBankStatements, setModalBankStatements] = useState(false);
+  const [
+    modalInvestmentsPerformancePerMonth,
+    setModalInvestmentsPerformancePerMonth,
+  ] = useState(false);
+  const [modal1, setModal1] = useState(false);
+  const [modal2, setModal2] = useState(false);
+  const [modal3, setModal3] = useState(false);
   const [bigChartData, setbigChartData] = useState('data1');
+
+  const toggleModalInvestmentsPerformancePerMonth = () => {
+    setDateInput('');
+    setModalInvestmentsPerformancePerMonth(
+      !modalInvestmentsPerformancePerMonth
+    );
+  };
+  const toggle1 = () => {
+    setModal1(!modal1);
+  };
+  const toggle2 = () => {
+    setModal2(!modal2);
+  };
+  const toggle3 = () => {
+    setModal3(!modal3);
+  };
+
   const setBgChartData = (name) => {
     setbigChartData(name);
   };
@@ -127,6 +171,29 @@ const Dashboard = () => {
     };
     getTransactions();
   }, []);
+
+  useEffect(() => {
+    if (dateInput) {
+      const date = format(
+        parse(dateInput, 'MMM/yyyy', new Date()),
+        'yyyy-MM-dd'
+      );
+
+      const incomeArray = setDataForModalMonthlyPermformanceInvestments(
+        investments,
+        date
+      );
+      const objArray = [];
+      incomeArray.forEach((income) => {
+        const obj = { ...income[0] };
+        obj.incomes = income[1];
+        objArray.push(obj);
+      });
+
+      setIncomesArray(objArray);
+      toggleModalInvestmentsPerformancePerMonth();
+    }
+  }, [investments, dateInput]);
 
   useEffect(() => {
     const getInflations = async () => {
@@ -154,6 +221,14 @@ const Dashboard = () => {
     getInflations();
   }, []);
   useEffect(() => {
+    if (accounts.length) {
+      setSelectedAccountId1(accounts[0]._id);
+      setSelectedAccount1(accounts[0]);
+      setSelectedAccountId2(accounts[0]._id);
+      setSelectedAccount2(accounts[0]);
+      setSelectedAccountId3(accounts[0]._id);
+      setSelectedAccount3(accounts[0]);
+    }
     const getInvestments = async () => {
       const investment = await fetchAllInvestments('', login);
       setGeometricMeane(geometricMeanReturnInvestments(investment));
@@ -181,6 +256,7 @@ const Dashboard = () => {
         );
 
         locationsForLoop.add(login.currency);
+        setCurrencies([...locationsForLoop]);
 
         // for (const location of locationsForLoop) {
         // if (
@@ -274,7 +350,7 @@ const Dashboard = () => {
     }
     // let newDate = new Date().toISOString();
     // newDate = newDate.split('T');
-    if (Incomes.length !== 0) {
+    if (incomes.length !== 0) {
       // let date =
       //   Incomes[1].length !== 0
       //     ? parse(Incomes[1][Incomes[1].length - 1], 'MMM/yyyy', new Date(), {
@@ -287,7 +363,51 @@ const Dashboard = () => {
 
       setFilterForGlobalAverage('');
     }
-  }, [investments, Incomes]);
+  }, [investments, incomes, accounts]);
+
+  useEffect(() => {
+    setTopSpendingCategories(
+      setDataAccountsSpendingCategories(selectedAccount1, transactions)
+    );
+    let res = setDataAccountsTotalExpensesAndRevenues(
+      selectedAccount2,
+      transactions
+    );
+
+    setExpenses(res[0]);
+    setRevenues(res[1]);
+    setBalance(res[2]);
+    setBalanceLabels(
+      res[2][1].map((date) =>
+        format(parse(date, 'yyyy-MM', new Date()), 'MMM/yy')
+      )
+    );
+    res = setDataAccountsSumExpesesGroupedByMonth(
+      selectedAccount3,
+      transactions
+    );
+
+    const colors = generateRandomColors(res[1].length);
+    setLines([
+      res[0],
+      res[1].map((el, idx) => ({
+        label: el.category,
+        fill: false,
+        borderColor: colors[idx],
+        data: el.transactions,
+      })),
+    ]);
+
+    console.log(
+      res[1].map((el, idx) => ({
+        label: el.category,
+        fill: true,
+        borderColor: colors[idx],
+        data: el.transactions,
+      }))
+    );
+    //
+  }, [selectedAccount1, selectedAccount2, selectedAccount3, transactions]);
   // eslint-disable-next-line
 
   const handleFilterForTaxes = (input) => {
@@ -307,6 +427,200 @@ const Dashboard = () => {
     );
   };
 
+  const chartExample8 = {
+    data: {
+      labels: balanceLabels,
+      datasets: [
+        {
+          label: 'Expenses',
+          fill: true,
+          backgroundColor: 'rgb(0, 130, 200)',
+          hoverBackgroundColor: ' rgb(0, 130, 200)',
+          borderColor: 'rgb(0, 130, 200)',
+          borderWidth: 2,
+          borderDash: [],
+          borderDashOffset: 0.0,
+          data: expenses[0],
+        },
+        {
+          label: 'Revenue',
+          fill: true,
+          backgroundColor: 'rgb(166, 204, 234)',
+          hoverBackgroundColor: 'rgb(166, 204, 234)',
+          borderColor: 'rgb(166, 204, 234)',
+          borderWidth: 2,
+          borderDash: [],
+          borderDashOffset: 0.0,
+          data: revenues[0],
+        },
+        {
+          label: 'Balance',
+          fill: true,
+          backgroundColor: 'rgb(204, 20, 57)',
+          hoverBackgroundColor: '  rgb(204, 20, 57)',
+          borderColor: 'rgb(204, 20, 57)',
+          borderWidth: 2,
+          borderDash: [],
+          borderDashOffset: 0.0,
+          data: balance[0],
+        },
+      ],
+    },
+    options: {
+      maintainAspectRatio: false,
+      legend: {
+        display: true,
+        position: 'bottom',
+        labels: {
+          padding: 8,
+          boxWidth: 11,
+          boxHeight: 14,
+          fontColor: 'white',
+          fontSize: 11.5,
+        },
+      },
+      tooltips: {
+        backgroundColor: '#f5f5f5',
+        titleFontColor: '#333',
+        bodyFontColor: '#666',
+        bodySpacing: 4,
+        xPadding: 12,
+        mode: 'nearest',
+        intersect: 0,
+        position: 'nearest',
+        callbacks: {
+          label: function (tooltipItem, data) {
+            var indice = tooltipItem.index;
+            var label = data.datasets[tooltipItem.datasetIndex].label + ': ';
+            return `${label}:  ${currencyFormat(
+              data.datasets[tooltipItem.datasetIndex].data[indice],
+              selectedAccount2.currency
+            )}`;
+          },
+        },
+      },
+      responsive: true,
+      scales: {
+        yAxes: [
+          {
+            gridLines: {
+              drawBorder: true,
+              color: 'white',
+              zeroLineColor: 'white',
+            },
+            ticks: {
+              maxTicksLimit: 5,
+              padding: 20,
+              fontColor: 'white',
+            },
+          },
+        ],
+        xAxes: [
+          {
+            gridLines: {
+              drawBorder: false,
+            },
+            ticks: {
+              padding: 20,
+              fontColor: 'white',
+            },
+          },
+        ],
+      },
+    },
+  };
+  const chartExample10 = {
+    data: {
+      labels: topSpendingCategories[1],
+      datasets: [
+        {
+          label: 'Emails',
+          pointRadius: 0,
+          pointHoverRadius: 0,
+          backgroundColor: [
+            'rgb(0, 130, 200)',
+            'rgb(191, 229, 255)',
+            'rgb(204, 20, 57)',
+            'rgb(230, 140, 124)',
+            'rgb(83, 179, 54)',
+            'rgb(165, 211, 142)',
+            'rgb(230, 138, 0)',
+            'rgb(243, 218, 97)',
+            'rgb(151, 107, 179)',
+            'rgb(204, 184, 204)',
+          ],
+
+          borderWidth: 0,
+          data: topSpendingCategories[0],
+        },
+      ],
+    },
+    options: {
+      cutoutPercentage: 0,
+      legend: {
+        display: true,
+
+        position: 'bottom',
+        labels: {
+          padding: 8,
+          boxWidth: 11,
+          boxHeight: 14,
+          fontColor: 'white',
+          fontSize: 11.5,
+        },
+      },
+      tooltips: {
+        backgroundColor: '#f5f5f5',
+        titleFontColor: '#333',
+        bodyFontColor: '#666',
+        bodySpacing: 4,
+        xPadding: 12,
+        mode: 'nearest',
+        intersect: 0,
+        position: 'nearest',
+        callbacks: {
+          label: function (tooltipItem, data) {
+            var indice = tooltipItem.index;
+            var label = data.datasets[tooltipItem.datasetIndex].label + ': ';
+
+            return `${data.labels[indice]}:  ${currencyFormat(
+              data.datasets[tooltipItem.datasetIndex].data[indice],
+              selectedAccount1.currency
+            )}`;
+          },
+        },
+      },
+      scales: {
+        yAxes: [
+          {
+            display: 0,
+            ticks: {
+              display: false,
+            },
+            gridLines: {
+              drawBorder: false,
+              zeroLineColor: 'transparent',
+              color: 'rgba(255,255,255,0.05)',
+            },
+          },
+        ],
+        xAxes: [
+          {
+            display: 0,
+            barPercentage: 1.6,
+            gridLines: {
+              drawBorder: false,
+              color: 'rgba(255,255,255,0.1)',
+              zeroLineColor: 'transparent',
+            },
+            ticks: {
+              display: false,
+            },
+          },
+        ],
+      },
+    },
+  };
   let chart1_2_options = {
     onClick:
       bigChartData === 'data1'
@@ -316,7 +630,7 @@ const Dashboard = () => {
               console.log(e._index);
               var x_value = this.data.labels[e._index];
               var y_value = this.data.datasets[0].data[e._index];
-              console.log(x_value);
+              setDateInput(x_value);
               console.log(y_value);
             }
           }
@@ -353,7 +667,7 @@ const Dashboard = () => {
           var label = data.datasets[tooltipItem.datasetIndex].label + ': ';
           return bigChartData === 'data1'
             ? `${data.labels[indice]}:  ${currencyFormat(
-                data.datasets[0].data[indice],
+                data.datasets[tooltipItem.datasetIndex].data[indice],
                 login.currency
               )}`
             : (label += new Intl.NumberFormat('pt-BR', {
@@ -556,7 +870,7 @@ const Dashboard = () => {
     }
 
     setInvestmentsToBeDisplayed(
-      handleSlicesOfInvestments(Incomes, initialDate + '-02', finalDate + '-02')
+      handleSlicesOfInvestments(incomes, initialDate + '-02', finalDate + '-02')
     );
   }
 
@@ -596,15 +910,14 @@ const Dashboard = () => {
     setModalBankStatements(!modalBankStatements);
   };
 
-  const closeBtn = (
-    <button
-      color='danger'
-      className='close'
-      onClick={() => handleShowAccountStatements()}
-    >
-      <span style={{ color: 'white' }}>×</span>
-    </button>
-  );
+  const closeBtn = (fn) => {
+    return (
+      <button className='close' onClick={() => fn()}>
+        <span style={{ color: 'white' }}>×</span>
+      </button>
+    );
+  };
+
   useEffect(() => {
     const taxesInUseEffects = getDataForTotalTaxes(
       investments,
@@ -617,6 +930,26 @@ const Dashboard = () => {
       taxesInUseEffects[1].reduce((acc, curr) => acc + curr, 0)
     );
   }, [investments, currencyExhangeRates]);
+
+  const handleDefineAccount1 = () => {
+    setSelectedAccount1(
+      accounts.find((account) => account._id === selectedAccountId1)
+    );
+    toggle1();
+  };
+  const handleDefineAccount2 = () => {
+    setSelectedAccount2(
+      accounts.find((account) => account._id === selectedAccountId2)
+    );
+    toggle2();
+  };
+  const handleDefineAccount3 = () => {
+    setSelectedAccount3(
+      accounts.find((account) => account._id === selectedAccountId3)
+    );
+    toggle3();
+  };
+
   return (
     <>
       <div className='content'>
@@ -627,6 +960,348 @@ const Dashboard = () => {
           </>
         ) : (
           <>
+            <Modal
+              modalClassName='modal-black'
+              size='lg'
+              style={{ maxWidth: '1600px', width: '80%' }}
+              isOpen={modalInvestmentsPerformancePerMonth}
+              toggle={() => toggleModalInvestmentsPerformancePerMonth()}
+            >
+              <ModalHeader
+                close={closeBtn(toggleModalInvestmentsPerformancePerMonth)}
+              >
+                Investments Performance per Month
+              </ModalHeader>
+              <ModalBody>
+                <Table>
+                  <thead>
+                    <tr>
+                      <th
+                        style={{
+                          maxWidth: '200px',
+                          whiteSpace: 'nowrap',
+                          overflow: 'hidden',
+                          display: 'inline-block',
+                          textOverflow: 'ellipsis',
+                          minWidth: '30px',
+                        }}
+                      >
+                        Name
+                      </th>
+                      <th>Broker</th>
+                      <th>Type</th>
+                      <th>Rate</th>
+                      <th>Investment date</th>
+                      <th>Due date</th>
+                      <th>Initial amount</th>
+                      <th
+                        style={{
+                          maxWidth: '200px',
+                          overflow: 'hidden',
+                          display: 'inline-block',
+                          textOverflow: 'ellipsis',
+                          minWidth: '80px',
+                          textAlign: 'center',
+                        }}
+                      >
+                        Yield in the period
+                      </th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {incomesArray.map((income) => (
+                      <tr key={income._id}>
+                        <td>
+                          <Link
+                            to={`/admin/investment/${income._id}`}
+                            onClick={toggleModalInvestmentsPerformancePerMonth}
+                          >
+                            <span
+                              id={`Tooltip-${income._id}`}
+                              style={{
+                                height: '20px',
+                                maxWidth: '200px',
+                                whiteSpace: 'nowrap',
+                                overflow: 'hidden',
+                                display: 'inline-block',
+                                textOverflow: 'ellipsis',
+                                minWidth: '30px',
+                              }}
+                            >
+                              {income.name}
+                              <MyTooltip
+                                placement='left'
+                                target={`Tooltip-${income._id}`}
+                              >
+                                {income.name}
+                                <br />
+                              </MyTooltip>
+                            </span>
+                          </Link>
+                        </td>
+                        <td>{income.broker.name}</td>
+                        <td>{income.type}</td>
+                        <td>{income.rate}</td>
+                        <td>
+                          {moment(income.investment_date).format('DD/MM/YYYY')}
+                        </td>
+                        <td>{moment(income.due_date).format('DD/MM/YYYY')}</td>
+                        <td>
+                          {currencyFormat(
+                            income.initial_amount,
+                            income.broker.currency
+                          )}
+                        </td>
+                        <td>
+                          <div
+                            style={{
+                              height: '20px',
+                              maxWidth: '180px',
+                              overflow: 'hidden',
+                              display: 'inline-block',
+                              textOverflow: 'ellipsis',
+                              minWidth: '80px',
+                              textAlign: 'right',
+                            }}
+                          >
+                            <span>
+                              {currencyFormat(
+                                income.incomes.value,
+                                income.broker.currency
+                              )}
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                  </tbody>
+                  <tfoot>
+                    {currencies.map((currency) => (
+                      <tr key={currency}>
+                        <td>Total by Currency</td>
+                        <td>{currency}</td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td></td>
+                        <td>
+                          {currencyFormat(
+                            incomesArray
+                              .filter((inv) => inv.broker.currency === currency)
+                              .reduce(
+                                (acum, curr) => acum + curr.initial_amount,
+                                0
+                              ),
+                            currency
+                          )}
+                        </td>
+                        <td>
+                          <div
+                            style={{
+                              height: '20px',
+                              maxWidth: '180px',
+                              overflow: 'hidden',
+                              display: 'inline-block',
+                              textOverflow: 'ellipsis',
+                              minWidth: '80px',
+                              textAlign: 'right',
+                            }}
+                          >
+                            <span>
+                              {currencyFormat(
+                                incomesArray
+                                  .filter(
+                                    (inv) => inv.broker.currency === currency
+                                  )
+                                  .reduce(
+                                    (acum, curr) => acum + curr.incomes.value,
+                                    0
+                                  ),
+                                currency
+                              )}
+                            </span>
+                          </div>
+                        </td>
+                      </tr>
+                    ))}
+                    <tr>
+                      <td>Grand Total</td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td></td>
+                      <td>
+                        <div
+                          style={{
+                            height: '20px',
+                            maxWidth: '180px',
+                            overflow: 'hidden',
+                            display: 'inline-block',
+                            textOverflow: 'ellipsis',
+                            minWidth: '80px',
+                            textAlign: 'right',
+                          }}
+                        >
+                          <span>
+                            {currencyFormat(
+                              Number(
+                                currencies
+                                  .map(
+                                    (currency) =>
+                                      incomesArray
+                                        .filter(
+                                          (inv) =>
+                                            inv.broker.currency === currency
+                                        )
+                                        .reduce(
+                                          (acum, curr) =>
+                                            acum +
+                                            Number(
+                                              curr.incomes.value.toFixed(2)
+                                            ),
+                                          0
+                                        ) *
+                                      currencyExhangeRates[
+                                        `${currency}_${login.currency}`
+                                      ]
+                                  )
+                                  .reduce((acum, curr) => acum + curr, 0)
+                                  .toFixed(2)
+                              ),
+                              login.currency
+                            )}
+                          </span>
+                        </div>
+                      </td>
+                    </tr>
+                  </tfoot>
+                </Table>
+              </ModalBody>
+              <ModalFooter></ModalFooter>
+            </Modal>
+            <Modal
+              isOpen={modal1}
+              toggle={() => toggle1()}
+              modalClassName='modal-black'
+              keyboard={true}
+            >
+              <ModalHeader close={closeBtn(toggle1)}>Settings</ModalHeader>
+              <ModalBody>
+                <Label htmlFor='accountSelectorId'>
+                  Select an account for Top 10 Spending Categories for the
+                  period Chart
+                </Label>
+                <Input
+                  id='accountSelectorId'
+                  style={{ backgroundColor: '#2b3553' }}
+                  type='select'
+                  value={selectedAccountId1}
+                  onChange={(e) =>
+                    setSelectedAccountId1(
+                      accounts.find((account) => account._id === e.target.value)
+                        ._id
+                    )
+                  }
+                >
+                  <option value='' disabled selected>
+                    Select an option
+                  </option>
+                  {accounts.map((account) => (
+                    <option key={account._id} value={account._id}>
+                      {account.name}
+                    </option>
+                  ))}
+                </Input>
+              </ModalBody>
+              <ModalFooter>
+                <Button onClick={handleDefineAccount1} color='success'>
+                  Define
+                </Button>
+              </ModalFooter>
+            </Modal>
+            <Modal
+              isOpen={modal2}
+              toggle={() => toggle2()}
+              modalClassName='modal-black'
+              keyboard={true}
+            >
+              <ModalHeader close={closeBtn(toggle2)}>Settings</ModalHeader>
+              <ModalBody>
+                <Label htmlFor='accountSelectorId'>
+                  Select an account for the Total Expenses x Total Revenues
+                  Chart
+                </Label>
+                <Input
+                  id='accountSelectorId'
+                  style={{ backgroundColor: '#2b3553' }}
+                  type='select'
+                  value={selectedAccountId2}
+                  onChange={(e) =>
+                    setSelectedAccountId2(
+                      accounts.find((account) => account._id === e.target.value)
+                        ._id
+                    )
+                  }
+                >
+                  <option value='' disabled selected>
+                    Select an option
+                  </option>
+                  {accounts.map((account) => (
+                    <option key={account._id} value={account._id}>
+                      {account.name}
+                    </option>
+                  ))}
+                </Input>
+              </ModalBody>
+              <ModalFooter>
+                <Button onClick={handleDefineAccount2} color='success'>
+                  Define
+                </Button>
+              </ModalFooter>
+            </Modal>
+            <Modal
+              isOpen={modal3}
+              toggle={() => toggle3()}
+              modalClassName='modal-black'
+              keyboard={true}
+            >
+              <ModalHeader close={closeBtn(toggle3)}>Settings</ModalHeader>
+              <ModalBody>
+                <Label htmlFor='accountSelectorId'>
+                  Select an account for the Sum of Expenses Grouped by Month
+                  Chart
+                </Label>
+                <Input
+                  id='accountSelectorId'
+                  style={{ backgroundColor: '#2b3553' }}
+                  type='select'
+                  value={selectedAccountId3}
+                  onChange={(e) =>
+                    setSelectedAccountId3(
+                      accounts.find((account) => account._id === e.target.value)
+                        ._id
+                    )
+                  }
+                >
+                  <option value='' disabled selected>
+                    Select an option
+                  </option>
+                  {accounts.map((account) => (
+                    <option key={account._id} value={account._id}>
+                      {account.name}
+                    </option>
+                  ))}
+                </Input>
+              </ModalBody>
+              <ModalFooter>
+                <Button onClick={handleDefineAccount3} color='success'>
+                  Define
+                </Button>
+              </ModalFooter>
+            </Modal>
+
             <Modal
               isOpen={modalBankStatements}
               modalClassName='modal-black'
@@ -645,7 +1320,7 @@ const Dashboard = () => {
               }}
             >
               <ModalHeader
-                close={closeBtn}
+                close={closeBtn(handleShowAccountStatements)}
                 toggle={() => handleShowAccountStatements()}
               >
                 Check your account statements
@@ -712,12 +1387,14 @@ const Dashboard = () => {
                                   type='month'
                                   min={format(
                                     ISODateFormat(inflations[0]['data']),
-                                    'yyyy-MM',
-                                    { locale: ptBR }
+                                    'yyyy-MM'
+                                    // { locale: ptBR }
                                   )}
                                   max={
                                     //prettier-ignore
-                                    format(ISODateFormat(inflations[inflations.length - 1]['data']), 'yyyy-MM', { locale: ptBR })
+                                    format(ISODateFormat(inflations[inflations.length - 1]['data']), 'yyyy-MM', 
+                                    // { locale: ptBR }
+                                    )
                                   }
                                 />
                               </Col>
@@ -733,15 +1410,15 @@ const Dashboard = () => {
                                   type='month'
                                   min={format(
                                     ISODateFormat(inflations[0]['data']),
-                                    'yyyy-MM',
-                                    { locale: ptBR }
+                                    'yyyy-MM'
+                                    // { locale: ptBR }
                                   )}
                                   max={format(
                                     ISODateFormat(
                                       inflations[inflations.length - 1]['data']
                                     ),
-                                    'yyyy-MM',
-                                    { locale: ptBR }
+                                    'yyyy-MM'
+                                    // { locale: ptBR }
                                   )}
                                 />
                               </Col>
@@ -875,7 +1552,7 @@ const Dashboard = () => {
                               <i className='tim-icons icon-gift-2' />
                             </span>
                           </Button>
-                          <Button
+                          {/* <Button
                             color='info'
                             id='2'
                             size='sm'
@@ -891,7 +1568,7 @@ const Dashboard = () => {
                             <span className='d-block d-sm-none'>
                               <i className='tim-icons icon-tap-02' />
                             </span>
-                          </Button>
+                          </Button> */}
                         </ButtonGroup>
                       </Col>
                     </Row>
@@ -1014,20 +1691,20 @@ const Dashboard = () => {
                           }
                         }}
                         max={
-                          Incomes[1].length === 0
+                          incomes[1].length === 0
                             ? format(new Date(), 'yyyy-MM')
                             : format(
                                 addDays(
                                   parse(
-                                    Incomes[1][Incomes[1].length - 1],
+                                    incomes[1][incomes[1].length - 1],
                                     'MMM/yyyy',
-                                    new Date(),
-                                    { locale: ptBR }
+                                    new Date()
+                                    // { locale: ptBR }
                                   ),
                                   1
                                 ),
-                                'yyyy-MM',
-                                { locale: ptBR }
+                                'yyyy-MM'
+                                // { locale: ptBR }
                               )
                         }
                       />
@@ -1141,20 +1818,20 @@ const Dashboard = () => {
                           }
                         }}
                         max={
-                          Incomes[1].length === 0
+                          incomes[1].length === 0
                             ? format(new Date(), 'yyyy-MM')
                             : format(
                                 addDays(
                                   parse(
-                                    Incomes[1][Incomes[1].length - 1],
+                                    incomes[1][incomes[1].length - 1],
                                     'MMM/yyyy',
-                                    new Date(),
-                                    { locale: ptBR }
+                                    new Date()
+                                    // { locale: ptBR }
                                   ),
                                   1
                                 ),
-                                'yyyy-MM',
-                                { locale: ptBR }
+                                'yyyy-MM'
+                                // { locale: ptBR }
                               )
                         }
                       />
@@ -1162,68 +1839,12 @@ const Dashboard = () => {
                   </CardFooter>
                 </Card>
               </Col>
-              {/* <Col lg='4'>
-                <Card className='card-chart'>
-                  <CardHeader>
-                    <h5 className='card-category'>Total Shipments</h5>
-                    <CardTitle tag='h3'>
-                      <i className='tim-icons icon-bell-55 text-primary' />{' '}
-                      763,215
-                    </CardTitle>
-                  </CardHeader>
-                  <CardBody>
-                    <div className='chart-area'>
-                      <Line
-                        data={chartExample2.data}
-                        options={chartExample2.options}
-                      />
-                    </div>
-                  </CardBody>
-                </Card>
-              </Col>
               <Col lg='4'>
                 <Card className='card-chart'>
                   <CardHeader>
-                    <h5 className='card-category'>Daily Sales</h5>
-                    <CardTitle tag='h3'>
-                      <i className='tim-icons icon-delivery-fast text-info' />{' '}
-                      3,500€
+                    <CardTitle tag='h4'>
+                      Top 10 Spending Categories for the period
                     </CardTitle>
-                  </CardHeader>
-                  <CardBody>
-                    <div className='chart-area'>
-                      <Bar
-                        data={chartExample3.data}
-                        options={chartExample3.options}
-                      />
-                    </div>
-                  </CardBody>
-                </Card>
-              </Col>
-              <Col lg='4'>
-                <Card className='card-chart'>
-                  <CardHeader>
-                    <h5 className='card-category'>Completed Tasks</h5>
-                    <CardTitle tag='h3'>
-                      <i className='tim-icons icon-send text-success' /> 12,100K
-                    </CardTitle>
-                  </CardHeader>
-                  <CardBody>
-                    <div className='chart-area'>
-                      <Line
-                        data={chartExample4.data}
-                        options={chartExample4.options}
-                      />
-                    </div>
-                  </CardBody>
-                </Card>
-              </Col> */}
-            </Row>
-            <Row>
-              <Col lg='5'>
-                <Card className='card-tasks'>
-                  <CardHeader>
-                    <h6 className='title d-inline'>Investments by brokers</h6>
                     <UncontrolledDropdown>
                       <DropdownToggle
                         caret
@@ -1236,25 +1857,117 @@ const Dashboard = () => {
                       </DropdownToggle>
                       <DropdownMenu right>
                         <DropdownItem
-                          href='#pablo'
-                          onClick={(e) => e.preventDefault()}
+                          href='#'
+                          onClick={(e) => {
+                            e.preventDefault();
+                            toggle1();
+                          }}
                         >
-                          Action
-                        </DropdownItem>
-                        <DropdownItem
-                          href='#pablo'
-                          onClick={(e) => e.preventDefault()}
-                        >
-                          Another action
-                        </DropdownItem>
-                        <DropdownItem
-                          href='#pablo'
-                          onClick={(e) => e.preventDefault()}
-                        >
-                          Something else
+                          Settings
                         </DropdownItem>
                       </DropdownMenu>
                     </UncontrolledDropdown>
+                  </CardHeader>
+                  <CardBody>
+                    {/* <div className='chart-area'> */}
+                    <Pie
+                      height={150}
+                      // options={{ maintainAspectRatio: false }}
+                      data={chartExample10.data}
+                      options={chartExample10.options}
+                    />
+                    {/* </div> */}
+                  </CardBody>
+                </Card>
+              </Col>
+              <Col lg='4'>
+                <Card className='card-chart'>
+                  <CardHeader>
+                    <CardTitle tag='h4'>
+                      Total Expenses x Total Revenues
+                    </CardTitle>
+
+                    <UncontrolledDropdown>
+                      <DropdownToggle
+                        caret
+                        className='btn-icon'
+                        color='link'
+                        data-toggle='dropdown'
+                        type='button'
+                      >
+                        <i className='tim-icons icon-settings-gear-63' />
+                      </DropdownToggle>
+                      <DropdownMenu right>
+                        <DropdownItem
+                          href='#'
+                          onClick={(e) => {
+                            toggle2();
+                            e.preventDefault();
+                          }}
+                        >
+                          Settings
+                        </DropdownItem>
+                      </DropdownMenu>
+                    </UncontrolledDropdown>
+                  </CardHeader>
+                  <CardBody>
+                    {/* <div className='chart-area'> */}
+                    <Bar
+                      height={280}
+                      data={chartExample8.data}
+                      options={chartExample8.options}
+                    />
+                    {/* </div> */}
+                  </CardBody>
+                </Card>
+              </Col>
+              <Col lg='4'>
+                <Card className='card-chart'>
+                  <CardHeader>
+                    <CardTitle tag='h4'>
+                      Sum of Expenses Grouped by Month
+                    </CardTitle>
+
+                    <UncontrolledDropdown>
+                      <DropdownToggle
+                        caret
+                        className='btn-icon'
+                        color='link'
+                        data-toggle='dropdown'
+                        type='button'
+                      >
+                        <i className='tim-icons icon-settings-gear-63' />
+                      </DropdownToggle>
+                      <DropdownMenu right>
+                        <DropdownItem
+                          href='#'
+                          onClick={(e) => {
+                            toggle3();
+                            e.preventDefault();
+                          }}
+                        >
+                          Settings
+                        </DropdownItem>
+                      </DropdownMenu>
+                    </UncontrolledDropdown>
+                  </CardHeader>
+                  <CardBody>
+                    {/* <div className='chart-area'> */}
+                    <Line
+                      height={280}
+                      data={chartExample2.data(lines)}
+                      options={chartExample2.options(selectedAccount3.currency)}
+                    />
+                    {/* </div> */}
+                  </CardBody>
+                </Card>
+              </Col>
+            </Row>
+            <Row>
+              <Col lg='5'>
+                <Card className='card-tasks'>
+                  <CardHeader>
+                    <h6 className='title d-inline'>Investments by brokers</h6>
                   </CardHeader>
                   <CardBody>
                     <Pie

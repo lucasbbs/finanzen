@@ -41,7 +41,7 @@ const AuthNavbar = (props) => {
     >
       <Container fluid>
         <div className='navbar-wrapper'>
-          <NavbarBrand href='#pablo' onClick={(e) => e.preventDefault()}>
+          <NavbarBrand href='#' onClick={(e) => e.preventDefault()}>
             {props.brandText}
           </NavbarBrand>
         </div>

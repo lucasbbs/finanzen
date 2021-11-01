@@ -49,12 +49,12 @@ const ModalTransactions = ({
   oldAmount,
   isEditing,
   setIsEditing,
+  exchangeRate2,
+  setExchangeRate2,
 }) => {
-  const {
-    // accounts: accountsFromContext,
-    // updateAccounts,
-    getAccounts,
-  } = useContext(GlobalContext);
+  const { getAccounts } = useContext(GlobalContext);
+  const [accountExchange, setAccountExchange] = useState({});
+  const [exchangeRate, setExchangeRate] = useState('');
   const [accounts, setAccounts] = useState([]);
   const [categories, setCategories] = useState([]);
   const [categoriesToBeDisplayes, setCategoriesToBeDisplayes] = useState([]);
@@ -86,6 +86,32 @@ const ModalTransactions = ({
 
     getCategoriesAndAccounts();
   }, [token]);
+
+  useEffect(() => {
+    setExchangeRate(exchangeRate2);
+    setAccountExchange(accounts.find((account) => account._id === accountId));
+  }, [exchangeRate2]);
+
+  useEffect(() => {
+    const config = { headers: { Authorization: `Bearer ${token}` } };
+    const getExchanges = async () => {
+      const response = await axios.post(
+        `${Config.SERVER_ADDRESS}/api/exchanges`,
+        { currencies: [currency], localCurrency: accountExchange?.currency },
+        config
+      );
+      console.log(response);
+      if (response.status === 200) {
+        setExchangeRate(
+          response.data[`${currency}_${accountExchange?.currency}`]
+        );
+      } else {
+        setExchangeRate(1.5);
+      }
+    };
+    getExchanges();
+  }, [accountExchange]);
+
   const closeBtn = (
     <button color='danger' className='close' onClick={toggleModalTransactions}>
       <span style={{ color: 'white' }}>×</span>
@@ -229,10 +255,15 @@ const ModalTransactions = ({
           {isEditing ? 'Update the Transaction' : 'Register a new Transaction'}
         </ModalHeader>
         <ModalBody>
-          <ButtonGroup>
+          <ButtonGroup style={{ width: '100%' }}>
             <Button
               color='primary'
-              onClick={() => setSelected('Revenue')}
+              onClick={() => {
+                setSelected('Revenue');
+                setExchangeRate('');
+                setAccount('');
+                setAccountId('');
+              }}
               active={selected === 'Revenue'}
               disabled={isEditing}
             >
@@ -240,7 +271,12 @@ const ModalTransactions = ({
             </Button>
             <Button
               color='primary'
-              onClick={() => setSelected('Expense')}
+              onClick={() => {
+                setSelected('Expense');
+                setExchangeRate('');
+                setAccount('');
+                setAccountId('');
+              }}
               active={selected === 'Expense'}
               disabled={isEditing}
             >
@@ -251,10 +287,10 @@ const ModalTransactions = ({
               onClick={() => {
                 setSelected('Transfer');
                 setCategory(
-                  categories.find((cat) => cat.type === 'Transfer').name
+                  categories.find((cat) => cat.type === 'Transfer')?.name
                 );
                 setCategoryId(
-                  categories.find((cat) => cat.type === 'Transfer')._id
+                  categories.find((cat) => cat.type === 'Transfer')?._id
                 );
               }}
               active={selected === 'Transfer'}
@@ -267,7 +303,7 @@ const ModalTransactions = ({
           {selected === 'Transfer' ? (
             <>
               <Label className='mt-3' htmlFor='destinationAccountId'>
-                Destination Account
+                Destination Account <sup style={{ color: 'red' }}>*</sup>
               </Label>
               <Input
                 disabled={isEditing}
@@ -278,6 +314,12 @@ const ModalTransactions = ({
                 onChange={(e) => {
                   setAccount(e.target.value);
                   setAccountId(e.target[e.target.selectedIndex].id);
+                  setAccountExchange(
+                    accounts.find(
+                      (account) =>
+                        account._id === e.target[e.target.selectedIndex].id
+                    )
+                  );
                 }}
               >
                 <option value=''>Select an option</option>
@@ -293,9 +335,10 @@ const ModalTransactions = ({
           ) : (
             <>
               <Label className='mt-3' htmlFor='categorySelectorId'>
-                Category
+                Category <sup style={{ color: 'red' }}>*</sup>
               </Label>
               <Input
+                required
                 id='categorySelectorId'
                 style={{ backgroundColor: '#2b3553' }}
                 type='select'
@@ -328,9 +371,10 @@ const ModalTransactions = ({
             id='observationId'
           />
           <Label className='mt-3' htmlFor='valueTransactionId'>
-            Value
+            Value <sup style={{ color: 'red' }}>*</sup>
           </Label>
           <NumberFormat
+            required
             id='valueTransactionId'
             style={{ backgroundColor: '#2b3553' }}
             onChange={(e) => {
@@ -368,6 +412,37 @@ const ModalTransactions = ({
             value={date}
             onChange={(e) => setDate(e.target.value)}
           ></Input>
+          <div style={{ display: selected === 'Transfer' ? 'block' : 'none' }}>
+            <Label htmlFor='exchangeRateId'>Exchange Rate</Label>
+
+            <NumberFormat
+              required
+              id='valueTransactionId'
+              style={{ backgroundColor: '#2b3553' }}
+              onChange={(e) => {
+                setExchangeRate(reverseFormatNumber(e.target.value));
+              }}
+              type='text'
+              value={exchangeRate}
+              placeholder={`${
+                (currencies[accountExchange?.currency]?.symbol_native
+                  ? currencies[accountExchange.currency]?.symbol_native
+                  : '') + ' '
+              }0,00`}
+              thousandSeparator={'.'}
+              decimalSeparator={','}
+              prefix={
+                (currencies[accountExchange?.currency]?.symbol_native
+                  ? currencies[accountExchange.currency]?.symbol_native
+                  : '') + ' '
+              }
+              customInput={Input}
+              isAllowed={(values) => {
+                const { formattedValue, floatValue } = values;
+                return formattedValue === '' || floatValue >= 0;
+              }}
+            />
+          </div>
         </ModalBody>
         <ModalFooter>
           <Button
@@ -381,6 +456,7 @@ const ModalTransactions = ({
                 ammount: amount,
                 formerAmount: formerAmount,
                 observation,
+                exchangeRate,
                 date,
               })
             }

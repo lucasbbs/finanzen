@@ -35,6 +35,7 @@ import { GlobalContext } from 'context/GlobalState';
 
 const AccountDetails = () => {
   const { getAccounts, updateAccounts } = useContext(GlobalContext);
+  const [exchangeRate, setExchangeRate] = useState(0);
   const history = useHistory();
   const [isEditing, setIsEditing] = useState(false);
   const [alert, setAlert] = useState(null);
@@ -82,6 +83,7 @@ const AccountDetails = () => {
       setAmountTransaction(0);
       setDate('');
       setIsEditing(false);
+      setExchangeRate(0);
     }
 
     setModalTransactions(!modalTransactions);
@@ -401,6 +403,8 @@ const AccountDetails = () => {
               transactionId={transactionId}
               date={date}
               setDate={setDate}
+              exchangeRate2={exchangeRate}
+              setExchangeRate2={setExchangeRate}
             />
             <ModalIconPicker
               modalIcons={modalIcons}
@@ -435,7 +439,9 @@ const AccountDetails = () => {
                     //prettier-ignore
                     (!account?.isArchived || id !== ':id') ? ( 
                     
-                    <Button onClick = {
+                    <Button 
+                    disabled={account.isArchived}
+                    onClick = {
               toggleModalTransactions
             } >
             New Transaction </Button>
@@ -455,8 +461,11 @@ const AccountDetails = () => {
                         paddingRight: '0',
                       }}
                     >
-                      <Label> Name </Label>
+                      <Label htmlFor='nameId'>
+                        Name <sup style={{ color: 'red' }}>*</sup>
+                      </Label>
                       <Input
+                        id='nameId'
                         required
                         value={name}
                         onChange={(e) => setName(e.target.value)}
@@ -471,8 +480,12 @@ const AccountDetails = () => {
                         paddingRight: '0',
                       }}
                     >
-                      <Label> Currency </Label>
+                      <Label htmlFor='currencyId'>
+                        Currency <sup style={{ color: 'red' }}>*</sup>
+                      </Label>
                       <Input
+                        id='currencyId'
+                        required
                         style={{
                           backgroundColor: '#2b3553',
                         }}
@@ -496,10 +509,12 @@ const AccountDetails = () => {
                         paddingRight: '0',
                       }}
                     >
-                      <Label>
-                        {id === ':id' ? 'Initial amount' : 'Balance'}
+                      <Label htmlFor='balanceId'>
+                        {id === ':id' ? 'Initial amount' : 'Balance'}{' '}
+                        <sup style={{ color: 'red' }}>*</sup>
                       </Label>
                       <NumberFormat
+                        id='balanceId'
                         style={{
                           backgroundColor: '#2b3553',
                         }}
@@ -529,8 +544,11 @@ const AccountDetails = () => {
                       />
                     </Col>
                     <Col md='3' className='row flex-column'>
-                      <Label> Pick an Icon </Label>
+                      <Label htmlFor='iconId'>
+                        Pick an Icon <sup style={{ color: 'red' }}>*</sup>
+                      </Label>
                       <Button
+                        id='iconId'
                         style={{
                           color: 'hsla(0,0%,100%,.8)',
                           marginLeft: '20px',
@@ -716,7 +734,6 @@ const AccountDetails = () => {
                                               e.target.parentElement
                                                 .parentElement.parentElement.id
                                           );
-                                          console.log(filtered);
                                           setSelected(filtered.type);
                                           setAmountTransaction(
                                             filtered.ammount
@@ -730,8 +747,12 @@ const AccountDetails = () => {
                                           setAccountId(
                                             filtered?.dueFromAccount?._id
                                           );
+                                          // setExchangeRate()
                                           setAccount(
                                             filtered.dueFromAccount?.name
+                                          );
+                                          setExchangeRate(
+                                            filtered.exchangeRate
                                           );
                                           setFormerAmount(filtered.ammount);
                                           setIsEditing(true);

@@ -24,7 +24,6 @@
     display: inline-block !important;
   }
 }
-
 .incomes {
   position: relative;
   pointer-events: all;
@@ -694,16 +693,21 @@ button.react-calendar__navigation__arrow {
 .eventListenerClass {
   cursor: pointer;
 }
+
 .eventListenerClass:hover:before {
   content: '\f2ed';
   font-family: 'Font Awesome 5 Free';
-  color: white;
+  color: inherit;
   position: absolute;
   top: 0;
   left: 0;
   pointer-events: all;
 }
-
+.rbc-agenda-date-cell,
+.rbc-agenda-time-cell,
+.rbc-agenda-event-cell {
+  color: inherit !important;
+}
 .custom-switch .custom-control-input:checked ~ .custom-control-label::before {
   background: -moz-radial-gradient(
     center,
@@ -742,4 +746,27 @@ button.react-calendar__navigation__arrow {
   + .form-check-sign::before {
   border: none;
   background-color: #aaa;
+  cursor: not-allowed !important;
+}
+label.disabled {
+  cursor: not-allowed !important;
+}
+.dropdown-menu {
+  min-width: 20rem !important;
+}
+.btn-close-button {
+  float: right !important;
+  padding-right: 0 !important;
+}
+button:focus {
+  outline: none !important;
+}
+@media (min-width: 992px) {
+  .btn-close-button {
+    float: none !important;
+  }
+}
+
+select {
+  font-family: 'FontAwesome', 'Poppins', sans-serif !important;
 }

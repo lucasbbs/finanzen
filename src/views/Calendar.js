@@ -16,12 +16,8 @@
 */
 import { ChromePicker } from 'react-color';
 import { useEffect, useState, useRef } from 'react';
-// react component used to create a calendar with events on it
 import { Calendar as BigCalendar, momentLocalizer } from 'react-big-calendar';
-// dependency plugin for react-big-calendar
 import moment from 'moment';
-
-// reactstrap components
 import {
   Card,
   CardBody,
@@ -37,7 +33,6 @@ import {
   Button,
 } from 'reactstrap';
 import NotificationAlert from 'react-notification-alert';
-import 'moment-business-days';
 import 'moment-recur';
 import axios from 'axios';
 import Config from '../config.json';
@@ -48,6 +43,7 @@ import {
   createDateString,
 } from 'helpers/functions';
 import ReactBSAlert from 'react-bootstrap-sweetalert';
+import { ISODateFormat } from 'helpers/functions';
 
 const localizer = momentLocalizer(moment);
 // const DnDCalendar = withDragAndDrop(BigCalendar);
@@ -62,13 +58,11 @@ const Calendar = () => {
       : null
   );
   const [calendarEvents, setCalendarEvents] = useState([]);
-  // const [event, setEvents] = useState(events.filter((evt) => !evt.recurrent));
   const [alert, setAlert] = useState(null);
   const [view, setView] = useState('month');
   const [date, setDate] = useState(new Date());
   const [recurringEvents, setRecurringEvents] = useState([]);
   const [initialEvents, setInitialEvents] = useState([]);
-
   const [allDay, setAllDay] = useState(true);
   const [until, setUntil] = useState('');
   const [selectedCalendar, setSelectedCalendar] = useState('');
@@ -82,6 +76,7 @@ const Calendar = () => {
   const [startFrom, setStartFrom] = useState('');
   const [endAt, setEndAt] = useState('');
   const [modal, setModal] = useState(false);
+  const [startRecurrenceFrom, setStartRecurrenceFrom] = useState('');
 
   const selectedEvent = (event, pointerEvent) => {
     if (pointerEvent.nativeEvent.offsetX <= 13) {
@@ -91,6 +86,9 @@ const Calendar = () => {
       setDescription(event.description);
       if (event.until) {
         setUntil(event.until.slice(0, 10));
+      }
+      if (event.startRecurrenceFrom) {
+        setStartRecurrenceFrom(event.startRecurrenceFrom.slice(0, 10));
       }
       setSelectedCalendar(event.calendar);
       setIntervalo(event.interval);
@@ -108,7 +106,6 @@ const Calendar = () => {
         setStartFrom(createDateString(event.start).slice(0, 16));
         setEndAt(createDateString(event.end).slice(0, 16));
       }
-
       toggle();
     }
   };
@@ -120,7 +117,6 @@ const Calendar = () => {
         `${Config.SERVER_ADDRESS}/api/calendars/`,
         config
       );
-
       setCalendars(data);
       setInitialEvents(
         ...data.map((calendar) =>
@@ -156,10 +152,12 @@ const Calendar = () => {
       exceptions,
       _id,
       description,
-      calendar
+      calendar,
+      startRecurrenceFrom
     ) {
       this.currentMonth;
       this.start = start;
+      this.startRecurrenceFrom = startRecurrenceFrom;
       this.end = end;
       this.endRecurrence = endRecurrence;
       this.freq = freq;
@@ -170,8 +168,8 @@ const Calendar = () => {
       this.color = color;
       this.calendar = calendar;
       this.rInterval = moment().recur({
-        start: this.start,
-        end: endRecurrence,
+        start: this.startRecurrenceFrom,
+        end: moment(endRecurrence).add(1, 'days').toDate(),
         rules: [{ units: { [interval]: true }, measure: freq }],
         exceptions: exceptions,
       });
@@ -204,6 +202,13 @@ const Calendar = () => {
       const start = moment(this.setCurrentStart(), 'YYYY-MM-DD').startOf(
         'week'
       );
+      const diffStart =
+        new Date(this.start).getTime() -
+        new Date(
+          new Date(this.start).getFullYear(),
+          new Date(this.start).getMonth(),
+          new Date(this.start).getDate()
+        ).getTime();
       const end = moment(this.setCurrentEnd(), 'YYYY-MM-DD').endOf('week');
       const diff = new Date(this.end) - new Date(this.start);
 
@@ -213,8 +218,8 @@ const Calendar = () => {
             _id: this._id,
             description: this.description,
             title: this.title,
-            start: new Date(start),
-            end: new Date(new Date(start).getTime() + diff), //.add(diff, 'minutes').toDate(),
+            start: new Date(new Date(start).getTime() + diffStart),
+            end: new Date(new Date(start).getTime() + diff + diffStart), //.add(diff, 'minutes').toDate(),
             recurrent: true,
             until: this.endRecurrence,
             color: this.color,
@@ -222,6 +227,7 @@ const Calendar = () => {
             interval: this.interval,
             allDay: this.allDay,
             calendar: this.calendar,
+            startRecurrenceFrom: this.startRecurrenceFrom,
           });
         }
       }
@@ -232,26 +238,31 @@ const Calendar = () => {
   useEffect(() => {
     setRecurringEvents(
       initialEvents
-        .filter((evt) => evt.recurrent)
-        .map(
-          (evt) =>
-            new RecurringEvent(
-              evt.start,
-              evt.freq,
-              evt.interval,
-              evt.end,
-              evt.title,
-              evt.allDay,
-              evt.color,
-              evt.until,
-              evt.exceptions,
-              evt._id,
-              evt.description,
-              evt.calendar
+        ? initialEvents
+            .filter((evt) => evt.recurrent)
+            .map(
+              (evt) =>
+                new RecurringEvent(
+                  evt.start,
+                  evt.freq,
+                  evt.interval,
+                  evt.end,
+                  evt.title,
+                  evt.allDay,
+                  evt.color,
+                  evt.until,
+                  evt.exceptions,
+                  evt._id,
+                  evt.description,
+                  evt.calendar,
+                  evt.startRecurrenceFrom
+                )
             )
-        )
+        : []
     );
-    const newEvents = initialEvents.filter((evt) => !evt.recurrent);
+    const newEvents = initialEvents
+      ? initialEvents.filter((evt) => !evt.recurrent)
+      : [];
     recurringEvents.forEach((element) => {
       element.setCurrentMonth(date);
       element.getMonths().forEach((elm) => {
@@ -282,13 +293,7 @@ const Calendar = () => {
     } else {
       setAllDay(true);
       setStartFrom(createDateString(slotInfo.start).slice(0, 10));
-      setEndAt(
-        moment(createDateString(slotInfo.end))
-          .add(-1, 'days')
-          .toDate()
-          .toISOString()
-          .slice(0, 10)
-      );
+      setEndAt(createDateString(slotInfo.end).slice(0, 10));
     }
     toggle();
   };
@@ -308,10 +313,12 @@ const Calendar = () => {
       calendar: selectedCalendar,
       color: color ? RGBAToHexA(color.r, color.g, color.b, color.a) : undefined,
     };
+
     if (isRecurringEvent) {
       obj.freq = recurrence;
       obj.interval = interval;
       obj.until = until;
+      obj.startRecurrenceFrom = ISODateFormat(startRecurrenceFrom);
     }
     let data;
     if (id === '') {
@@ -381,7 +388,8 @@ const Calendar = () => {
               data.exceptions,
               data._id,
               data.description,
-              data.calendar
+              data.calendar,
+              data.startRecurrenceFrom
             ),
           ]);
         } else {
@@ -402,7 +410,8 @@ const Calendar = () => {
                 data.exceptions,
                 data._id,
                 data.description,
-                data.calendar
+                data.calendar,
+                data.startRecurrenceFrom
               )
             );
           } else {
@@ -418,7 +427,8 @@ const Calendar = () => {
               data.exceptions,
               data._id,
               data.description,
-              data.calendar
+              data.calendar,
+              data.startRecurrenceFrom
             );
           }
 
@@ -477,7 +487,8 @@ const Calendar = () => {
             data.exceptions,
             data._id,
             data.description,
-            data.calendar
+            data.calendar,
+            data.startRecurrenceFrom
           )
         );
       } else {
@@ -493,7 +504,8 @@ const Calendar = () => {
           data.exceptions,
           data._id,
           data.description,
-          data.calendar
+          data.calendar,
+          data.startRecurrenceFrom
         );
       }
 
@@ -553,12 +565,16 @@ const Calendar = () => {
   };
 
   const eventStyleGetter = (event, start, end, isSelected) => {
+    const rgba = hexAToRGBA(event.color);
     var backgroundColor = event.color;
     var style = {
       backgroundColor: backgroundColor ? backgroundColor : null,
       borderRadius: '0px',
       opacity: 0.8,
-      color: 'black',
+      color:
+        contrast([255, 255, 255], [rgba?.r, rgba?.g, rgba?.b]) >= 4
+          ? 'white'
+          : 'black',
       border: '0px',
       display: 'block',
       // height: '15px',
@@ -584,6 +600,10 @@ const Calendar = () => {
       setTitle('');
       setSelectedCalendar('');
       setIsEditable(true);
+      setIntervalo(0);
+      setRecurrence('');
+      setStartRecurrenceFrom('');
+      setUntil('');
     }
   };
 
@@ -750,7 +770,7 @@ const Calendar = () => {
               >
                 All day Event?
               </Label>
-              <Label check>
+              <Label className={!isEditable ? 'disabled' : ''} check>
                 <Input
                   disabled={!isEditable}
                   id='allDay'
@@ -836,7 +856,7 @@ const Calendar = () => {
               >
                 Recurring Event?
               </Label>
-              <Label check>
+              <Label className={!isEditable ? 'disabled' : ''} check>
                 <Input
                   disabled={!isEditable}
                   id='recurringEventsId'
@@ -854,7 +874,7 @@ const Calendar = () => {
             </FormGroup>
             {isRecurringEvent ? (
               <Row>
-                <Col md='4'>
+                <Col md='6'>
                   <Label htmlFor='recurrenceId'>Recurrence</Label>
                   <Input
                     id='recurrenceId'
@@ -872,7 +892,7 @@ const Calendar = () => {
                     <option value='years'>Yearly</option>
                   </Input>
                 </Col>
-                <Col md='4'>
+                <Col md='6'>
                   <Label htmlFor='intervalId'>Interval</Label>
                   <Input
                     id='intervalId'
@@ -881,7 +901,21 @@ const Calendar = () => {
                     onChange={(e) => setIntervalo(e.target.value)}
                   />
                 </Col>
-                <Col md='4'>
+                <Col md='6'>
+                  <Label htmlFor='startRecurrenceId'>
+                    Start Recurrence From
+                  </Label>
+                  <Input
+                    type='date'
+                    id='startRecurrenceId'
+                    style={{ backgroundColor: '#27293d' }}
+                    value={startRecurrenceFrom}
+                    onChange={(e) => {
+                      setStartRecurrenceFrom(e.target.value);
+                    }}
+                  />
+                </Col>
+                <Col md='6'>
                   <Label htmlFor='untilId'>Until</Label>
                   <Input
                     type='date'

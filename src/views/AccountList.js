@@ -379,8 +379,12 @@ const AccountList = () => {
                   }}
                 >
                   <Col md='4'>
-                    <Label> Icon </Label>
+                    <Label htmlFor='iconPickerId'>
+                      {' '}
+                      Icon <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
                     <Button
+                      id='iconPickerId'
                       style={{
                         color: 'hsla(0,0%,100%,.8)',
                         marginLeft: '20px',
@@ -402,7 +406,9 @@ const AccountList = () => {
                     </Button>
                   </Col>
                   <Col md='8'>
-                    <Label htmlFor='nameID'> Name </Label>
+                    <Label htmlFor='nameID'>
+                      Name <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
                     <Input
                       id='nameID'
                       required
@@ -422,7 +428,9 @@ const AccountList = () => {
                       paddingRight: '0',
                     }}
                   >
-                    <Label htmlFor='currencyID'> Currency </Label>
+                    <Label htmlFor='currencyID'>
+                      Currency <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
                     <Input
                       id='currencyID'
                       style={{
@@ -448,7 +456,9 @@ const AccountList = () => {
                       paddingRight: '0',
                     }}
                   >
-                    <Label htmlFor='initialAmountID'> Initial amount </Label>
+                    <Label htmlFor='initialAmountID'>
+                      Initial amount <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
                     <NumberFormat
                       style={{
                         backgroundColor: '#2b3553',

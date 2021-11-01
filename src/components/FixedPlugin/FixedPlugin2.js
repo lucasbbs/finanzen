@@ -36,7 +36,7 @@ const FixedPlugin = (props) => {
     <div className='fixed-plugin'>
       <div className={classes}>
         <a
-          href='#pablo'
+          href='#'
           onClick={(e) => {
             e.preventDefault();
             handleClick();

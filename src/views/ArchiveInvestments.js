@@ -100,7 +100,7 @@ const ArchiveInvestments = () => {
         setInvestment([...investment]);
       })
       .catch((error) => {
-        console.log(err);
+        console.log(error);
         notify(
           error.response && error.response.data.message
             ? error.response.data.message
@@ -433,7 +433,7 @@ const ArchiveInvestments = () => {
                 close={closeBtn}
               >
                 <span style={{ color: 'hsla(0,0%,100%,.9)' }}>
-                  Editar Investimento
+                  Edit Investiment
                 </span>
               </ModalHeader>
               <ModalBody
@@ -442,8 +442,11 @@ const ArchiveInvestments = () => {
                     'linear-gradient(180deg,#222a42 0,#1d253b)!important',
                 }}
               >
-                <Label>Nome</Label>
+                <Label htmlFor='nameId'>
+                  Name <sup style={{ color: 'red' }}>*</sup>
+                </Label>
                 <Input
+                  id='nameId'
                   required
                   style={{ backgroundColor: '#2b3553' }}
                   type='text'
@@ -454,8 +457,11 @@ const ArchiveInvestments = () => {
                 />
                 <Row style={{ marginBottom: '10px' }}>
                   <Col md='3' style={{ paddingRight: '0' }}>
-                    <Label>Corretora</Label>
+                    <Label htmlFor='brokerId'>
+                      Corretora <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
                     <Input
+                      id='brokerId'
                       required
                       style={{ backgroundColor: '#2b3553' }}
                       type='select'
@@ -476,15 +482,18 @@ const ArchiveInvestments = () => {
                     </Input>
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
-                    <Label>Tipo</Label>
+                    <Label htmlFor='typeId'>
+                      Type <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
                     <Input
+                      id='typeId'
                       style={{ backgroundColor: '#2b3553' }}
                       type='select'
                       value={type}
                       onChange={(e) => setType(e.target.value)}
                     >
                       <option value='' disabled={true}>
-                        Selecione uma opção
+                        Select an option
                       </option>
                       <option>CDB</option>
                       <option>LCI</option>
@@ -493,8 +502,11 @@ const ArchiveInvestments = () => {
                     </Input>
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
-                    <Label>Taxa</Label>
+                    <Label htmlFor='rateId'>
+                      Rate <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
                     <Input
+                      id='rateId'
                       style={{ backgroundColor: '#2b3553' }}
                       type='text'
                       value={rate}
@@ -502,8 +514,11 @@ const ArchiveInvestments = () => {
                     />
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
-                    <Label>Indexador</Label>
+                    <Label htmlFor='indexerId'>
+                      Indexer <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
                     <Input
+                      id='indexerId'
                       required
                       style={{ backgroundColor: '#2b3553' }}
                       type='select'
@@ -511,7 +526,7 @@ const ArchiveInvestments = () => {
                       onChange={(e) => setIndexer(e.target.value)}
                     >
                       <option value='' disabled={true}>
-                        Selecione uma opção
+                        Select an option
                       </option>
                       <option>CDI</option>
                       <option>IPCA</option>
@@ -519,8 +534,11 @@ const ArchiveInvestments = () => {
                     </Input>
                   </Col>
                   <Col md='3' style={{ paddingRight: '0' }}>
-                    <Label>Investment date</Label>
+                    <Label htmlFor='investmentDateId'>
+                      Investment date <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
                     <Input
+                      id='investmentDateId'
                       style={{ backgroundColor: '#2b3553' }}
                       type='date'
                       value={investmentDate.slice(0, 10)}
@@ -530,8 +548,11 @@ const ArchiveInvestments = () => {
                     />
                   </Col>
                   <Col md='3' style={{ paddingRight: '0' }}>
-                    <Label>Data de vencimento</Label>
+                    <Label htmlFor='dueDateId'>
+                      Due Date <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
                     <Input
+                      id='dueDateId'
                       style={{ backgroundColor: '#2b3553' }}
                       type='date'
                       value={dueDate.slice(0, 10)}
@@ -539,8 +560,9 @@ const ArchiveInvestments = () => {
                     />
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
-                    <Label>Montante Inicial</Label>
+                    <Label htmlFor='initialAmountId'>Initial Amount</Label>
                     <NumberFormat
+                      id='initialAmountId'
                       style={{ backgroundColor: '#2b3553' }}
                       onChange={(e) => {
                         setHasChanged(true);
@@ -583,10 +605,10 @@ const ArchiveInvestments = () => {
                     );
                   }}
                 >
-                  Salvar
+                  Save
                 </Button>
-                <Button color='secondary' onClick={toggle}>
-                  Cancelar
+                <Button color='danger' onClick={toggle}>
+                  Cancel
                 </Button>
               </ModalFooter>
             </Modal>

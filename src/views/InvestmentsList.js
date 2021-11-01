@@ -16,14 +16,16 @@ import {
   ModalFooter,
   Input,
   Label,
-  FormGroup,
-  Form,
 } from 'reactstrap';
 import { Link } from 'react-router-dom';
 import moment from 'moment';
 import Spinner from '../components/Spinner/Spinner';
 import { fetchInvestments } from '../services/Investments';
-import { currencyFormat, reverseFormatNumber } from '../helpers/functions';
+import {
+  currencyFormat,
+  decimalFormat,
+  reverseFormatNumber,
+} from '../helpers/functions';
 import axios from 'axios';
 import NotificationAlert from 'react-notification-alert';
 import Config from '../config.json';
@@ -39,6 +41,8 @@ const InvestmentsList = () => {
   const [typeOperation, setTypeOperation] = useState('archive');
   const [hasSelectedAccount, setHasSelectedAccount] = useState(false);
   const [account, setAccount] = useState('');
+  const [code, setCode] = useState('');
+  // const [accountsToBeDisplayed, setAccountsToBeDisplayed] = useState([]);
   const [currency, setCurrency] = useState('');
   const [id, setId] = useState('');
   const [name, setName] = useState('');
@@ -299,7 +303,12 @@ const InvestmentsList = () => {
     setAlert(null);
   };
 
-  const toggle = () => setModal(!modal);
+  const toggle = () => {
+    if (modal) {
+      setAccount('');
+    }
+    setModal(!modal);
+  };
   const toggleToSelectAccount = () =>
     setModalToSelectAccount(!modalToSelectAccount);
   const closeBtn = (
@@ -433,8 +442,11 @@ const InvestmentsList = () => {
                     'linear-gradient(180deg,#222a42 0,#1d253b)!important',
                 }}
               >
-                <Label>Name</Label>
+                <Label htmlFor='nameID'>
+                  Name <sup style={{ color: 'red' }}>*</sup>
+                </Label>
                 <Input
+                  id='nameID'
                   required
                   style={{ backgroundColor: '#2b3553' }}
                   type='text'
@@ -445,8 +457,11 @@ const InvestmentsList = () => {
                 />
                 <Row style={{ marginBottom: '10px' }}>
                   <Col md='3' style={{ paddingRight: '0' }}>
-                    <Label>Broker</Label>
+                    <Label htmlFor='brokerID'>
+                      Broker <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
                     <Input
+                      id='brokerID'
                       required
                       style={{ backgroundColor: '#2b3553' }}
                       type='select'
@@ -454,6 +469,11 @@ const InvestmentsList = () => {
                       onChange={(e) => {
                         console.log(broker, e.target.value);
                         setBroker(e.target.value);
+                        setCurrency(
+                          brokers.find(
+                            (broker) => broker._id === e.target.value
+                          ).currency
+                        );
                       }}
                     >
                       <option value='default' disabled={true}>
@@ -467,8 +487,11 @@ const InvestmentsList = () => {
                     </Input>
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
-                    <Label>Type</Label>
+                    <Label htmlFor='typeID'>
+                      Type <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
                     <Input
+                      id='typeID'
                       style={{ backgroundColor: '#2b3553' }}
                       type='select'
                       value={type}
@@ -484,8 +507,11 @@ const InvestmentsList = () => {
                     </Input>
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
-                    <Label>Rate</Label>
+                    <Label htmlFor='rateID'>
+                      Rate <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
                     <Input
+                      id='rateID'
                       style={{ backgroundColor: '#2b3553' }}
                       type='text'
                       value={rate}
@@ -493,8 +519,11 @@ const InvestmentsList = () => {
                     />
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
-                    <Label>Indexer</Label>
+                    <Label htmlFor='indexerID'>
+                      Indexer <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
                     <Input
+                      id='indexerID'
                       required
                       style={{ backgroundColor: '#2b3553' }}
                       type='select'
@@ -510,28 +539,37 @@ const InvestmentsList = () => {
                     </Input>
                   </Col>
                   <Col md='3' style={{ paddingRight: '0' }}>
-                    <Label>Investment date</Label>
+                    <Label htmlFor='investmentDateID'>
+                      Investment date <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
                     <Input
+                      id='investmentDateID'
                       style={{ backgroundColor: '#2b3553' }}
                       type='date'
-                      value={investmentDate.slice(0, 10)}
+                      value={investmentDate}
                       onChange={(e) => {
                         setInvestmentDate(e.target.value);
                       }}
                     />
                   </Col>
                   <Col md='3' style={{ paddingRight: '0' }}>
-                    <Label>Due date</Label>
+                    <Label htmlFor='dueDateID'>
+                      Due date <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
                     <Input
+                      id='dueDateID'
                       style={{ backgroundColor: '#2b3553' }}
                       type='date'
-                      value={dueDate.slice(0, 10)}
+                      value={dueDate}
                       onChange={(e) => setDueDate(e.target.value)}
                     />
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
-                    <Label>Initial amount</Label>
+                    <Label htmlFor='initialAmountID'>
+                      Initial amount <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
                     <NumberFormat
+                      id='initialAmountID'
                       style={{ backgroundColor: '#2b3553' }}
                       onChange={(e) => {
                         setHasChanged(true);
@@ -556,6 +594,49 @@ const InvestmentsList = () => {
                       }}
                     />
                   </Col>
+                  <Col md='3'>
+                    <Label htmlFor='accountID'>
+                      Account <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
+                    <Input
+                      id='accountID'
+                      type='select'
+                      value={account}
+                      onChange={(e) => setAccount(e.target.value)}
+                      style={{ backgroundColor: '#2b3553' }}
+                    >
+                      <option value='' selected disabled={true}>
+                        Select an option
+                      </option>
+                      {accounts
+                        .filter((account) => account.currency === currency)
+                        .map((account) => (
+                          <option key={account._id} value={account._id}>
+                            {account.name}
+                          </option>
+                        ))}
+                    </Input>
+                  </Col>
+                  <Col
+                    style={{
+                      display:
+                        type === 'Debênture' && currency === 'BRL'
+                          ? 'block'
+                          : 'none',
+                    }}
+                    md='2'
+                  >
+                    <Label htmlFor='codeId'>
+                      Code <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
+                    <Input
+                      required={type === 'Debênture' && currency === 'BRL'}
+                      id='codeId'
+                      value={code}
+                      onChange={(e) => setCode(e.target.value)}
+                      style={{ backgroundColor: '#2b3553' }}
+                    ></Input>
+                  </Col>
                 </Row>
               </ModalBody>
               <ModalFooter
@@ -567,7 +648,6 @@ const InvestmentsList = () => {
                 <Button
                   color='success'
                   onClick={() => {
-                    console.log(id);
                     handleUpdate(
                       {
                         _id: id,
@@ -575,9 +655,17 @@ const InvestmentsList = () => {
                         broker,
                         type,
                         rate,
+                        account,
                         indexer,
-                        investment_date: investmentDate,
-                        due_date: dueDate,
+                        code,
+                        investment_date: new Date(
+                          new Date(investmentDate).getTime() +
+                            new Date().getTimezoneOffset() * 60000
+                        ),
+                        due_date: new Date(
+                          new Date(dueDate).getTime() +
+                            new Date().getTimezoneOffset() * 60000
+                        ),
                         accrued_income: accruedIncome,
                       },
                       id
@@ -586,7 +674,7 @@ const InvestmentsList = () => {
                 >
                   Save
                 </Button>
-                <Button color='secondary' onClick={toggle}>
+                <Button color='danger' onClick={toggle}>
                   Cancel
                 </Button>
               </ModalFooter>
@@ -620,6 +708,14 @@ const InvestmentsList = () => {
                             <th>Broker</th>
                             <th>Type</th>
                             <th>Rate</th>
+                            <th
+                              style={{
+                                display: 'table-cell',
+                                textAlign: 'center',
+                              }}
+                            >
+                              Duration
+                            </th>
                             <th>Indexer</th>
                             <th>investment date</th>
                             <th>due date</th>
@@ -639,6 +735,17 @@ const InvestmentsList = () => {
                               <td>{inves.broker.name}</td>
                               <td>{inves.type}</td>
                               <td>{inves.rate}</td>
+                              <td
+                                style={{
+                                  display: 'table-cell',
+                                  textAlign: 'center',
+                                }}
+                              >
+                                {inves.duration
+                                  ? decimalFormat(inves.duration, 2)
+                                  : ''}
+                                {inves.duration ? ' days' : <span>—</span>}
+                              </td>
                               <td>{inves.indexer}</td>
                               <td>
                                 {moment(inves.investment_date).format(
@@ -738,6 +845,7 @@ const InvestmentsList = () => {
                                           e.target.parentElement.parentElement
                                             .parentElement.id
                                       );
+                                      setCode(filtered.code);
                                       setCurrency(filtered.broker.currency);
                                       setBroker(filtered.broker._id);
                                       setId(filtered._id);
@@ -745,14 +853,21 @@ const InvestmentsList = () => {
                                       setType(filtered.type);
                                       setRate(filtered.rate);
                                       setIndexer(filtered.indexer);
-                                      setDueDate(filtered.due_date);
+                                      setDueDate(
+                                        new Date(filtered.due_date)
+                                          .toISOString()
+                                          .slice(0, 10)
+                                      );
                                       setInvestmentDate(
-                                        filtered.investment_date
+                                        new Date(filtered.investment_date)
+                                          .toISOString()
+                                          .slice(0, 10)
                                       );
                                       setInitialAmount(filtered.initial_amount);
                                       setInitialAmount2(
                                         filtered.initial_amount
                                       );
+                                      setAccount(filtered.account);
                                       setAccruedIncome(filtered.accrued_income);
                                       toggle();
                                     }}

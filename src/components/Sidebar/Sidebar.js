@@ -99,7 +99,7 @@ const Sidebar = (props) => {
             key={key}
           >
             <a
-              href='#pablo'
+              href='#'
               data-toggle='collapse'
               aria-expanded={state[prop.state]}
               onClick={(e) => {

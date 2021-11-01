@@ -14,7 +14,7 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import React from "react";
+import React from 'react';
 
 // reactstrap components
 import {
@@ -27,31 +27,31 @@ import {
   UncontrolledDropdown,
   Row,
   Col,
-} from "reactstrap";
+} from 'reactstrap';
 
 const Timeline = () => {
   return (
     <>
-      <div className="content">
-        <div className="header text-center">
-          <h3 className="title">Timeline</h3>
+      <div className='content'>
+        <div className='header text-center'>
+          <h3 className='title'>Timeline</h3>
         </div>
         <Row>
-          <Col md="12">
-            <Card className="card-timeline card-plain">
+          <Col md='12'>
+            <Card className='card-timeline card-plain'>
               <CardBody>
-                <ul className="timeline">
-                  <li className="timeline-inverted">
-                    <div className="timeline-badge danger">
-                      <i className="tim-icons icon-planet" />
+                <ul className='timeline'>
+                  <li className='timeline-inverted'>
+                    <div className='timeline-badge danger'>
+                      <i className='tim-icons icon-planet' />
                     </div>
-                    <div className="timeline-panel">
-                      <div className="timeline-heading">
-                        <Badge color="danger" pill>
+                    <div className='timeline-panel'>
+                      <div className='timeline-heading'>
+                        <Badge color='danger' pill>
                           Some Title
                         </Badge>
                       </div>
-                      <div className="timeline-body">
+                      <div className='timeline-body'>
                         <p>
                           Wifey made the best Father's Day meal ever. So
                           thankful so happy so blessed. Thank you for making my
@@ -62,22 +62,22 @@ const Timeline = () => {
                         </p>
                       </div>
                       <h6>
-                        <i className="ti-time" />
+                        <i className='ti-time' />
                         11 hours ago via Twitter
                       </h6>
                     </div>
                   </li>
                   <li>
-                    <div className="timeline-badge success">
-                      <i className="tim-icons icon-user-run" />
+                    <div className='timeline-badge success'>
+                      <i className='tim-icons icon-user-run' />
                     </div>
-                    <div className="timeline-panel">
-                      <div className="timeline-heading">
-                        <Badge color="success" pill>
+                    <div className='timeline-panel'>
+                      <div className='timeline-heading'>
+                        <Badge color='success' pill>
                           Another One
                         </Badge>
                       </div>
-                      <div className="timeline-body">
+                      <div className='timeline-body'>
                         <p>
                           Thank God for the support of my wife and real friends.
                           I also wanted to point out that it’s the first album
@@ -89,17 +89,17 @@ const Timeline = () => {
                       </div>
                     </div>
                   </li>
-                  <li className="timeline-inverted">
-                    <div className="timeline-badge info">
-                      <i className="tim-icons icon-notes" />
+                  <li className='timeline-inverted'>
+                    <div className='timeline-badge info'>
+                      <i className='tim-icons icon-notes' />
                     </div>
-                    <div className="timeline-panel">
-                      <div className="timeline-heading">
-                        <Badge color="info" pill>
+                    <div className='timeline-panel'>
+                      <div className='timeline-heading'>
+                        <Badge color='info' pill>
                           Another Title
                         </Badge>
                       </div>
-                      <div className="timeline-body">
+                      <div className='timeline-body'>
                         <p>
                           Called I Miss the Old Kanye That’s all it was Kanye
                           And I love you like Kanye loves Kanye Famous viewing @
@@ -113,32 +113,32 @@ const Timeline = () => {
                         </p>
                         <hr />
                       </div>
-                      <div className="timeline-footer">
+                      <div className='timeline-footer'>
                         <UncontrolledDropdown>
                           <DropdownToggle
                             caret
-                            className="btn-round"
-                            color="info"
-                            data-toggle="dropdown"
-                            type="button"
+                            className='btn-round'
+                            color='info'
+                            data-toggle='dropdown'
+                            type='button'
                           >
-                            <i className="tim-icons icon-settings-gear-63" />{" "}
+                            <i className='tim-icons icon-settings-gear-63' />{' '}
                           </DropdownToggle>
                           <DropdownMenu>
                             <DropdownItem
-                              href="#pablo"
+                              href='#'
                               onClick={(e) => e.preventDefault()}
                             >
                               Action
                             </DropdownItem>
                             <DropdownItem
-                              href="#pablo"
+                              href='#'
                               onClick={(e) => e.preventDefault()}
                             >
                               Another action
                             </DropdownItem>
                             <DropdownItem
-                              href="#pablo"
+                              href='#'
                               onClick={(e) => e.preventDefault()}
                             >
                               Something else here
@@ -149,16 +149,16 @@ const Timeline = () => {
                     </div>
                   </li>
                   <li>
-                    <div className="timeline-badge warning">
-                      <i className="tim-icons icon-gift-2" />
+                    <div className='timeline-badge warning'>
+                      <i className='tim-icons icon-gift-2' />
                     </div>
-                    <div className="timeline-panel">
-                      <div className="timeline-heading">
-                        <Badge color="warning" pill>
+                    <div className='timeline-panel'>
+                      <div className='timeline-heading'>
+                        <Badge color='warning' pill>
                           Another One
                         </Badge>
                       </div>
-                      <div className="timeline-body">
+                      <div className='timeline-body'>
                         <p>
                           Tune into Big Boy's 92.3 I'm about to play the first
                           single from Cruel Winter also to Kim’s hair and makeup

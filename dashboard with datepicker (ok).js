@@ -702,19 +702,19 @@ const Dashboard = () => {
                       </DropdownToggle>
                       <DropdownMenu right>
                         <DropdownItem
-                          href='#pablo'
+                          href='#'
                           onClick={(e) => e.preventDefault()}
                         >
                           Action
                         </DropdownItem>
                         <DropdownItem
-                          href='#pablo'
+                          href='#'
                           onClick={(e) => e.preventDefault()}
                         >
                           Another action
                         </DropdownItem>
                         <DropdownItem
-                          href='#pablo'
+                          href='#'
                           onClick={(e) => e.preventDefault()}
                         >
                           Something else
@@ -969,26 +969,26 @@ const Dashboard = () => {
                         </DropdownToggle>
                         <DropdownMenu right>
                           <DropdownItem
-                            href='#pablo'
+                            href='#'
                             onClick={(e) => e.preventDefault()}
                           >
                             Action
                           </DropdownItem>
                           <DropdownItem
-                            href='#pablo'
+                            href='#'
                             onClick={(e) => e.preventDefault()}
                           >
                             Another action
                           </DropdownItem>
                           <DropdownItem
-                            href='#pablo'
+                            href='#'
                             onClick={(e) => e.preventDefault()}
                           >
                             Something else
                           </DropdownItem>
                           <DropdownItem
                             className='text-danger'
-                            href='#pablo'
+                            href='#'
                             onClick={(e) => e.preventDefault()}
                           >
                             Remove Data

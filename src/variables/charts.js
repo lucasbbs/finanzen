@@ -223,43 +223,75 @@ let chartExample1 = {
   options: chart_1_2_3_options,
 };
 
-// #########################################
-// // // used inside src/views/Dashboard.js
-// #########################################
 let chartExample2 = {
-  data: (canvas) => {
-    let ctx = canvas.getContext('2d');
+  data: (data) => ({
+    labels: data[0],
+    datasets: data[1],
+  }),
+  options: (currency) => ({
+    maintainAspectRatio: false,
+    legend: {
+      display: true,
+      position: 'bottom',
+      labels: {
+        padding: 8,
+        boxWidth: 11,
+        boxHeight: 14,
+        fontColor: 'white',
+        fontSize: 11.5,
+      },
+    },
+    tooltips: {
+      backgroundColor: '#f5f5f5',
+      titleFontColor: '#333',
+      bodyFontColor: '#666',
+      bodySpacing: 4,
+      mode: 'nearest',
+      intersect: 0,
+      position: 'nearest',
+      callbacks: {
+        label: function (tooltipItem, data) {
+          var indice = tooltipItem.index;
+          var label = data.datasets[tooltipItem.datasetIndex].label + ': ';
 
-    let gradientStroke = ctx.createLinearGradient(0, 230, 0, 50);
-
-    gradientStroke.addColorStop(1, 'rgba(29,140,248,0.2)');
-    gradientStroke.addColorStop(0.4, 'rgba(29,140,248,0.0)');
-    gradientStroke.addColorStop(0, 'rgba(29,140,248,0)'); //blue colors
-
-    return {
-      labels: ['JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'],
-      datasets: [
+          return `${label}:  ${currencyFormat(
+            data.datasets[tooltipItem.datasetIndex].data[indice],
+            currency
+          )}`;
+        },
+      },
+    },
+    responsive: true,
+    scales: {
+      yAxes: [
         {
-          label: 'Data',
-          fill: true,
-          backgroundColor: gradientStroke,
-          borderColor: '#1f8ef1',
-          borderWidth: 2,
-          borderDash: [],
-          borderDashOffset: 0.0,
-          pointBackgroundColor: '#1f8ef1',
-          pointBorderColor: 'rgba(255,255,255,0)',
-          pointHoverBackgroundColor: '#1f8ef1',
-          pointBorderWidth: 20,
-          pointHoverRadius: 4,
-          pointHoverBorderWidth: 15,
-          pointRadius: 4,
-          data: [80, 100, 70, 80, 120, 80],
+          gridLines: {
+            drawBorder: false,
+            color: 'white',
+            zeroLineColor: 'white',
+          },
+          ticks: {
+            maxTicksLimit: 4,
+            padding: 20,
+            fontColor: 'white',
+          },
         },
       ],
-    };
-  },
-  options: chart_1_2_3_options,
+      xAxes: [
+        {
+          gridLines: {
+            drawBorder: false,
+            color: 'transparent',
+            zeroLineColor: 'white',
+          },
+          ticks: {
+            padding: 20,
+            fontColor: 'white',
+          },
+        },
+      ],
+    },
+  }),
 };
 
 // #########################################
@@ -680,33 +712,52 @@ const chartExample8 = {
     labels: ['JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'],
     datasets: [
       {
-        label: 'Data',
+        label: 'Expenses',
         fill: true,
-        backgroundColor: '#ff8a76',
-        hoverBackgroundColor: ' #ff8a76',
-        borderColor: '#ff8a76',
+        backgroundColor: 'rgb(0, 130, 200)',
+        hoverBackgroundColor: ' rgb(0, 130, 200)',
+        borderColor: 'rgb(0, 130, 200)',
         borderWidth: 2,
         borderDash: [],
         borderDashOffset: 0.0,
         data: [80, 100, 70, 80, 120, 80, 130],
       },
       {
-        label: 'Data',
+        label: 'Revenue',
         fill: true,
-        backgroundColor: '#2782f0',
-        hoverBackgroundColor: ' #2782f0',
-        borderColor: '#2782f0',
+        backgroundColor: 'rgb(166, 204, 234)',
+        hoverBackgroundColor: 'rgb(166, 204, 234)',
+        borderColor: 'rgb(166, 204, 234)',
         borderWidth: 2,
         borderDash: [],
         borderDashOffset: 0.0,
         data: [60, 110, 90, 70, 90, 100],
+      },
+      {
+        label: 'Balance',
+        fill: true,
+        backgroundColor: 'rgb(204, 20, 57)',
+        hoverBackgroundColor: '  rgb(204, 20, 57)',
+        borderColor: 'rgb(204, 20, 57)',
+        borderWidth: 2,
+        borderDash: [],
+        borderDashOffset: 0.0,
+        data: [-20, 10, 20, -10, 10, -30],
       },
     ],
   },
   options: {
     maintainAspectRatio: false,
     legend: {
-      display: false,
+      display: true,
+      position: 'bottom',
+      labels: {
+        padding: 8,
+        boxWidth: 11,
+        boxHeight: 14,
+        fontColor: 'white',
+        fontSize: 11.5,
+      },
     },
     tooltips: {
       backgroundColor: '#f5f5f5',
@@ -723,15 +774,14 @@ const chartExample8 = {
       yAxes: [
         {
           gridLines: {
-            drawBorder: false,
-            color: 'rgba(29,140,248,0.1)',
-            zeroLineColor: 'transparent',
+            drawBorder: true,
+            color: 'white',
+            zeroLineColor: 'white',
           },
           ticks: {
-            suggestedMin: 60,
-            suggestedMax: 120,
+            maxTicksLimit: 5,
             padding: 20,
-            fontColor: '#9e9e9e',
+            fontColor: 'white',
           },
         },
       ],
@@ -739,12 +789,10 @@ const chartExample8 = {
         {
           gridLines: {
             drawBorder: false,
-            color: 'rgba(29,140,248,0.1)',
-            zeroLineColor: 'transparent',
           },
           ticks: {
             padding: 20,
-            fontColor: '#9e9e9e',
+            fontColor: 'white',
           },
         },
       ],
@@ -790,12 +838,12 @@ const chartExample9 = {
         {
           display: 0,
           ticks: {
-            display: false,
+            display: true,
           },
           gridLines: {
             drawBorder: false,
-            zeroLineColor: 'transparent',
-            color: 'rgba(255,255,255,0.05)',
+            zeroLineColor: 'white',
+            color: 'white',
           },
         },
       ],
@@ -806,11 +854,11 @@ const chartExample9 = {
           barPercentage: 1.6,
           gridLines: {
             drawBorder: false,
-            color: 'rgba(255,255,255,0.1)',
-            zeroLineColor: 'transparent',
+            color: 'white',
+            zeroLineColor: 'white',
           },
           ticks: {
-            display: false,
+            display: true,
           },
         },
       ],
@@ -822,22 +870,62 @@ const chartExample9 = {
 // #########################################
 const chartExample10 = {
   data: {
-    labels: [1, 2, 3],
+    labels: [
+      'Aluguel',
+      'Alimentação',
+      'Internet',
+      'Telefone',
+      'Energia Elétrica',
+      'Cartão de Crédito',
+      // 'Educação',
+      // 'Gastos com Pets',
+      // 'Água e Saneamento',
+      // 'Cabelo',
+    ],
     datasets: [
       {
         label: 'Emails',
         pointRadius: 0,
         pointHoverRadius: 0,
-        backgroundColor: ['#ff8779', '#2a84e9', '#e2e2e2'],
+        backgroundColor: [
+          'rgb(0, 130, 200)',
+          'rgb(191, 229, 255)',
+          'rgb(204, 20, 57)',
+          'rgb(230, 140, 124)',
+          'rgb(83, 179, 54)',
+          'rgb(165, 211, 142)',
+          'rgb(230, 138, 0)',
+          'rgb(243, 218, 97)',
+          'rgb(151, 107, 179)',
+          'rgb(204, 184, 204)',
+        ],
+
         borderWidth: 0,
-        data: [60, 40, 20],
+        data: [
+          60,
+          40,
+          20,
+          40,
+          50,
+          20,
+          //  10, 5, 4, 8
+        ],
       },
     ],
   },
   options: {
-    cutoutPercentage: 70,
+    cutoutPercentage: 0,
     legend: {
-      display: false,
+      display: true,
+
+      position: 'bottom',
+      labels: {
+        padding: 8,
+        boxWidth: 11,
+        boxHeight: 14,
+        fontColor: 'white',
+        fontSize: 11.5,
+      },
     },
     tooltips: {
       backgroundColor: '#f5f5f5',

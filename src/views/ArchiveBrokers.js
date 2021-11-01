@@ -318,8 +318,11 @@ const ArchiveBrokers = () => {
               >
                 <Row className='mb-10 align-items-center justify-content-center '>
                   <Col md='4' className='pr-0'>
-                    <Label>Name</Label>
+                    <Label htmlFor='nameId'>
+                      Name <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
                     <Input
+                      id='nameId'
                       required
                       style={{ backgroundColor: '#2b3553' }}
                       type='text'
@@ -331,8 +334,11 @@ const ArchiveBrokers = () => {
                   </Col>
 
                   <Col md='4' className='pr-0'>
-                    <Label>Country</Label>
+                    <Label htmlFor='countryId'>
+                      Country <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
                     <Input
+                      id='countryId'
                       required
                       style={{ backgroundColor: '#2b3553' }}
                       type='select'
@@ -357,8 +363,11 @@ const ArchiveBrokers = () => {
                     </Input>
                   </Col>
                   <Col md='4' className='pr-0'>
-                    <Label>Currency</Label>
+                    <Label htmlFor='currencyId'>
+                      Currency <sup style={{ color: 'red' }}>*</sup>
+                    </Label>
                     <Input
+                      id='currencyId'
                       required
                       style={{ backgroundColor: '#2b3553' }}
                       type='select'

@@ -14,7 +14,7 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import React from "react";
+import React from 'react';
 
 // reactstrap components
 import {
@@ -40,276 +40,267 @@ import {
   Row,
   Col,
   UncontrolledTooltip,
-} from "reactstrap";
+} from 'reactstrap';
 
 const Rtl = () => {
   return (
     <>
-      <div className="content">
+      <div className='content'>
         <Row>
-          <Col className="text-center" lg="6" sm="6">
-            <Card className="card-tasks text-left">
+          <Col className='text-center' lg='6' sm='6'>
+            <Card className='card-tasks text-left'>
               <CardHeader>
-                <h6 className="title d-inline">تتبع</h6>
-                <p className="card-category d-inline">اليوم</p>
+                <h6 className='title d-inline'>تتبع</h6>
+                <p className='card-category d-inline'>اليوم</p>
                 <UncontrolledDropdown>
                   <DropdownToggle
                     aria-expanded={false}
                     aria-haspopup={true}
                     caret
-                    color="link"
-                    data-toggle="dropdown"
-                    id="dropdownMenuLink"
+                    color='link'
+                    data-toggle='dropdown'
+                    id='dropdownMenuLink'
                   >
-                    <i className="tim-icons icon-settings-gear-63" />
+                    <i className='tim-icons icon-settings-gear-63' />
                   </DropdownToggle>
-                  <DropdownMenu aria-labelledby="dropdownMenuLink" right>
-                    <DropdownItem
-                      href="#pablo"
-                      onClick={(e) => e.preventDefault()}
-                    >
+                  <DropdownMenu aria-labelledby='dropdownMenuLink' right>
+                    <DropdownItem href='#' onClick={(e) => e.preventDefault()}>
                       عمل
                     </DropdownItem>
-                    <DropdownItem
-                      href="#pablo"
-                      onClick={(e) => e.preventDefault()}
-                    >
+                    <DropdownItem href='#' onClick={(e) => e.preventDefault()}>
                       عمل آخر
                     </DropdownItem>
-                    <DropdownItem
-                      href="#pablo"
-                      onClick={(e) => e.preventDefault()}
-                    >
+                    <DropdownItem href='#' onClick={(e) => e.preventDefault()}>
                       شيء آخر هنا
                     </DropdownItem>
                   </DropdownMenu>
                 </UncontrolledDropdown>
               </CardHeader>
               <CardBody>
-                <div className="table-full-width table-responsive">
+                <div className='table-full-width table-responsive'>
                   <Table>
                     <tbody>
                       <tr>
-                        <td className="text-center">
+                        <td className='text-center'>
                           <FormGroup check>
                             <Label check>
                               <Input
                                 defaultChecked
-                                defaultValue=""
-                                type="checkbox"
+                                defaultValue=''
+                                type='checkbox'
                               />
-                              <span className="form-check-sign">
-                                <span className="check" />
+                              <span className='form-check-sign'>
+                                <span className='check' />
                               </span>
                             </Label>
                           </FormGroup>
                         </td>
-                        <td className="text-right">
-                          <p className="title">مركز معالجة موقع محور</p>
-                          <p className="text-muted">نص آخر هناالوثائق</p>
+                        <td className='text-right'>
+                          <p className='title'>مركز معالجة موقع محور</p>
+                          <p className='text-muted'>نص آخر هناالوثائق</p>
                         </td>
-                        <td className="td-actions">
+                        <td className='td-actions'>
                           <Button
-                            color="link"
-                            id="tooltip141118598"
-                            title=""
-                            type="button"
+                            color='link'
+                            id='tooltip141118598'
+                            title=''
+                            type='button'
                           >
-                            <i className="tim-icons icon-settings" />
+                            <i className='tim-icons icon-settings' />
                           </Button>
                           <UncontrolledTooltip
                             delay={0}
-                            target="tooltip141118598"
+                            target='tooltip141118598'
                           >
                             مهمة تحرير
                           </UncontrolledTooltip>
                         </td>
                       </tr>
                       <tr>
-                        <td className="text-center">
+                        <td className='text-center'>
                           <FormGroup check>
                             <Label check>
-                              <Input defaultValue="" type="checkbox" />
-                              <span className="form-check-sign">
-                                <span className="check" />
+                              <Input defaultValue='' type='checkbox' />
+                              <span className='form-check-sign'>
+                                <span className='check' />
                               </span>
                             </Label>
                           </FormGroup>
                         </td>
-                        <td className="text-right">
-                          <p className="title">لامتثال GDPR</p>
-                          <p className="text-muted">
+                        <td className='text-right'>
+                          <p className='title'>لامتثال GDPR</p>
+                          <p className='text-muted'>
                             الناتج المحلي الإجمالي هو نظام يتطلب من الشركات
                             حماية البيانات الشخصية والخصوصية لمواطني أوروبا
                             بالنسبة للمعاملات التي تتم داخل الدول الأعضاء في
                             الاتحاد الأوروبي.
                           </p>
                         </td>
-                        <td className="td-actions">
+                        <td className='td-actions'>
                           <Button
-                            color="link"
-                            id="tooltip167064857"
-                            title=""
-                            type="button"
+                            color='link'
+                            id='tooltip167064857'
+                            title=''
+                            type='button'
                           >
-                            <i className="tim-icons icon-settings" />
+                            <i className='tim-icons icon-settings' />
                           </Button>
                           <UncontrolledTooltip
                             delay={0}
-                            target="tooltip167064857"
+                            target='tooltip167064857'
                           >
                             مهمة تحرير
                           </UncontrolledTooltip>
                         </td>
                       </tr>
                       <tr>
-                        <td className="text-center">
+                        <td className='text-center'>
                           <FormGroup check>
                             <Label check>
-                              <Input defaultValue="" type="checkbox" />
-                              <span className="form-check-sign">
-                                <span className="check" />
+                              <Input defaultValue='' type='checkbox' />
+                              <span className='form-check-sign'>
+                                <span className='check' />
                               </span>
                             </Label>
                           </FormGroup>
                         </td>
-                        <td className="text-right">
-                          <p className="title">القضاياالقضايا</p>
-                          <p className="text-muted">
+                        <td className='text-right'>
+                          <p className='title'>القضاياالقضايا</p>
+                          <p className='text-muted'>
                             سيكونونقال 50٪ من جميع المستجيبين أنهم سيكونون أكثر
                             عرضة للتسوق في شركة
                           </p>
                         </td>
-                        <td className="td-actions">
+                        <td className='td-actions'>
                           <Button
-                            color="link"
-                            id="tooltip844573982"
-                            title=""
-                            type="button"
+                            color='link'
+                            id='tooltip844573982'
+                            title=''
+                            type='button'
                           >
-                            <i className="tim-icons icon-settings" />
+                            <i className='tim-icons icon-settings' />
                           </Button>
                           <UncontrolledTooltip
                             delay={0}
-                            target="tooltip844573982"
+                            target='tooltip844573982'
                           >
                             مهمة تحرير
                           </UncontrolledTooltip>
                         </td>
                       </tr>
                       <tr>
-                        <td className="text-center">
+                        <td className='text-center'>
                           <FormGroup check>
                             <Label check>
                               <Input
                                 defaultChecked
-                                defaultValue=""
-                                type="checkbox"
+                                defaultValue=''
+                                type='checkbox'
                               />
-                              <span className="form-check-sign">
-                                <span className="check" />
+                              <span className='form-check-sign'>
+                                <span className='check' />
                               </span>
                             </Label>
                           </FormGroup>
                         </td>
-                        <td className="text-right">
-                          <p className="title">
+                        <td className='text-right'>
+                          <p className='title'>
                             تصدير الملفات التي تمت معالجتها
                           </p>
-                          <p className="text-muted">
+                          <p className='text-muted'>
                             كما يبين التقرير أن المستهلكين لن يغفروا شركة بسهولة
                             بمجرد حدوث خرق يعرض بياناتهم الشخصية.
                           </p>
                         </td>
-                        <td className="td-actions">
+                        <td className='td-actions'>
                           <Button
-                            color="link"
-                            id="tooltip509041436"
-                            title=""
-                            type="button"
+                            color='link'
+                            id='tooltip509041436'
+                            title=''
+                            type='button'
                           >
-                            <i className="tim-icons icon-settings" />
+                            <i className='tim-icons icon-settings' />
                           </Button>
                           <UncontrolledTooltip
                             delay={0}
-                            target="tooltip509041436"
+                            target='tooltip509041436'
                           >
                             مهمة تحرير
                           </UncontrolledTooltip>
                         </td>
                       </tr>
                       <tr>
-                        <td className="text-center">
+                        <td className='text-center'>
                           <FormGroup check>
                             <Label check>
                               <Input
                                 defaultChecked
-                                defaultValue=""
-                                type="checkbox"
+                                defaultValue=''
+                                type='checkbox'
                               />
-                              <span className="form-check-sign">
-                                <span className="check" />
+                              <span className='form-check-sign'>
+                                <span className='check' />
                               </span>
                             </Label>
                           </FormGroup>
                         </td>
-                        <td className="text-right">
-                          <p className="title">الوصول إلى عملية التصدير</p>
-                          <p className="text-muted">
+                        <td className='text-right'>
+                          <p className='title'>الوصول إلى عملية التصدير</p>
+                          <p className='text-muted'>
                             سياسة السيء إنطلاق في قبل, مساعدة والمانيا أخذ قد.
                             بل أما أمام ماشاء الشتاء،, تكاليف الإقتصادي بـ حين.
                             ٣٠ يتعلّق للإتحاد ولم, وتم هناك مدينة بتحدّي إذ, كان
                             بل عمل
                           </p>
                         </td>
-                        <td className="td-actions">
+                        <td className='td-actions'>
                           <Button
-                            color="link"
-                            id="tooltip665486771"
-                            title=""
-                            type="button"
+                            color='link'
+                            id='tooltip665486771'
+                            title=''
+                            type='button'
                           >
-                            <i className="tim-icons icon-settings" />
+                            <i className='tim-icons icon-settings' />
                           </Button>
                           <UncontrolledTooltip
                             delay={0}
-                            target="tooltip665486771"
+                            target='tooltip665486771'
                           >
                             مهمة تحرير
                           </UncontrolledTooltip>
                         </td>
                       </tr>
                       <tr>
-                        <td className="text-center">
+                        <td className='text-center'>
                           <FormGroup check>
                             <Label check>
-                              <Input defaultValue="" type="checkbox" />
-                              <span className="form-check-sign">
-                                <span className="check" />
+                              <Input defaultValue='' type='checkbox' />
+                              <span className='form-check-sign'>
+                                <span className='check' />
                               </span>
                             </Label>
                           </FormGroup>
                         </td>
-                        <td className="text-right">
-                          <p className="title">الافراج عن v2.0.0</p>
-                          <p className="text-muted">
+                        <td className='text-right'>
+                          <p className='title'>الافراج عن v2.0.0</p>
+                          <p className='text-muted'>
                             عن رئيس طوكيو البولندي لمّ, مايو مرجع وباءت قبل هو,
                             تسمّى الطريق الإقتصادي ذات أن. لغات الإطلاق الفرنسية
                             دار ان, بين بتخصيص الساحة اقتصادية أم. و الآخ
                           </p>
                         </td>
-                        <td className="td-actions">
+                        <td className='td-actions'>
                           <Button
-                            color="link"
-                            id="tooltip458666133"
-                            title=""
-                            type="button"
+                            color='link'
+                            id='tooltip458666133'
+                            title=''
+                            type='button'
                           >
-                            <i className="tim-icons icon-settings" />
+                            <i className='tim-icons icon-settings' />
                           </Button>
                           <UncontrolledTooltip
                             delay={0}
-                            target="tooltip458666133"
+                            target='tooltip458666133'
                           >
                             مهمة تحرير
                           </UncontrolledTooltip>
@@ -320,37 +311,37 @@ const Rtl = () => {
                 </div>
               </CardBody>
             </Card>
-            <Card className="card-contributions">
+            <Card className='card-contributions'>
               <CardBody>
-                <CardTitle tag="h1">6,332</CardTitle>
-                <h3 className="card-category">مجموع المساهمات العامة</h3>
-                <p className="card-description">
+                <CardTitle tag='h1'>6,332</CardTitle>
+                <h3 className='card-category'>مجموع المساهمات العامة</h3>
+                <p className='card-description'>
                   بعد نجاح ناجح لمدة عامين ، سنقوم بتغيير طريقة عمل المساهمات.
                 </p>
               </CardBody>
               <hr />
               <CardFooter>
                 <Row>
-                  <Col xs="6">
-                    <div className="card-stats justify-content-center">
-                      <div className="d-flex justify-content-center align-items-center">
-                        <span className="ml-n4 mt-3">على</span>
+                  <Col xs='6'>
+                    <div className='card-stats justify-content-center'>
+                      <div className='d-flex justify-content-center align-items-center'>
+                        <span className='ml-n4 mt-3'>على</span>
                         <CustomInput
-                          type="switch"
-                          id="switch-1"
+                          type='switch'
+                          id='switch-1'
                           defaultChecked
                         />
-                        <span className="mr-3 mt-3">إيقاف</span>
+                        <span className='mr-3 mt-3'>إيقاف</span>
                       </div>
                       <span>جميع المساهمات العامة</span>
                     </div>
                   </Col>
-                  <Col xs="6">
-                    <div className="card-stats justify-content-center">
-                      <div className="d-flex justify-content-center align-items-center">
-                        <span className="ml-n4 mt-3">على</span>
-                        <CustomInput type="switch" id="switch-2" />
-                        <span className="mr-3 mt-3">إيقاف</span>
+                  <Col xs='6'>
+                    <div className='card-stats justify-content-center'>
+                      <div className='d-flex justify-content-center align-items-center'>
+                        <span className='ml-n4 mt-3'>على</span>
+                        <CustomInput type='switch' id='switch-2' />
+                        <span className='mr-3 mt-3'>إيقاف</span>
                       </div>
                       <span>مساهمات الأسبوع الماضي</span>
                     </div>
@@ -359,21 +350,21 @@ const Rtl = () => {
               </CardFooter>
             </Card>
           </Col>
-          <Col lg="6" sm="6">
-            <Card className="card-timeline card-plain">
+          <Col lg='6' sm='6'>
+            <Card className='card-timeline card-plain'>
               <CardBody>
-                <ul className="timeline timeline-simple">
-                  <li className="timeline-inverted">
-                    <div className="timeline-badge danger">
-                      <i className="tim-icons icon-bag-16" />
+                <ul className='timeline timeline-simple'>
+                  <li className='timeline-inverted'>
+                    <div className='timeline-badge danger'>
+                      <i className='tim-icons icon-bag-16' />
                     </div>
-                    <div className="timeline-panel text-right">
-                      <div className="timeline-heading">
-                        <Badge color="danger" pill>
+                    <div className='timeline-panel text-right'>
+                      <div className='timeline-heading'>
+                        <Badge color='danger' pill>
                           بعض العنوان
                         </Badge>
                       </div>
-                      <div className="timeline-body">
+                      <div className='timeline-body'>
                         <p>
                           ل Wifey قدم أفضل وجبة يوم الأب على الإطلاق. ممتن جدا
                           سعيد جدا حتى المباركة. شكراً لك على صنع عائلتي لقد
@@ -382,22 +373,22 @@ const Rtl = () => {
                         </p>
                       </div>
                       <h6>
-                        <i className="ti-time" />
+                        <i className='ti-time' />
                         قبل ساعتين عبر تويتر
                       </h6>
                     </div>
                   </li>
-                  <li className="timeline-inverted">
-                    <div className="timeline-badge success">
-                      <i className="tim-icons icon-gift-2" />
+                  <li className='timeline-inverted'>
+                    <div className='timeline-badge success'>
+                      <i className='tim-icons icon-gift-2' />
                     </div>
-                    <div className="timeline-panel text-right">
-                      <div className="timeline-heading">
-                        <Badge color="success" pill>
+                    <div className='timeline-panel text-right'>
+                      <div className='timeline-heading'>
+                        <Badge color='success' pill>
                           واحدة أخرى
                         </Badge>
                       </div>
-                      <div className="timeline-body">
+                      <div className='timeline-body'>
                         <p>
                           أشكر الله على دعم زوجتي وأصدقائي الحقيقيين. أود أيضًا
                           الإشارة إلى أنه أول ألبوم ينتقل إلى رقم 1 من البث
@@ -408,17 +399,17 @@ const Rtl = () => {
                       </div>
                     </div>
                   </li>
-                  <li className="timeline-inverted">
-                    <div className="timeline-badge info">
-                      <i className="tim-icons icon-planet" />
+                  <li className='timeline-inverted'>
+                    <div className='timeline-badge info'>
+                      <i className='tim-icons icon-planet' />
                     </div>
-                    <div className="timeline-panel text-right">
-                      <div className="timeline-heading">
-                        <Badge color="info" pill>
+                    <div className='timeline-panel text-right'>
+                      <div className='timeline-heading'>
+                        <Badge color='info' pill>
                           عنوان آخر
                         </Badge>
                       </div>
-                      <div className="timeline-body">
+                      <div className='timeline-body'>
                         <p>
                           يطلق عليه أنا أفتقد كاني القديم هذا كل ما كان كاني
                           وأنا أحبك مثل كانيي يحب كاني الشهير مشاهدة فيجويروا
@@ -432,32 +423,32 @@ const Rtl = () => {
                         </p>
                         <hr />
                       </div>
-                      <div className="timeline-footer">
+                      <div className='timeline-footer'>
                         <UncontrolledDropdown>
                           <DropdownToggle
                             caret
-                            className="btn-round"
-                            color="info"
-                            data-toggle="dropdown"
-                            type="button"
+                            className='btn-round'
+                            color='info'
+                            data-toggle='dropdown'
+                            type='button'
                           >
-                            <i className="tim-icons icon-bullet-list-67" />
+                            <i className='tim-icons icon-bullet-list-67' />
                           </DropdownToggle>
                           <DropdownMenu right>
                             <DropdownItem
-                              href="#pablo"
+                              href='#'
                               onClick={(e) => e.preventDefault()}
                             >
                               عمل
                             </DropdownItem>
                             <DropdownItem
-                              href="#pablo"
+                              href='#'
                               onClick={(e) => e.preventDefault()}
                             >
                               عمل آخر
                             </DropdownItem>
                             <DropdownItem
-                              href="#pablo"
+                              href='#'
                               onClick={(e) => e.preventDefault()}
                             >
                               شيء آخر هنا
@@ -473,86 +464,86 @@ const Rtl = () => {
           </Col>
         </Row>
         <Row>
-          <Col lg="3" md="6">
-            <Card className="card-pricing card-primary">
+          <Col lg='3' md='6'>
+            <Card className='card-pricing card-primary'>
               <CardBody>
-                <CardTitle tag="h1">طليعة</CardTitle>
+                <CardTitle tag='h1'>طليعة</CardTitle>
                 <CardImg
-                  alt="..."
-                  src={require("assets/img/card-primary.png").default}
+                  alt='...'
+                  src={require('assets/img/card-primary.png').default}
                 />
                 <ListGroup>
                   <ListGroupItem>300 رسائل</ListGroupItem>
                   <ListGroupItem>150 رسائل البريد الإلكتروني</ListGroupItem>
                   <ListGroupItem>24/7 الدعم</ListGroupItem>
                 </ListGroup>
-                <div className="card-prices">
-                  <h3 className="text-on-front">
+                <div className='card-prices'>
+                  <h3 className='text-on-front'>
                     <span>$</span>
                     95
                   </h3>
-                  <h5 className="text-on-back">95</h5>
-                  <p className="plan">خطة مهنية</p>
+                  <h5 className='text-on-back'>95</h5>
+                  <p className='plan'>خطة مهنية</p>
                 </div>
               </CardBody>
-              <CardFooter className="text-center mb-3 mt-3">
-                <Button className="btn-round btn-just-icon" color="primary">
+              <CardFooter className='text-center mb-3 mt-3'>
+                <Button className='btn-round btn-just-icon' color='primary'>
                   البدء
                 </Button>
               </CardFooter>
             </Card>
           </Col>
-          <Col lg="3" md="6">
-            <Card className="card-pricing card-primary card-white">
+          <Col lg='3' md='6'>
+            <Card className='card-pricing card-primary card-white'>
               <CardBody>
-                <CardTitle tag="h1">طليعة</CardTitle>
+                <CardTitle tag='h1'>طليعة</CardTitle>
                 <CardImg
-                  alt="..."
-                  src={require("assets/img/card-primary.png").default}
+                  alt='...'
+                  src={require('assets/img/card-primary.png').default}
                 />
                 <ListGroup>
                   <ListGroupItem>300 رسائل</ListGroupItem>
                   <ListGroupItem>150 رسائل البريد الإلكتروني</ListGroupItem>
                   <ListGroupItem>24/7 الدعم</ListGroupItem>
                 </ListGroup>
-                <div className="card-prices">
-                  <h3 className="text-on-front">
+                <div className='card-prices'>
+                  <h3 className='text-on-front'>
                     <span>$</span>
                     95
                   </h3>
-                  <h5 className="text-on-back">95</h5>
-                  <p className="plan">خطة مهنية</p>
+                  <h5 className='text-on-back'>95</h5>
+                  <p className='plan'>خطة مهنية</p>
                 </div>
               </CardBody>
-              <CardFooter className="text-center mb-3 mt-3">
-                <Button className="btn-round btn-just-icon" color="primary">
+              <CardFooter className='text-center mb-3 mt-3'>
+                <Button className='btn-round btn-just-icon' color='primary'>
                   البدء
                 </Button>
               </CardFooter>
             </Card>
           </Col>
-          <Col md="6">
-            <Card className="card-testimonial">
-              <CardHeader className="card-header-avatar">
-                <a href="#pablo" onClick={(e) => e.preventDefault()}>
+          <Col md='6'>
+            <Card className='card-testimonial'>
+              <CardHeader className='card-header-avatar'>
+                <a href='#' onClick={(e) => e.preventDefault()}>
                   <img
-                    alt="..."
-                    className="img img-raised"
-                    src={require("assets/img/james.jpg").default}
+                    alt='...'
+                    className='img img-raised'
+                    src={require('assets/img/james.jpg').default}
                   />
                 </a>
               </CardHeader>
               <CardBody>
-                <p className="card-description">
+                <p className='card-description'>
                   إن التشبيك في قمة الويب لا يشبه أي مؤتمر تقني أوروبي آخر.
                 </p>
-                <div className="icon icon-primary">
-                  <i className="fa fa-quote-right" />
+                <div className='icon icon-primary'>
+                  <i className='fa fa-quote-right' />
                 </div>
               </CardBody>
               <CardFooter>
-                <CardTitle tag="h4">روبرت بريسن</CardTitle>
-                <p className="category">@خطةطليعة</p>
+                <CardTitle tag='h4'>روبرت بريسن</CardTitle>
+                <p className='category'>@خطةطليعة</p>
               </CardFooter>
             </Card>
           </Col>

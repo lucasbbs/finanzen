@@ -1,7 +1,7 @@
 import axios from 'axios';
 import { currencyFormat } from 'helpers/functions';
 import { getDataForTheInvestmentProjectChart } from 'helpers/functions';
-import { useEffect, useRef, useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { Line } from 'react-chartjs-2';
 import {
   Button,
@@ -10,18 +10,26 @@ import {
   CardHeader,
   Col,
   CustomInput,
+  FormGroup,
   Input,
   Label,
+  Modal,
+  ModalBody,
+  ModalFooter,
+  ModalHeader,
   Row,
   Table,
 } from 'reactstrap';
 import Config from '../config.json';
 import NotificationAlert from 'react-notification-alert';
+import ReactBSAlert from 'react-bootstrap-sweetalert';
 
 const InvestmentProjects = () => {
+  const [alert, setAlert] = useState(null);
   const [data, setData] = useState([]);
   const [boolRate, setBoolRate] = useState(false);
   const [boolTerm, setBoolTerm] = useState(false);
+  const [modal, setModal] = useState(false);
   const [term, setTerm] = useState(0);
   const [rate, setRate] = useState(0);
   const [name, setName] = useState('');
@@ -34,6 +42,65 @@ const InvestmentProjects = () => {
       ? JSON.parse(localStorage.getItem('userInfo'))
       : null
   );
+
+  const hideAlert = () => {
+    setAlert(null);
+  };
+  const success = () => {
+    setAlert(
+      <ReactBSAlert
+        success
+        style={{ display: 'block', marginTop: '-100px' }}
+        title='Deleted!'
+        onConfirm={() => hideAlert()}
+        onCancel={() => hideAlert()}
+        confirmBtnBsStyle='success'
+        btnSize=''
+      >
+        'Your investment project was deleted...'
+      </ReactBSAlert>
+    );
+  };
+  const cancel = () => {
+    setAlert(
+      <ReactBSAlert
+        danger
+        style={{
+          display: 'block',
+          marginTop: '-100px',
+        }}
+        title='Cancelled'
+        onConfirm={() => hideAlert()}
+        onCancel={() => hideAlert()}
+        confirmBtnText='Ok'
+        confirmBtnBsStyle='success'
+        btnSize=''
+      ></ReactBSAlert>
+    );
+  };
+
+  const warningWithConfirmAndCancelMessage = (id) => {
+    setAlert(
+      <ReactBSAlert
+        warning
+        style={{
+          display: 'block',
+          marginTop: '-100px',
+        }}
+        title='Are you sure?'
+        onConfirm={() => handleDelete(id)}
+        onCancel={() => cancel()}
+        confirmBtnBsStyle='success'
+        cancelBtnBsStyle='danger'
+        confirmBtnText='Yes, delete!'
+        cancelBtnText='Cancel'
+        showCancel
+        btnSize=''
+      >
+        'You will not be able to restore the data for your investment project'
+      </ReactBSAlert>
+    );
+  };
   useEffect(() => {
     const getData = async () => {
       const config = { headers: { Authorization: `Bearer ${login.token}` } };
@@ -218,15 +285,17 @@ const InvestmentProjects = () => {
 
   const handleSave = async (objInvestProject) => {
     const config = { headers: { Authorization: `Bearer ${login.token}` } };
+
     await axios
       .post(
         `${Config.SERVER_ADDRESS}/api/investmentProjects/`,
         objInvestProject,
         config
       )
-      .then((res) =>
-        notify('You have successfully saved your investment project')
-      )
+      .then(({ data }) => {
+        setInvestmentProjects([...investmentProjects, data]);
+        notify('You have successfully saved your investment project');
+      })
       .catch((error) =>
         notify(
           error.response && error.response.data.message
@@ -237,17 +306,49 @@ const InvestmentProjects = () => {
       );
   };
   const handleLoad = async () => {
-    if (investmentProjectId !== '') {
-      const filtered = investmentProjects.find(
-        (project) => project._id === investmentProjectId
+    const filtered = investmentProjects.find(
+      (project) => project._id === investmentProjectId
+    );
+    setName(filtered.name);
+    setRate(filtered.rate);
+    setTerm(filtered.term);
+    setInitialAmount(filtered.initialAmount);
+    setMonthlyDeposit(filtered.monthlyDeposit);
+    setBoolRate(filtered.boolRate);
+    setBoolTerm(filtered.boolTerm);
+    toggle();
+  };
+
+  const handleDelete = async (id) => {
+    const config = { headers: { Authorization: `Bearer ${login.token}` } };
+    try {
+      await axios.delete(
+        `${Config.SERVER_ADDRESS}/api/investmentProjects/${id}`,
+        config
       );
-      setName(filtered.name);
-      setRate(filtered.rate);
-      setTerm(filtered.term);
-      setInitialAmount(filtered.initialAmount);
-      setMonthlyDeposit(filtered.monthlyDeposit);
-      setBoolRate(filtered.boolRate);
-      setBoolTerm(filtered.boolTerm);
+      setInvestmentProjects([
+        ...investmentProjects.filter((inv) => inv._id !== id),
+      ]);
+
+      if (id === investmentProjectId) {
+        setName('');
+        setRate(0);
+        setTerm(0);
+        setInitialAmount(0);
+        setMonthlyDeposit(0);
+        setBoolRate(false);
+        setBoolTerm(false);
+      }
+      toggle();
+      success();
+    } catch (error) {
+      notify(
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message,
+        'danger'
+      );
+      hideAlert();
     }
   };
   const notificationAlertRef = useRef(null);
@@ -266,11 +367,71 @@ const InvestmentProjects = () => {
     };
     notificationAlertRef.current.notificationAlert(options);
   };
+
+  const toggle = () => {
+    setModal(!modal);
+  };
   return (
     <div className='content'>
       <div className='react-notification-alert-container'>
         <NotificationAlert ref={notificationAlertRef} />
       </div>
+      <Modal modalClassName='modal-black' isOpen={modal}>
+        <ModalHeader></ModalHeader>
+        <ModalBody>
+          {investmentProjects.map((project) => (
+            <div className='row justify-content-between' key={project._id}>
+              <FormGroup check className='form-check-radio'>
+                <Label check>
+                  <Input
+                    checked={project._id === investmentProjectId}
+                    onChange={(e) => setInvestmentProjectId(e.target.value)}
+                    value={project._id}
+                    id='exampleRadios2'
+                    name='radiosToSelectProject'
+                    type='radio'
+                  />
+                  <span className='form-check-sign' />
+                  {project.name}
+                </Label>
+              </FormGroup>
+              <Button
+                className='btn-link'
+                data-id={project._id}
+                onClick={
+                  (e) =>
+                    warningWithConfirmAndCancelMessage(
+                      e.currentTarget.getAttribute('data-id')
+                    )
+                  // handleDelete(e.currentTarget.getAttribute('data-id'))
+                }
+                color='danger'
+              >
+                <i className='fas fa-trash-alt'></i>
+              </Button>
+            </div>
+          ))}
+        </ModalBody>
+        <ModalFooter>
+          <Button onClick={toggle} color='danger'>
+            Cancel
+          </Button>
+          <Button
+            style={{
+              marginTop: 0,
+              marginLeft: '0px',
+              padding: '10px 20px',
+            }}
+            onClick={() => handleLoad()}
+            disabled={
+              investmentProjects.length === 0 || investmentProjectId == ''
+            }
+          >
+            Load
+          </Button>
+        </ModalFooter>
+      </Modal>
+      {alert}
       <Card className='card-chart'>
         <CardHeader>
           <h1>
@@ -280,7 +441,9 @@ const InvestmentProjects = () => {
         <CardBody>
           <Row>
             <Col md='4'>
-              <Label htmlFor='nameId'>Name</Label>
+              <Label htmlFor='nameId'>
+                Name <sup style={{ color: 'red' }}>*</sup>
+              </Label>
               <Input
                 style={{ backgroundColor: '#2b3553' }}
                 id='nameId'
@@ -290,7 +453,9 @@ const InvestmentProjects = () => {
               />
               <Row>
                 <Col md='6'>
-                  <Label htmlFor='rateId'>Rate (%)</Label>
+                  <Label htmlFor='rateId'>
+                    Rate (%) <sup style={{ color: 'red' }}>*</sup>
+                  </Label>
                   <Input
                     style={{ backgroundColor: '#2b3553' }}
                     id='rateId'
@@ -335,23 +500,25 @@ const InvestmentProjects = () => {
                 </Col>
               </Row>
 
-              <Label>Initial amount</Label>
+              <Label htmlFor='initialAmountId'>Initial amount</Label>
               <Input
+                id='initialAmountId'
                 style={{ backgroundColor: '#2b3553' }}
                 min={0}
                 type='number'
                 value={initialAmount}
                 onChange={(e) => setInitialAmount(Number(e.target.value))}
               />
-              <Label>Monthly Deposit</Label>
+              <Label htmlFor='monthlyDepositId'>Monthly Deposit</Label>
               <Input
+                id='monthlyDepositId'
                 style={{ backgroundColor: '#2b3553' }}
                 type='number'
                 min={0}
                 value={monthlyDeposit}
                 onChange={(e) => setMonthlyDeposit(Number(e.target.value))}
               />
-              <Row className='mt-4'>
+              <Row className='mt-4 justify-content-between'>
                 <Col md='2'>
                   <Button
                     color='success'
@@ -375,36 +542,16 @@ const InvestmentProjects = () => {
                     Save
                   </Button>
                 </Col>
-                <Col md='8'>
-                  <Input
-                    type='select'
-                    style={{ backgroundColor: '#2b3553' }}
-                    onChange={(e) => {
-                      setInvestmentProjectId(
-                        e.target[e.target.selectedIndex].id
-                      );
-                    }}
-                  >
-                    <option value=''>Select an option</option>
-                    {investmentProjects.map((project) => (
-                      <option key={project._id} id={project._id}>
-                        {project.name}
-                      </option>
-                    ))}
-                  </Input>
-                </Col>
-                <Col md='2'>
-                  <Button
-                    style={{
-                      marginTop: 0,
-                      marginLeft: '0px',
-                      padding: '10px 20px',
-                    }}
-                    onClick={() => handleLoad()}
-                    disabled={investmentProjects.length === 0}
-                  >
-                    Load
-                  </Button>
+                <Col md='4'>
+                  <div className='row'>
+                    <Button
+                      color='primary'
+                      onClick={toggle}
+                      className='mt-0 text-nowrap'
+                    >
+                      Select Project
+                    </Button>
+                  </div>
                 </Col>
               </Row>
             </Col>

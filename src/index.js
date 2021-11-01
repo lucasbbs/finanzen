@@ -14,7 +14,7 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import React from 'react';
+import React, { useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom';
 
@@ -38,37 +38,43 @@ import registerServiceWorker from 'registerServiceWorker';
 
 // axios.defaults.withCredentials = true;
 
-const PrivateRoute = ({ component: Component, ...rest }) => (
-  <Route
-    key={Date.now()}
-    {...rest}
-    render={(props) =>
-      isAuthenticated() ? (
-        isFirtAccess() ? (
-          <Redirect
-            to={{
-              pathname: '/auth/first-access',
-              // state: { from: props.location },
-            }}
-          />
-        ) : hasRestoredLogin() ? (
-          <Redirect
-            to={{
-              pathname: '/auth/restore-access',
-              // state: { from: props.location },
-            }}
-          />
+const PrivateRoute = ({ component: Component, ...rest }) => {
+  // useEffect(() => {
+  //   loadReCaptcha(Config.CLIENT_KEY_RECAPTCHA);
+  // }, []);
+
+  return (
+    <Route
+      key={Date.now()}
+      {...rest}
+      render={(props) =>
+        isAuthenticated() ? (
+          isFirtAccess() ? (
+            <Redirect
+              to={{
+                pathname: '/auth/first-access',
+                // state: { from: props.location },
+              }}
+            />
+          ) : hasRestoredLogin() ? (
+            <Redirect
+              to={{
+                pathname: '/auth/restore-access',
+                // state: { from: props.location },
+              }}
+            />
+          ) : (
+            <Component {...props} />
+          )
         ) : (
-          <Component {...props} />
+          <Redirect
+            to={{ pathname: '/auth/login', state: { from: props.location } }}
+          />
         )
-      ) : (
-        <Redirect
-          to={{ pathname: '/auth/login', state: { from: props.location } }}
-        />
-      )
-    }
-  />
-);
+      }
+    />
+  );
+};
 
 ReactDOM.render(
   <GlobalProvider>
@@ -90,4 +96,5 @@ ReactDOM.render(
   </GlobalProvider>,
   document.getElementById('root')
 );
+
 registerServiceWorker();

@@ -15,7 +15,7 @@
 
 */
 /* eslint-disable no-unused-vars*/
-import React from "react";
+import React from 'react';
 
 // reactstrap components
 import {
@@ -31,52 +31,52 @@ import {
   Input,
   Row,
   Col,
-} from "reactstrap";
+} from 'reactstrap';
 
 const ValidationForms = () => {
   // register form
-  const [registerEmail, setregisterEmail] = React.useState("");
-  const [registerPassword, setregisterPassword] = React.useState("");
+  const [registerEmail, setregisterEmail] = React.useState('');
+  const [registerPassword, setregisterPassword] = React.useState('');
   const [registerConfirmPassword, setregisterConfirmPassword] = React.useState(
-    ""
+    ''
   );
-  const [registerEmailState, setregisterEmailState] = React.useState("");
-  const [registerPasswordState, setregisterPasswordState] = React.useState("");
+  const [registerEmailState, setregisterEmailState] = React.useState('');
+  const [registerPasswordState, setregisterPasswordState] = React.useState('');
   const [
     registerConfirmPasswordState,
     setregisterConfirmPasswordState,
-  ] = React.useState("");
+  ] = React.useState('');
   // login form
-  const [loginFullName, setloginFullName] = React.useState("");
-  const [loginEmail, setloginEmail] = React.useState("");
-  const [loginPassword, setloginPassword] = React.useState("");
-  const [loginFullNameState, setloginFullNameState] = React.useState("");
-  const [loginEmailState, setloginEmailState] = React.useState("");
-  const [loginPasswordState, setloginPasswordState] = React.useState("");
+  const [loginFullName, setloginFullName] = React.useState('');
+  const [loginEmail, setloginEmail] = React.useState('');
+  const [loginPassword, setloginPassword] = React.useState('');
+  const [loginFullNameState, setloginFullNameState] = React.useState('');
+  const [loginEmailState, setloginEmailState] = React.useState('');
+  const [loginPasswordState, setloginPasswordState] = React.useState('');
   // type validation form
-  const [required, setrequired] = React.useState("");
-  const [email, setemail] = React.useState("");
-  const [number, setnumber] = React.useState("");
-  const [url, seturl] = React.useState("");
-  const [source, setsource] = React.useState("");
-  const [destination, setdestination] = React.useState("");
-  const [requiredState, setrequiredState] = React.useState("");
-  const [emailState, setemailState] = React.useState("");
-  const [numberState, setnumberState] = React.useState("");
-  const [urlState, seturlState] = React.useState("");
-  const [sourceState, setsourceState] = React.useState("");
-  const [destinationState, setdestinationState] = React.useState("");
+  const [required, setrequired] = React.useState('');
+  const [email, setemail] = React.useState('');
+  const [number, setnumber] = React.useState('');
+  const [url, seturl] = React.useState('');
+  const [source, setsource] = React.useState('');
+  const [destination, setdestination] = React.useState('');
+  const [requiredState, setrequiredState] = React.useState('');
+  const [emailState, setemailState] = React.useState('');
+  const [numberState, setnumberState] = React.useState('');
+  const [urlState, seturlState] = React.useState('');
+  const [sourceState, setsourceState] = React.useState('');
+  const [destinationState, setdestinationState] = React.useState('');
   // range validation form
-  const [minLength, setminLength] = React.useState("");
-  const [maxLength, setmaxLength] = React.useState("");
-  const [range, setrange] = React.useState("");
-  const [min, setmin] = React.useState("");
-  const [max, setmax] = React.useState("");
-  const [minLengthState, setminLengthState] = React.useState("");
-  const [maxLengthState, setmaxLengthState] = React.useState("");
-  const [rangeState, setrangeState] = React.useState("");
-  const [minState, setminState] = React.useState("");
-  const [maxState, setmaxState] = React.useState("");
+  const [minLength, setminLength] = React.useState('');
+  const [maxLength, setmaxLength] = React.useState('');
+  const [range, setrange] = React.useState('');
+  const [min, setmin] = React.useState('');
+  const [max, setmax] = React.useState('');
+  const [minLengthState, setminLengthState] = React.useState('');
+  const [maxLengthState, setmaxLengthState] = React.useState('');
+  const [rangeState, setrangeState] = React.useState('');
+  const [minState, setminState] = React.useState('');
+  const [maxState, setmaxState] = React.useState('');
   const stateFunctions = {
     // register form
     setregisterEmail: (value) => setregisterEmail(value),
@@ -142,7 +142,7 @@ const ValidationForms = () => {
   };
   // function that verifies if value contains only numbers
   const verifyNumber = (value) => {
-    var numberRex = new RegExp("^[0-9]+$");
+    var numberRex = new RegExp('^[0-9]+$');
     if (numberRex.test(value)) {
       return true;
     }
@@ -159,172 +159,172 @@ const ValidationForms = () => {
   };
   const change = (event, stateName, type, stateNameEqualTo, maxValue) => {
     switch (type) {
-      case "email":
+      case 'email':
         if (verifyEmail(event.target.value)) {
-          stateFunctions["set" + stateName + "State"]("has-success");
+          stateFunctions['set' + stateName + 'State']('has-success');
         } else {
-          stateFunctions["set" + stateName + "State"]("has-danger");
+          stateFunctions['set' + stateName + 'State']('has-danger');
         }
         break;
-      case "password":
+      case 'password':
         if (verifyLength(event.target.value, 1)) {
-          stateFunctions["set" + stateName + "State"]("has-success");
+          stateFunctions['set' + stateName + 'State']('has-success');
         } else {
-          stateFunctions["set" + stateName + "State"]("has-danger");
+          stateFunctions['set' + stateName + 'State']('has-danger');
         }
         break;
-      case "equalTo":
+      case 'equalTo':
         if (compare(event.target.value, stateNameEqualTo.value)) {
-          stateFunctions["set" + stateName + "State"]("has-success");
-          stateFunctions["set" + stateNameEqualTo.stateName + "State"](
-            "has-success"
+          stateFunctions['set' + stateName + 'State']('has-success');
+          stateFunctions['set' + stateNameEqualTo.stateName + 'State'](
+            'has-success'
           );
         } else {
-          stateFunctions["set" + stateName + "State"]("has-danger");
-          stateFunctions["set" + stateNameEqualTo.stateName + "State"](
-            "has-danger"
+          stateFunctions['set' + stateName + 'State']('has-danger');
+          stateFunctions['set' + stateNameEqualTo.stateName + 'State'](
+            'has-danger'
           );
         }
         break;
-      case "number":
+      case 'number':
         if (verifyNumber(event.target.value)) {
-          stateFunctions["set" + stateName + "State"]("has-success");
+          stateFunctions['set' + stateName + 'State']('has-success');
         } else {
-          stateFunctions["set" + stateName + "State"]("has-danger");
+          stateFunctions['set' + stateName + 'State']('has-danger');
         }
         break;
-      case "length":
+      case 'length':
         if (verifyLength(event.target.value, stateNameEqualTo)) {
-          stateFunctions["set" + stateName + "State"]("has-success");
+          stateFunctions['set' + stateName + 'State']('has-success');
         } else {
-          stateFunctions["set" + stateName + "State"]("has-danger");
+          stateFunctions['set' + stateName + 'State']('has-danger');
         }
         break;
-      case "max-length":
+      case 'max-length':
         if (!verifyLength(event.target.value, stateNameEqualTo + 1)) {
-          stateFunctions["set" + stateName + "State"]("has-success");
+          stateFunctions['set' + stateName + 'State']('has-success');
         } else {
-          stateFunctions["set" + stateName + "State"]("has-danger");
+          stateFunctions['set' + stateName + 'State']('has-danger');
         }
         break;
-      case "url":
+      case 'url':
         if (verifyUrl(event.target.value)) {
-          stateFunctions["set" + stateName + "State"]("has-success");
+          stateFunctions['set' + stateName + 'State']('has-success');
         } else {
-          stateFunctions["set" + stateName + "State"]("has-danger");
+          stateFunctions['set' + stateName + 'State']('has-danger');
         }
         break;
-      case "min-value":
+      case 'min-value':
         if (
           verifyNumber(event.target.value) &&
           event.target.value >= stateNameEqualTo
         ) {
-          stateFunctions["set" + stateName + "State"]("has-success");
+          stateFunctions['set' + stateName + 'State']('has-success');
         } else {
-          stateFunctions["set" + stateName + "State"]("has-danger");
+          stateFunctions['set' + stateName + 'State']('has-danger');
         }
         break;
-      case "max-value":
+      case 'max-value':
         if (
           verifyNumber(event.target.value) &&
           event.target.value <= stateNameEqualTo
         ) {
-          stateFunctions["set" + stateName + "State"]("has-success");
+          stateFunctions['set' + stateName + 'State']('has-success');
         } else {
-          stateFunctions["set" + stateName + "State"]("has-danger");
+          stateFunctions['set' + stateName + 'State']('has-danger');
         }
         break;
-      case "range":
+      case 'range':
         if (
           verifyNumber(event.target.value) &&
           event.target.value >= stateNameEqualTo &&
           event.target.value <= maxValue
         ) {
-          stateFunctions["set" + stateName + "State"]("has-success");
+          stateFunctions['set' + stateName + 'State']('has-success');
         } else {
-          stateFunctions["set" + stateName + "State"]("has-danger");
+          stateFunctions['set' + stateName + 'State']('has-danger');
         }
         break;
       default:
         break;
     }
-    stateFunctions["set" + stateName](event.target.value);
+    stateFunctions['set' + stateName](event.target.value);
   };
   const registerClick = () => {
-    if (registerEmailState === "") {
-      setregisterEmailState("has-danger");
+    if (registerEmailState === '') {
+      setregisterEmailState('has-danger');
     }
-    if (registerPasswordState === "" || registerConfirmPasswordState === "") {
-      setregisterPasswordState("has-danger");
-      setregisterConfirmPasswordState("has-danger");
+    if (registerPasswordState === '' || registerConfirmPasswordState === '') {
+      setregisterPasswordState('has-danger');
+      setregisterConfirmPasswordState('has-danger');
     }
   };
   const loginClick = () => {
-    if (loginFullNameState === "") {
-      setloginFullNameState("has-danger");
+    if (loginFullNameState === '') {
+      setloginFullNameState('has-danger');
     }
-    if (loginEmailState === "") {
-      setloginEmailState("has-danger");
+    if (loginEmailState === '') {
+      setloginEmailState('has-danger');
     }
-    if (loginPasswordState === "") {
-      setloginPasswordState("has-danger");
+    if (loginPasswordState === '') {
+      setloginPasswordState('has-danger');
     }
   };
   const typeClick = () => {
-    if (requiredState === "") {
-      setrequiredState("has-danger");
+    if (requiredState === '') {
+      setrequiredState('has-danger');
     }
-    if (emailState === "") {
-      setemailState("has-danger");
+    if (emailState === '') {
+      setemailState('has-danger');
     }
-    if (numberState === "") {
-      setnumberState("has-danger");
+    if (numberState === '') {
+      setnumberState('has-danger');
     }
-    if (urlState === "") {
-      seturlState("has-danger");
+    if (urlState === '') {
+      seturlState('has-danger');
     }
-    if (sourceState === "" || destinationState === "") {
-      setsourceState("has-danger");
-      setdestinationState("has-danger");
+    if (sourceState === '' || destinationState === '') {
+      setsourceState('has-danger');
+      setdestinationState('has-danger');
     }
   };
   const rangeClick = () => {
-    if (minLengthState === "") {
-      setminLengthState("has-danger");
+    if (minLengthState === '') {
+      setminLengthState('has-danger');
     }
-    if (maxLengthState === "") {
-      setmaxLengthState("has-danger");
+    if (maxLengthState === '') {
+      setmaxLengthState('has-danger');
     }
-    if (rangeState === "") {
-      setrangeState("has-danger");
+    if (rangeState === '') {
+      setrangeState('has-danger');
     }
-    if (minState === "") {
-      setminState("has-danger");
+    if (minState === '') {
+      setminState('has-danger');
     }
-    if (maxState === "") {
-      setmaxState("has-danger");
+    if (maxState === '') {
+      setmaxState('has-danger');
     }
   };
   return (
     <>
-      <div className="content">
+      <div className='content'>
         <Row>
-          <Col md="6">
-            <Form id="RegisterValidation">
+          <Col md='6'>
+            <Form id='RegisterValidation'>
               <Card>
                 <CardHeader>
-                  <CardTitle tag="h4">Register Form</CardTitle>
+                  <CardTitle tag='h4'>Register Form</CardTitle>
                 </CardHeader>
                 <CardBody>
                   <FormGroup className={`has-label ${registerEmailState}`}>
                     <label>Email Address *</label>
                     <Input
-                      name="email"
-                      type="email"
-                      onChange={(e) => change(e, "registerEmail", "email")}
+                      name='email'
+                      type='email'
+                      onChange={(e) => change(e, 'registerEmail', 'email')}
                     />
-                    {registerEmailState === "has-danger" ? (
-                      <label className="error">
+                    {registerEmailState === 'has-danger' ? (
+                      <label className='error'>
                         Please enter a valid email address.
                       </label>
                     ) : null}
@@ -332,16 +332,16 @@ const ValidationForms = () => {
                   <FormGroup className={`has-label ${registerPasswordState}`}>
                     <label>Password *</label>
                     <Input
-                      id="registerPassword"
-                      name="password"
-                      type="password"
-                      autoComplete="off"
+                      id='registerPassword'
+                      name='password'
+                      type='password'
+                      autoComplete='off'
                       onChange={(e) =>
-                        change(e, "registerPassword", "password")
+                        change(e, 'registerPassword', 'password')
                       }
                     />
-                    {registerPasswordState === "has-danger" ? (
-                      <label className="error">This field is required.</label>
+                    {registerPasswordState === 'has-danger' ? (
+                      <label className='error'>This field is required.</label>
                     ) : null}
                   </FormGroup>
                   <FormGroup
@@ -349,68 +349,68 @@ const ValidationForms = () => {
                   >
                     <label>Confirm Password *</label>
                     <Input
-                      equalto="#registerPassword"
-                      id="registerPasswordConfirmation"
-                      name="password_confirmation"
-                      type="password"
-                      autoComplete="off"
+                      equalto='#registerPassword'
+                      id='registerPasswordConfirmation'
+                      name='password_confirmation'
+                      type='password'
+                      autoComplete='off'
                       onChange={(e) =>
-                        change(e, "registerConfirmPassword", "equalTo", {
+                        change(e, 'registerConfirmPassword', 'equalTo', {
                           value: registerPassword,
-                          stateName: "registerPassword",
+                          stateName: 'registerPassword',
                         })
                       }
                     />
-                    {registerConfirmPasswordState === "has-danger" ? (
-                      <label className="error">This field is required.</label>
+                    {registerConfirmPasswordState === 'has-danger' ? (
+                      <label className='error'>This field is required.</label>
                     ) : null}
                   </FormGroup>
-                  <div className="category form-category">
+                  <div className='category form-category'>
                     * Required fields
                   </div>
                 </CardBody>
-                <CardFooter className="text-right">
-                  <FormGroup check className="pull-left">
+                <CardFooter className='text-right'>
+                  <FormGroup check className='pull-left'>
                     <Label check>
-                      <Input name="optionCheckboxes" type="checkbox" />
-                      <span className="form-check-sign" />
+                      <Input name='optionCheckboxes' type='checkbox' />
+                      <span className='form-check-sign' />
                       Accept the terms and conditions
                     </Label>
                   </FormGroup>
-                  <Button color="primary" onClick={registerClick}>
+                  <Button color='primary' onClick={registerClick}>
                     Register
                   </Button>
                 </CardFooter>
               </Card>
             </Form>
           </Col>
-          <Col md="6">
-            <Form id="LoginValidation">
+          <Col md='6'>
+            <Form id='LoginValidation'>
               <Card>
                 <CardHeader>
-                  <CardTitle tag="h4">Login Form</CardTitle>
+                  <CardTitle tag='h4'>Login Form</CardTitle>
                 </CardHeader>
                 <CardBody>
                   <FormGroup className={`has-label ${loginFullNameState}`}>
                     <label>Full Name *</label>
                     <Input
-                      name="fullname"
-                      type="text"
-                      onChange={(e) => change(e, "loginFullName", "length", 1)}
+                      name='fullname'
+                      type='text'
+                      onChange={(e) => change(e, 'loginFullName', 'length', 1)}
                     />
-                    {loginFullNameState === "has-danger" ? (
-                      <label className="error">This field is required.</label>
+                    {loginFullNameState === 'has-danger' ? (
+                      <label className='error'>This field is required.</label>
                     ) : null}
                   </FormGroup>
                   <FormGroup className={`has-label ${loginEmailState}`}>
                     <label>Email Address *</label>
                     <Input
-                      name="email"
-                      type="email"
-                      onChange={(e) => change(e, "loginEmail", "email")}
+                      name='email'
+                      type='email'
+                      onChange={(e) => change(e, 'loginEmail', 'email')}
                     />
-                    {loginEmailState === "has-danger" ? (
-                      <label className="error">
+                    {loginEmailState === 'has-danger' ? (
+                      <label className='error'>
                         Please enter a valid email address.
                       </label>
                     ) : null}
@@ -418,26 +418,26 @@ const ValidationForms = () => {
                   <FormGroup className={`has-label ${loginPasswordState}`}>
                     <label>Password *</label>
                     <Input
-                      name="password"
-                      type="password"
-                      autoComplete="off"
-                      onChange={(e) => change(e, "loginPassword", "password")}
+                      name='password'
+                      type='password'
+                      autoComplete='off'
+                      onChange={(e) => change(e, 'loginPassword', 'password')}
                     />
-                    {loginPasswordState === "has-danger" ? (
-                      <label className="error">This field is required.</label>
+                    {loginPasswordState === 'has-danger' ? (
+                      <label className='error'>This field is required.</label>
                     ) : null}
                   </FormGroup>
-                  <div className="category form-category">
+                  <div className='category form-category'>
                     * Required fields
                   </div>
                 </CardBody>
-                <CardFooter className="text-left">
-                  <Button color="primary" onClick={loginClick}>
+                <CardFooter className='text-left'>
+                  <Button color='primary' onClick={loginClick}>
                     Login
                   </Button>
                   <a
-                    href="#pablo"
-                    className="pull-right"
+                    href='#'
+                    className='pull-right'
                     onClick={(e) => e.preventDefault}
                   >
                     Forgot password?
@@ -446,255 +446,255 @@ const ValidationForms = () => {
               </Card>
             </Form>
           </Col>
-          <Col md="12">
-            <Form className="form-horizontal" id="TypeValidation">
+          <Col md='12'>
+            <Form className='form-horizontal' id='TypeValidation'>
               <Card>
                 <CardHeader>
-                  <CardTitle tag="h4">Type Validation</CardTitle>
+                  <CardTitle tag='h4'>Type Validation</CardTitle>
                 </CardHeader>
                 <CardBody>
                   <Row>
-                    <Label sm="2">Required Text</Label>
-                    <Col sm="7">
+                    <Label sm='2'>Required Text</Label>
+                    <Col sm='7'>
                       <FormGroup className={requiredState}>
                         <Input
-                          name="required"
-                          type="text"
-                          onChange={(e) => change(e, "required", "length", 1)}
+                          name='required'
+                          type='text'
+                          onChange={(e) => change(e, 'required', 'length', 1)}
                         />
-                        {requiredState === "has-danger" ? (
-                          <label className="error">
+                        {requiredState === 'has-danger' ? (
+                          <label className='error'>
                             This field is required.
                           </label>
                         ) : null}
                       </FormGroup>
                     </Col>
-                    <Col className="label-on-right" tag="label" sm="3">
+                    <Col className='label-on-right' tag='label' sm='3'>
                       <code>required</code>
                     </Col>
                   </Row>
                   <Row>
-                    <Label sm="2">Email</Label>
-                    <Col sm="7">
+                    <Label sm='2'>Email</Label>
+                    <Col sm='7'>
                       <FormGroup className={emailState}>
                         <Input
-                          name="email"
-                          type="text"
-                          onChange={(e) => change(e, "email", "email")}
+                          name='email'
+                          type='text'
+                          onChange={(e) => change(e, 'email', 'email')}
                         />
-                        {emailState === "has-danger" ? (
-                          <label className="error">
+                        {emailState === 'has-danger' ? (
+                          <label className='error'>
                             Please enter a valid email address.
                           </label>
                         ) : null}
                       </FormGroup>
                     </Col>
-                    <Col className="label-on-right" tag="label" sm="3">
+                    <Col className='label-on-right' tag='label' sm='3'>
                       <code>type="email"</code>
                     </Col>
                   </Row>
                   <Row>
-                    <Label sm="2">Number</Label>
-                    <Col sm="7">
+                    <Label sm='2'>Number</Label>
+                    <Col sm='7'>
                       <FormGroup className={numberState}>
                         <Input
-                          name="number"
-                          type="text"
-                          onChange={(e) => change(e, "number", "number")}
+                          name='number'
+                          type='text'
+                          onChange={(e) => change(e, 'number', 'number')}
                         />
-                        {numberState === "has-danger" ? (
-                          <label className="error">
+                        {numberState === 'has-danger' ? (
+                          <label className='error'>
                             Please enter a valid number.
                           </label>
                         ) : null}
                       </FormGroup>
                     </Col>
-                    <Col className="label-on-right" tag="label" sm="3">
+                    <Col className='label-on-right' tag='label' sm='3'>
                       <code>type="number"</code>
                     </Col>
                   </Row>
                   <Row>
-                    <Label sm="2">Url</Label>
-                    <Col sm="7">
+                    <Label sm='2'>Url</Label>
+                    <Col sm='7'>
                       <FormGroup className={urlState}>
                         <Input
-                          name="url"
-                          type="text"
-                          onChange={(e) => change(e, "url", "url")}
+                          name='url'
+                          type='text'
+                          onChange={(e) => change(e, 'url', 'url')}
                         />
-                        {urlState === "has-danger" ? (
-                          <label className="error">
+                        {urlState === 'has-danger' ? (
+                          <label className='error'>
                             Please enter a valid URL.
                           </label>
                         ) : null}
                       </FormGroup>
                     </Col>
-                    <Col className="label-on-right" tag="label" sm="3">
+                    <Col className='label-on-right' tag='label' sm='3'>
                       <code>type="url"</code>
                     </Col>
                   </Row>
                   <Row>
-                    <Label sm="2">Equal to</Label>
-                    <Col sm="3">
+                    <Label sm='2'>Equal to</Label>
+                    <Col sm='3'>
                       <FormGroup className={sourceState}>
                         <Input
-                          id="idSource"
-                          placeholder="#idSource"
-                          type="text"
+                          id='idSource'
+                          placeholder='#idSource'
+                          type='text'
                           onChange={(e) =>
-                            change(e, "source", "equalTo", {
+                            change(e, 'source', 'equalTo', {
                               value: destination,
-                              stateName: "destination",
+                              stateName: 'destination',
                             })
                           }
                         />
                       </FormGroup>
                     </Col>
-                    <Col sm="3">
+                    <Col sm='3'>
                       <FormGroup className={destinationState}>
                         <Input
-                          id="idDestination"
-                          placeholder="#idDestination"
-                          type="text"
+                          id='idDestination'
+                          placeholder='#idDestination'
+                          type='text'
                           onChange={(e) =>
-                            change(e, "destination", "equalTo", {
+                            change(e, 'destination', 'equalTo', {
                               value: source,
-                              stateName: "source",
+                              stateName: 'source',
                             })
                           }
                         />
-                        {destinationState === "has-danger" ? (
-                          <label className="error">
+                        {destinationState === 'has-danger' ? (
+                          <label className='error'>
                             Please enter the same value.
                           </label>
                         ) : null}
                       </FormGroup>
                     </Col>
-                    <Col className="label-on-right" tag="label" sm="4">
+                    <Col className='label-on-right' tag='label' sm='4'>
                       <code>equalTo="#idSource"</code>
                     </Col>
                   </Row>
                 </CardBody>
-                <CardFooter className="text-center">
-                  <Button color="primary" onClick={typeClick}>
+                <CardFooter className='text-center'>
+                  <Button color='primary' onClick={typeClick}>
                     Validate Inputs
                   </Button>
                 </CardFooter>
               </Card>
             </Form>
           </Col>
-          <Col md="12">
-            <Form className="form-horizontal" id="RangeValidation">
+          <Col md='12'>
+            <Form className='form-horizontal' id='RangeValidation'>
               <Card>
                 <CardHeader>
-                  <CardTitle tag="h4">Range Validation</CardTitle>
+                  <CardTitle tag='h4'>Range Validation</CardTitle>
                 </CardHeader>
                 <CardBody>
                   <Row>
-                    <Label sm="2">Min Length</Label>
-                    <Col sm="7">
+                    <Label sm='2'>Min Length</Label>
+                    <Col sm='7'>
                       <FormGroup className={minLengthState}>
                         <Input
-                          name="min_length"
-                          type="text"
-                          onChange={(e) => change(e, "minLength", "length", 5)}
+                          name='min_length'
+                          type='text'
+                          onChange={(e) => change(e, 'minLength', 'length', 5)}
                         />
-                        {minLengthState === "has-danger" ? (
-                          <label className="error">
+                        {minLengthState === 'has-danger' ? (
+                          <label className='error'>
                             Please enter at least 5 characters.
                           </label>
                         ) : null}
                       </FormGroup>
                     </Col>
-                    <Col className="label-on-right" tag="label" sm="3">
+                    <Col className='label-on-right' tag='label' sm='3'>
                       <code>minLength="5"</code>
                     </Col>
                   </Row>
                   <Row>
-                    <Label sm="2">Max Length</Label>
-                    <Col sm="7">
+                    <Label sm='2'>Max Length</Label>
+                    <Col sm='7'>
                       <FormGroup className={maxLengthState}>
                         <Input
-                          name="max_length"
-                          type="text"
+                          name='max_length'
+                          type='text'
                           onChange={(e) =>
-                            change(e, "maxLength", "max-length", 5)
+                            change(e, 'maxLength', 'max-length', 5)
                           }
                         />
-                        {maxLengthState === "has-danger" ? (
-                          <label className="error">
+                        {maxLengthState === 'has-danger' ? (
+                          <label className='error'>
                             Please enter 5 or less characters.
                           </label>
                         ) : null}
                       </FormGroup>
                     </Col>
-                    <Col className="label-on-right" tag="label" sm="3">
+                    <Col className='label-on-right' tag='label' sm='3'>
                       <code>maxLength="5"</code>
                     </Col>
                   </Row>
                   <Row>
-                    <Label sm="2">Range</Label>
-                    <Col sm="7">
+                    <Label sm='2'>Range</Label>
+                    <Col sm='7'>
                       <FormGroup className={rangeState}>
                         <Input
-                          name="range"
-                          type="text"
-                          onChange={(e) => change(e, "range", "range", 6, 10)}
+                          name='range'
+                          type='text'
+                          onChange={(e) => change(e, 'range', 'range', 6, 10)}
                         />
-                        {rangeState === "has-danger" ? (
-                          <label className="error">
+                        {rangeState === 'has-danger' ? (
+                          <label className='error'>
                             Please enter a value between 6 and 10.
                           </label>
                         ) : null}
                       </FormGroup>
                     </Col>
-                    <Col className="label-on-right" tag="label" sm="3">
+                    <Col className='label-on-right' tag='label' sm='3'>
                       <code>min="6" max="10"</code>
                     </Col>
                   </Row>
                   <Row>
-                    <Label sm="2">Min Value</Label>
-                    <Col sm="7">
+                    <Label sm='2'>Min Value</Label>
+                    <Col sm='7'>
                       <FormGroup className={minState}>
                         <Input
-                          name="min"
-                          type="text"
-                          onChange={(e) => change(e, "min", "min-value", 6)}
+                          name='min'
+                          type='text'
+                          onChange={(e) => change(e, 'min', 'min-value', 6)}
                         />
-                        {minState === "has-danger" ? (
-                          <label className="error">
+                        {minState === 'has-danger' ? (
+                          <label className='error'>
                             Please enter a value greater than or equal to 6.
                           </label>
                         ) : null}
                       </FormGroup>
                     </Col>
-                    <Col className="label-on-right" tag="label" sm="3">
+                    <Col className='label-on-right' tag='label' sm='3'>
                       <code>min="6"</code>
                     </Col>
                   </Row>
                   <Row>
-                    <Label sm="2">Max Value</Label>
-                    <Col sm="7">
+                    <Label sm='2'>Max Value</Label>
+                    <Col sm='7'>
                       <FormGroup className={maxState}>
                         <Input
-                          name="max"
-                          type="text"
-                          onChange={(e) => change(e, "max", "max-value", 6)}
+                          name='max'
+                          type='text'
+                          onChange={(e) => change(e, 'max', 'max-value', 6)}
                         />
-                        {maxState === "has-danger" ? (
-                          <label className="error">
+                        {maxState === 'has-danger' ? (
+                          <label className='error'>
                             Please enter a value less than or equal to 6.
                           </label>
                         ) : null}
                       </FormGroup>
                     </Col>
-                    <Col className="label-on-right" tag="label" sm="3">
+                    <Col className='label-on-right' tag='label' sm='3'>
                       <code>max="6"</code>
                     </Col>
                   </Row>
                 </CardBody>
-                <CardFooter className="text-center">
-                  <Button color="primary" onClick={rangeClick}>
+                <CardFooter className='text-center'>
+                  <Button color='primary' onClick={rangeClick}>
                     Validate Inputs
                   </Button>
                 </CardFooter>

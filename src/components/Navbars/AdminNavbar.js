@@ -14,7 +14,7 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-import React, { useState, useEffect, useContext } from 'react';
+import { useState, useEffect, useContext, useRef } from 'react';
 import moment from 'moment';
 // nodejs library that concatenates classes
 import classNames from 'classnames';
@@ -36,9 +36,12 @@ import {
   Container,
   Modal,
   UncontrolledTooltip,
-  ModalBody,
   ModalHeader,
+  ModalBody,
+  ModalFooter,
   Table,
+  Col,
+  Row,
 } from 'reactstrap';
 import { logout } from 'services/auth';
 import { Link, useHistory } from 'react-router-dom';
@@ -46,36 +49,48 @@ import { currencyFormat } from '../../helpers/functions';
 import { fetchAllInvestments } from '../../services/Investments';
 import MyTooltip from 'components/Tooltip/MyTooltip';
 import { GlobalContext } from 'context/GlobalState';
+import axios from 'axios';
+import Config from '../../config.json';
+import NotificationAlert from 'react-notification-alert';
+
 const AdminNavbar = (props) => {
   const { accounts, getAccounts } = useContext(GlobalContext);
   useEffect(() => {
-    // console.log('Hello from the navbar');
     getAccounts();
   }, []);
   const [name] = useState(JSON.parse(localStorage.getItem('userInfo')).name);
-  // const getName = (input) => {
-  //   return input.split(' ').slice(0, -1).join(' ');
-  // };
-  // const [fundsToInvest, setFundsToInvest] = useState(
-  //   localStorage.getItem('userInfo')
-  //     ? JSON.parse(localStorage.getItem('userInfo')).fundsToInvest
-  //     : null
-  // );
   const [currencies, setCurrencies] = useState([]);
   const [filter, setFilter] = useState('');
   const [investments, setInvestments] = useState([]);
   const [investmentsFiltered, setInvestmentsFiltered] = useState([]);
-  const [collapseOpen, setCollapseOpen] = React.useState(false);
-  const [modalSearch, setModalSearch] = React.useState(false);
+  const [collapseOpen, setCollapseOpen] = useState(false);
+  const [modalSearch, setModalSearch] = useState(false);
+  const [modalNotifications, setModalNotifications] = useState(false);
   const [modalInvestments, setmodalInvestments] = useState(false);
-  const [color, setColor] = React.useState('navbar-transparent');
+  const [color, setColor] = useState('navbar-transparent');
   const [hasRunned, setHasRunned] = useState(false);
   const [login] = useState(
     localStorage.getItem('userInfo')
       ? JSON.parse(localStorage.getItem('userInfo'))
       : null
   );
+  const [notifications, setNotifications] = useState([]);
+  const [id, setId] = useState('');
+  const [title, setTitle] = useState('');
+  const [message, setMessage] = useState('');
 
+  useEffect(() => {
+    const getNotifications = async () => {
+      const config = { headers: { Authorization: `Bearer ${login.token}` } };
+      const { data } = await axios.get(
+        `${Config.SERVER_ADDRESS}/api/notifications/`,
+        config
+      );
+
+      setNotifications(data);
+    };
+    getNotifications();
+  }, []);
   const handleAsyncFunction = async () => {
     const investments = await fetchAllInvestments('', login);
     setInvestments(investments);
@@ -142,9 +157,31 @@ const AdminNavbar = (props) => {
     }
     setCollapseOpen(!collapseOpen);
   };
-  // this function is to open the Search modal
   const toggleModalSearch = () => {
     setModalSearch(!modalSearch);
+  };
+  const toggleModalNotifications = async (isRead, id) => {
+    setModalNotifications(!modalNotifications);
+    if (!modalNotifications && !isRead) {
+      const config = { headers: { Authorization: `Bearer ${login.token}` } };
+      await axios.put(
+        `${Config.SERVER_ADDRESS}/api/notifications/${id}`,
+        { read: true },
+        config
+      );
+      let notReadNotifications = [...notifications];
+      const index = notReadNotifications.findIndex((not) => not._id === id);
+      const obj = notReadNotifications[index];
+      obj.read = true;
+      notReadNotifications.splice(index, 1, obj);
+
+      setNotifications(notReadNotifications);
+    }
+    if (modalNotifications) {
+      setId('');
+      setTitle('');
+      setMessage('');
+    }
   };
   const toggleModalInvestments = () => {
     setmodalInvestments(!modalInvestments);
@@ -152,22 +189,82 @@ const AdminNavbar = (props) => {
 
   const history = useHistory();
 
+  const closeBtn = (fn) => {
+    return (
+      <button className='close' onClick={() => fn()}>
+        <span style={{ color: 'white' }}>×</span>
+      </button>
+    );
+  };
+
+  const handleDeleteNotification = async (id, attr = true) => {
+    const config = { headers: { Authorization: `Bearer ${login.token}` } };
+    try {
+      await axios.delete(
+        `${Config.SERVER_ADDRESS}/api/notifications/${id}`,
+        config
+      );
+      setNotifications(notifications.filter((not) => not._id !== id));
+      notify('You have successfully deleted your notification');
+
+      if (attr) {
+        toggleModalNotifications();
+      }
+    } catch (error) {
+      console.log(error);
+      notify(
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message,
+        'danger'
+      );
+    }
+  };
+
+  const notificationAlertRef = useRef(null);
+  const notify = (message, type = 'success', place = 'tc') => {
+    var options = {};
+    options = {
+      place: place,
+      message: (
+        <div>
+          <div>{message}</div>
+        </div>
+      ),
+      type: type,
+      icon: 'tim-icons icon-bell-55',
+      autoDismiss: 7,
+    };
+    notificationAlertRef.current.notificationAlert(options);
+  };
+
+  const truncate = (input) =>
+    input.length > 40 ? `${input.substring(0, 40)}...` : input;
   return (
     <>
+      <div className='react-notification-alert-container'>
+        <NotificationAlert ref={notificationAlertRef} />
+      </div>
       <Modal
         isOpen={modalInvestments}
         modalClassName='modal-long modal-black '
         toggle={toggleModalInvestments}
         size='lg'
+        style={{ maxWidth: '1600px', width: '80%' }}
       >
-        <ModalHeader toggle={toggleModalInvestments}>Investments</ModalHeader>
+        <ModalHeader
+          toggle={toggleModalInvestments}
+          close={closeBtn(toggleModalInvestments)}
+        >
+          Investments
+        </ModalHeader>
         <ModalBody className='px-0'>
           <Table>
             <thead>
               <tr>
                 <th
                   style={{
-                    maxWidth: '100px',
+                    maxWidth: '200px',
                     whiteSpace: 'nowrap',
                     overflow: 'hidden',
                     display: 'inline-block',
@@ -185,7 +282,7 @@ const AdminNavbar = (props) => {
                 <th>Initial amount</th>
                 <th
                   style={{
-                    maxWidth: '180px',
+                    maxWidth: '200px',
                     overflow: 'hidden',
                     display: 'inline-block',
                     textOverflow: 'ellipsis',
@@ -209,7 +306,7 @@ const AdminNavbar = (props) => {
                         id={`Tooltip-${invest._id}`}
                         style={{
                           height: '20px',
-                          maxWidth: '110px',
+                          maxWidth: '200px',
                           whiteSpace: 'nowrap',
                           overflow: 'hidden',
                           display: 'inline-block',
@@ -251,7 +348,12 @@ const AdminNavbar = (props) => {
                         textAlign: 'right',
                       }}
                     >
-                      <span> {currencyFormat(invest.accrued_income)}</span>
+                      <span>
+                        {currencyFormat(
+                          invest.accrued_income,
+                          invest.broker.currency
+                        )}
+                      </span>
                     </div>
                   </td>
                 </tr>
@@ -423,37 +525,92 @@ const AdminNavbar = (props) => {
                   color='default'
                   data-toggle='dropdown'
                   nav
+                  disabled={notifications.length === 0}
                 >
-                  <div className='notification d-none d-lg-block d-xl-block' />
-                  <i className='tim-icons icon-sound-wave' />
+                  <div
+                    style={{
+                      height: '19px',
+                      width: '19px',
+                      lineHeight: '18px',
+                      top: '0px',
+                      right: '8px',
+                      backgroundColor: 'red',
+                    }}
+                    className='notification d-none d-lg-block d-md-block'
+                  >
+                    <span
+                      style={{
+                        fontSize: '10px',
+                        verticalAlign: 'middle',
+                      }}
+                    >
+                      {notifications.filter((not) => !not.read).length <= 99
+                        ? notifications.filter((not) => !not.read).length
+                        : '+99'}
+                    </span>
+                  </div>
+                  <i className='tim-icons icon-bell-55'></i>
                   <p className='d-lg-none'>Notifications</p>
                 </DropdownToggle>
                 <DropdownMenu className='dropdown-navbar' right tag='ul'>
-                  <NavLink tag='li'>
-                    <DropdownItem className='nav-item'>
-                      Mike John responded to your email
-                    </DropdownItem>
-                  </NavLink>
-                  <NavLink tag='li'>
-                    <DropdownItem className='nav-item'>
-                      You have 5 more tasks
-                    </DropdownItem>
-                  </NavLink>
-                  <NavLink tag='li'>
-                    <DropdownItem className='nav-item'>
-                      Your friend Michael is in town
-                    </DropdownItem>
-                  </NavLink>
-                  <NavLink tag='li'>
-                    <DropdownItem className='nav-item'>
-                      Another notification
-                    </DropdownItem>
-                  </NavLink>
-                  <NavLink tag='li'>
-                    <DropdownItem className='nav-item'>
-                      Another one
-                    </DropdownItem>
-                  </NavLink>
+                  <Col>
+                    {notifications.map((notification) => (
+                      <NavLink
+                        tag='li'
+                        style={{
+                          backgroundColor: notification.read
+                            ? '#ddd'
+                            : 'transparent',
+                          color: notification.read
+                            ? '#333 !important'
+                            : 'inherit',
+                        }}
+                        className='row'
+                        key={notification._id}
+                      >
+                        <Col style={{ flexWrap: 'nowrap' }} className='row'>
+                          <Col sm='11'>
+                            <DropdownItem
+                              style={{ color: 'inherit' }}
+                              onClick={(e) => {
+                                const selectedNotification = notifications.find(
+                                  (not) =>
+                                    not._id === e.target.getAttribute('data')
+                                );
+                                setId(selectedNotification._id);
+                                setTitle(selectedNotification.title);
+                                setMessage(selectedNotification.message);
+                                toggleModalNotifications(
+                                  selectedNotification.read,
+                                  selectedNotification._id
+                                );
+                              }}
+                              className='nav-item'
+                              data={notification._id}
+                            >
+                              {notification.title}
+                            </DropdownItem>
+                          </Col>
+                          <Col sm='1'>
+                            <NavLink>
+                              <Button
+                                data={notification._id}
+                                onClick={(e) => {
+                                  handleDeleteNotification(
+                                    e.target.getAttribute('data'),
+                                    false
+                                  );
+                                }}
+                                className='btn-close-button btn-link nav-item'
+                              >
+                                &times;
+                              </Button>
+                            </NavLink>
+                          </Col>
+                        </Col>
+                      </NavLink>
+                    ))}
+                  </Col>
                 </DropdownMenu>
               </UncontrolledDropdown>
               <UncontrolledDropdown nav>
@@ -486,10 +643,6 @@ const AdminNavbar = (props) => {
                       <DropdownItem className='nav-item'>Profile</DropdownItem>
                     </NavLink>
                   </Link>
-
-                  {/* <NavLink tag='li'>
-                    <DropdownItem className='nav-item'>Settings</DropdownItem>
-                  </NavLink> */}
                   <DropdownItem divider tag='li' />
                   <NavLink
                     tag='li'
@@ -507,6 +660,25 @@ const AdminNavbar = (props) => {
           </Collapse>
         </Container>
       </Navbar>
+      <Modal
+        isOpen={modalNotifications}
+        modalClassName='modal-black'
+        autoFocus={false}
+        toggle={toggleModalNotifications}
+      >
+        <ModalHeader close={closeBtn(toggleModalNotifications)}>
+          Notification
+        </ModalHeader>
+        <ModalBody>
+          <span>{title}</span>
+          <p>{message}</p>
+        </ModalBody>
+        <ModalFooter>
+          <Button onClick={() => handleDeleteNotification(id)} color='danger'>
+            Dismiss
+          </Button>
+        </ModalFooter>
+      </Modal>
       <Modal
         modalClassName='modal-search modal-black'
         isOpen={modalSearch}

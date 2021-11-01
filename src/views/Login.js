@@ -1,6 +1,13 @@
 /*eslint-disable*/
+
 import axios from 'axios';
-import React, { useContext, useEffect, useRef, useState } from 'react';
+import React, {
+  useCallback,
+  useContext,
+  useEffect,
+  useRef,
+  useState,
+} from 'react';
 import { useHistory, useLocation } from 'react-router-dom';
 import {
   Button,
@@ -19,11 +26,17 @@ import Config from '../config.json';
 import NotificationAlert from 'react-notification-alert';
 import classnames from 'classnames';
 import { GlobalContext } from 'context/GlobalState';
+import ReCAPTCHA from 'react-google-recaptcha';
 
 const Login = ({ location }) => {
+  const recaptchaRef = React.useRef();
+  const recaptchaRefLogin = React.useRef();
   const { emptyState } = useContext(GlobalContext);
 
   let history = useHistory();
+  const [loginAttempts, setLoginAttempts] = useState(0);
+  const [captcha, setCaptcha] = useState(false);
+  const [captchaLogin, setCaptchaLogin] = useState(false);
   const [checkbox, setCheckbox] = useState(false);
   const [fullnameFocus, setfullnameFocus] = useState('');
   const [emailFocus, setemailFocus] = useState('');
@@ -84,6 +97,7 @@ const Login = ({ location }) => {
   };
 
   const doLogin = async (e, email, password) => {
+    const recaptchaValue = recaptchaRefLogin.current.getValue();
     e.preventDefault();
 
     await axios
@@ -92,6 +106,7 @@ const Login = ({ location }) => {
         {
           email,
           password,
+          captcha: recaptchaValue,
         },
         config
       )
@@ -108,6 +123,11 @@ const Login = ({ location }) => {
       })
       .catch((error) => {
         console.error(error);
+        if (error.response.data.times) {
+          setLoginAttempts(error.response.data.times);
+        } else {
+          setLoginAttempts(0);
+        }
         notify(
           error.response && error.response.data.message
             ? error.response.data.message
@@ -125,6 +145,7 @@ const Login = ({ location }) => {
     confirmPassword,
     termsAndConditions
   ) => {
+    const recaptchaValue = recaptchaRef.current.getValue();
     e.preventDefault();
     if (registerEmailState === '') {
       setregisterEmailState('has-danger');
@@ -181,6 +202,7 @@ const Login = ({ location }) => {
             email,
             password,
             termsAndConditions,
+            captcha: recaptchaValue,
           },
           config
         )
@@ -491,19 +513,19 @@ const Login = ({ location }) => {
                 <h1 className={styles.h1Style}>Create Account</h1>
                 <div className={styles.socialContainer}>
                   <a
-                    href='http://localhost:4000/api/auth/facebook'
+                    href='https://finanzen-fr.herokuapp.com/api/auth/facebook'
                     className={[styles.linkStyle, styles.social].join(' ')}
                   >
                     <i className='fab fa-facebook-f'></i>
                   </a>
                   <a
-                    href='http://localhost:4000/api/auth/google'
+                    href='https://finanzen-fr.herokuapp.com/api/auth/google'
                     className={[styles.linkStyle, styles.social].join(' ')}
                   >
                     <i className='fab fa-google-plus-g'></i>
                   </a>
                   <a
-                    href='http://localhost:4000/api/auth/linkedin'
+                    href='https://finanzen-fr.herokuapp.com/api/auth/linkedin'
                     className={[styles.linkStyle, styles.social].join(' ')}
                   >
                     <i className='fab fa-linkedin-in'></i>
@@ -672,6 +694,16 @@ const Login = ({ location }) => {
                     Accept the terms and conditions
                   </Label>
                 </FormGroup>
+                <ReCAPTCHA
+                  style={{
+                    alignSelf: 'center',
+                    transform: 'scale(0.85)',
+                  }}
+                  ref={recaptchaRef}
+                  theme='dark'
+                  onChange={() => setCaptcha(true)}
+                  sitekey={Config.CLIENT_KEY_RECAPTCHA}
+                />
                 <Button
                   color='primary'
                   className={styles.buttonStyle}
@@ -699,19 +731,19 @@ const Login = ({ location }) => {
                 <h1 className={styles.h1Style}>Sign in</h1>
                 <div className={styles.socialContainer}>
                   <a
-                    href='http://localhost:4000/api/auth/facebook'
+                    href='https://finanzen-fr.herokuapp.com/api/auth/facebook'
                     className={[styles.linkStyle, styles.social].join(' ')}
                   >
                     <i className='fab fa-facebook-f'></i>
                   </a>
                   <a
-                    href='http://localhost:4000/api/auth/google'
+                    href='https://finanzen-fr.herokuapp.com/api/auth/google'
                     className={[styles.linkStyle, styles.social].join(' ')}
                   >
                     <i className='fab fa-google-plus-g'></i>
                   </a>
                   <a
-                    href='http://localhost:4000/api/auth/linkedin'
+                    href='https://finanzen-fr.herokuapp.com/api/auth/linkedin'
                     className={[styles.linkStyle, styles.social].join(' ')}
                   >
                     <i className='fab fa-linkedin-in'></i>
@@ -744,7 +776,12 @@ const Login = ({ location }) => {
                     autoComplete='new-password'
                     id='email'
                     required
-                    style={{ width: '100%', border: 'none', margin: '0' }}
+                    style={{
+                      width: '100%',
+                      border: 'none',
+                      margin: '0',
+                      borderRadius: '0 0.4285rem 0.4285rem 0',
+                    }}
                     className={styles.inputSyle}
                     type='email'
                     placeholder='Email'
@@ -776,12 +813,28 @@ const Login = ({ location }) => {
                     autoComplete='new-password'
                     id='password'
                     required
-                    style={{ width: '100%', border: 'none', margin: '0' }}
+                    style={{
+                      width: '100%',
+                      border: 'none',
+                      margin: '0',
+                      borderRadius: '0 0.4285rem 0.4285rem 0',
+                    }}
                     className={styles.inputSyle}
                     type='password'
                     placeholder='Password'
                   />
                 </div>
+                <ReCAPTCHA
+                  style={{
+                    display: loginAttempts < 2 ? 'none' : 'block',
+                    alignSelf: 'center',
+                    transform: 'scale(0.85)',
+                  }}
+                  ref={recaptchaRefLogin}
+                  theme='dark'
+                  onChange={() => setCaptchaLogin(true)}
+                  sitekey={Config.CLIENT_KEY_RECAPTCHA}
+                />
 
                 <a
                   className={[styles.linkStyle, 'selector'].join(' ')}

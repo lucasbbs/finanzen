@@ -217,8 +217,12 @@ const BrokerDetails = () => {
                 <Col md='10' className='mx-auto'>
                   <Row style={{ marginBottom: '10px' }}>
                     <Col md='6' style={{ paddingRight: '0' }}>
-                      <Label>Name</Label>
+                      <Label htmlFor='nameId'>
+                        Name
+                        <sup style={{ color: 'red' }}>*</sup>
+                      </Label>
                       <Input
+                        id='nameId'
                         required
                         value={name}
                         onChange={(e) => setName(e.target.value)}
@@ -226,8 +230,12 @@ const BrokerDetails = () => {
                       />
                     </Col>
                     <Col md='3' style={{ paddingRight: '0' }}>
-                      <Label>Country</Label>
+                      <Label htmlFor='countryId'>
+                        Country <sup style={{ color: 'red' }}>*</sup>
+                      </Label>
                       <Input
+                        id='countryId'
+                        required
                         style={{ backgroundColor: '#2b3553' }}
                         value={country}
                         type='select'
@@ -251,8 +259,12 @@ const BrokerDetails = () => {
                       </Input>
                     </Col>
                     <Col md='3' style={{ paddingRight: '0' }}>
-                      <Label>Currency</Label>
+                      <Label htmlFor='currencyId'>
+                        Currency <sup style={{ color: 'red' }}>*</sup>
+                      </Label>
                       <Input
+                        id='currencyId'
+                        required
                         style={{ backgroundColor: '#2b3553' }}
                         type='select'
                         value={currency}
@@ -401,8 +413,9 @@ const BrokerDetails = () => {
                           md='3'
                           sm='4'
                         >
-                          <Label>Broker IMage</Label>
+                          <Label id='imageId'>Broker Image</Label>
                           <ImageUpload
+                            id='imageId'
                             addBtnColor='primary'
                             changeBtnColor='primary'
                             removeBtnColor='danger'
@@ -417,7 +430,7 @@ const BrokerDetails = () => {
                         <Button
                           className='mx-auto'
                           color='success'
-                          onClick={(e) => handleSave()}
+                          onClick={() => handleSave()}
                         >
                           Submit
                         </Button>

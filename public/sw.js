@@ -13,9 +13,7 @@ var STATIC_FILES = [
   '/src/assets/css/black-dashboard-pro-react.css',
   '/src/assets/css/bootstraps.min.css',
   '/static/media/icomoon.b65c7204.ttf',
-  // 'https://maps.googleapis.com/maps-api-v3/api/js/46/6/common.js',
   'https://fonts.googleapis.com/css?family=Poppins:400,800',
-  // 'https://maps.googleapis.com/maps-api-v3/api/js/46/6/util.js',
   'https://cdnjs.cloudflare.com/ajax/libs/material-design-lite/1.3.0/material.indigo-pink.min.css',
 ];
 
@@ -29,12 +27,13 @@ self.addEventListener('install', function (event) {
   );
 });
 
-self.addEventListener('push', function (event) {
+self.addEventListener('push', async function (event) {
   const payLoad = event.data
     ? JSON.parse(event.data.text())
     : 'sorry no payload';
-  const title = 'Finanzen';
   console.log(payLoad);
+
+  const title = 'Finanzen';
   event.waitUntil(
     self.registration.showNotification(title, {
       body: payLoad.msg,
