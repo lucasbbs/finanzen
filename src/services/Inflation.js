@@ -1,4 +1,3 @@
-import Config from '../config.json';
 import axios from 'axios';
 
 export async function fetchInflation() {
@@ -9,9 +8,8 @@ export async function fetchInflation() {
   return await response.json();
 }
 export async function fetchInflationsFromLocalAPI(alpha2Code) {
-  const inflations = await axios.get(
-    `${Config.SERVER_ADDRESS}/api/inflations/${alpha2Code}`
-  );
+  const address = process.env.REACT_APP_SERVER_ADDRESS;
+  const inflations = await axios.get(`${address}/api/inflations/${alpha2Code}`);
   return inflations.data.values.map((inflation) => {
     const dateParts = Object.entries(inflation)[0][0].split('-');
     return {

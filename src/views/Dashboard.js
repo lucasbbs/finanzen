@@ -36,7 +36,6 @@ import {
 import { fetchInflationsFromLocalAPI } from '../services/Inflation';
 import Spinner from '../components/Spinner/Spinner';
 import axios from 'axios';
-import Config from '../config.json';
 import { GlobalContext } from 'context/GlobalState';
 import CollapsibleItem from 'components/CollapsibleItem/CollapsibleItem';
 import { chartExample2 } from 'variables/charts';
@@ -56,7 +55,11 @@ Array.prototype.min = function () {
 };
 
 const Dashboard = () => {
-  const { accounts, updateAccounts, getAccounts } = useContext(GlobalContext);
+  console.log(
+    process.env.REACT_APP_SERVER_ADDRESS,
+    'That is the server address'
+  );
+  const { accounts, updateAccounts } = useContext(GlobalContext);
   const [login] = useState(
     localStorage.getItem('userInfo')
       ? JSON.parse(localStorage.getItem('userInfo'))
@@ -64,16 +67,31 @@ const Dashboard = () => {
   );
   const [incomesArray, setIncomesArray] = useState([]);
   const [dateInput, setDateInput] = useState('');
-  const [selectedAccountId1, setSelectedAccountId1] = useState('');
+  const [selectedAccountId1, setSelectedAccountId1] = useState(
+    localStorage.getItem('userInfo')
+      ? JSON.parse(localStorage.getItem('userInfo')).graph1Account
+      : null
+  );
   const [selectedAccount1, setSelectedAccount1] = useState('');
-  const [selectedAccountId2, setSelectedAccountId2] = useState('');
+  const [selectedAccountId2, setSelectedAccountId2] = useState(
+    localStorage.getItem('userInfo')
+      ? JSON.parse(localStorage.getItem('userInfo')).graph2Account
+      : null
+  );
   const [selectedAccount2, setSelectedAccount2] = useState('');
-  const [selectedAccountId3, setSelectedAccountId3] = useState('');
+  const [selectedAccountId3, setSelectedAccountId3] = useState(
+    localStorage.getItem('userInfo')
+      ? JSON.parse(localStorage.getItem('userInfo')).graph3Account
+      : null
+  );
   const [selectedAccount3, setSelectedAccount3] = useState('');
   const [revenues, setRevenues] = useState([]);
   const [expenses, setExpenses] = useState([]);
   const [balance, setBalance] = useState([]);
   const [balanceLabels, setBalanceLabels] = useState([]);
+
+  const [firstMonth, setFirstMonth] = useState('');
+  const [lastMonth, setLastMonth] = useState('');
 
   const [lines, setLines] = useState([]);
   const [geometricMeane, setGeometricMeane] = useState(0);
@@ -107,11 +125,6 @@ const Dashboard = () => {
   const [filterForTaxes, setFilterForTaxes] = useState('');
   // const [filterForReturn, setFilterForReturn] = useState('');
   const [filterForGlobalAverage, setFilterForGlobalAverage] = useState('');
-  // const [currentMoney, setCurrentMoney] = useState(
-  //   localStorage.getItem('userInfo')
-  //     ? JSON.parse(localStorage.getItem('userInfo')).fundsToInvest
-  //     : 0
-  // );
   const [investments, setInvestments] = useState([]);
   const [incomes, setIncomes] = useState([]);
   const [investmentsToBeDisplayed, setInvestmentsToBeDisplayed] = useState([]);
@@ -160,13 +173,11 @@ const Dashboard = () => {
     setTransactions([...transactions, value]);
   };
 
+  const address = process.env.REACT_APP_SERVER_ADDRESS;
   useEffect(() => {
     const getTransactions = async () => {
       const config = { headers: { Authorization: `Bearer ${login.token}` } };
-      const res = await axios.get(
-        `${Config.SERVER_ADDRESS}/api/transactions`,
-        config
-      );
+      const res = await axios.get(`${address}/api/transactions`, config);
       setTransactions(res.data.transactions);
     };
     getTransactions();
@@ -221,13 +232,24 @@ const Dashboard = () => {
     getInflations();
   }, []);
   useEffect(() => {
-    if (accounts.length) {
-      setSelectedAccountId1(accounts[0]._id);
-      setSelectedAccount1(accounts[0]);
-      setSelectedAccountId2(accounts[0]._id);
-      setSelectedAccount2(accounts[0]);
-      setSelectedAccountId3(accounts[0]._id);
-      setSelectedAccount3(accounts[0]);
+    if (accounts && accounts.length) {
+      setSelectedAccount1(
+        selectedAccountId1
+          ? accounts.find((account) => account._id === selectedAccountId1)
+          : accounts[0]
+      );
+
+      setSelectedAccount2(
+        selectedAccountId2
+          ? accounts.find((account) => account._id === selectedAccountId2)
+          : accounts[0]
+      );
+
+      setSelectedAccount3(
+        selectedAccountId3
+          ? accounts.find((account) => account._id === selectedAccountId3)
+          : accounts[0]
+      );
     }
     const getInvestments = async () => {
       const investment = await fetchAllInvestments('', login);
@@ -267,7 +289,7 @@ const Dashboard = () => {
         if (Object.keys(currencyExhangeRates).length === 0) {
           axios
             .post(
-              `${Config.SERVER_ADDRESS}/api/exchanges`,
+              `${address}/api/exchanges`,
               {
                 currencies: Array.from(locationsForLoop),
                 localCurrency: login.currency,
@@ -364,7 +386,6 @@ const Dashboard = () => {
       setFilterForGlobalAverage('');
     }
   }, [investments, incomes, accounts]);
-
   useEffect(() => {
     setTopSpendingCategories(
       setDataAccountsSpendingCategories(selectedAccount1, transactions)
@@ -398,14 +419,14 @@ const Dashboard = () => {
       })),
     ]);
 
-    console.log(
-      res[1].map((el, idx) => ({
-        label: el.category,
-        fill: true,
-        borderColor: colors[idx],
-        data: el.transactions,
-      }))
-    );
+    // console.log(
+    //   res[1].map((el, idx) => ({
+    //     label: el.category,
+    //     fill: true,
+    //     borderColor: colors[idx],
+    //     data: el.transactions,
+    //   }))
+    // );
     //
   }, [selectedAccount1, selectedAccount2, selectedAccount3, transactions]);
   // eslint-disable-next-line
@@ -880,16 +901,16 @@ const Dashboard = () => {
 
     await axios
       .put(
-        `${Config.SERVER_ADDRESS}/api/users/${login._id}`,
+        `${address}/api/users/${login._id}`,
         { fundsToInvest: accounts, salary: salary },
         config
       )
       .then((res) => {
-        login['fundsToInvest'] = accounts;
-        // setCurrentMoney(accounts);
-        // setFundsToBeInvested;
-        localStorage.setItem('userInfo', JSON.stringify(login));
-        updateAccounts(accounts);
+        //   // login['fundsToInvest'] = accounts;
+        //setCurrentMoney(accounts);
+        //   // // setFundsToBeInvested;
+        //   // localStorage.setItem('userInfo', JSON.stringify(login));
+        updateAccounts();
       });
   };
 
@@ -931,22 +952,62 @@ const Dashboard = () => {
     );
   }, [investments, currencyExhangeRates]);
 
-  const handleDefineAccount1 = () => {
-    setSelectedAccount1(
-      accounts.find((account) => account._id === selectedAccountId1)
+  const handleDefineAccount1 = async () => {
+    const account = accounts.find(
+      (account) => account._id === selectedAccountId1
     );
+    const config = { headers: { Authorization: `Bearer ${login.token}` } };
+    await axios.put(
+      `${address}/api/users/graph1account`,
+      {
+        graph1Account: selectedAccountId1,
+      },
+      config
+    );
+
+    login['graph1Account'] = selectedAccountId1;
+
+    localStorage.setItem('userInfo', JSON.stringify(login));
+    setSelectedAccount1(account);
     toggle1();
   };
-  const handleDefineAccount2 = () => {
-    setSelectedAccount2(
-      accounts.find((account) => account._id === selectedAccountId2)
+  const handleDefineAccount2 = async () => {
+    const account = accounts.find(
+      (account) => account._id === selectedAccountId2
     );
+    const config = { headers: { Authorization: `Bearer ${login.token}` } };
+    await axios.put(
+      `${address}/api/users/graph2account`,
+      {
+        graph2Account: selectedAccountId2,
+      },
+      config
+    );
+
+    login['graph2Account'] = selectedAccountId2;
+
+    localStorage.setItem('userInfo', JSON.stringify(login));
+    setSelectedAccount2(account);
     toggle2();
   };
-  const handleDefineAccount3 = () => {
-    setSelectedAccount3(
-      accounts.find((account) => account._id === selectedAccountId3)
+  const handleDefineAccount3 = async () => {
+    const account = accounts.find(
+      (account) => account._id === selectedAccountId3
     );
+    const config = { headers: { Authorization: `Bearer ${login.token}` } };
+    await axios.put(
+      `${address}/api/users/graph3account`,
+      {
+        graph3Account: selectedAccountId3,
+      },
+      config
+    );
+
+    login['graph3Account'] = selectedAccountId3;
+
+    localStorage.setItem('userInfo', JSON.stringify(login));
+
+    setSelectedAccount3(account);
     toggle3();
   };
 
@@ -1066,7 +1127,7 @@ const Dashboard = () => {
                           >
                             <span>
                               {currencyFormat(
-                                income.incomes.value,
+                                income.incomes.value - income.incomes.tax,
                                 income.broker.currency
                               )}
                             </span>
@@ -1114,7 +1175,13 @@ const Dashboard = () => {
                                     (inv) => inv.broker.currency === currency
                                   )
                                   .reduce(
-                                    (acum, curr) => acum + curr.incomes.value,
+                                    (acum, curr) =>
+                                      acum +
+                                      Number(
+                                        (
+                                          curr.incomes.value - curr.incomes.tax
+                                        ).toFixed(2)
+                                      ),
                                     0
                                   ),
                                 currency
@@ -1159,7 +1226,10 @@ const Dashboard = () => {
                                           (acum, curr) =>
                                             acum +
                                             Number(
-                                              curr.incomes.value.toFixed(2)
+                                              (
+                                                curr.incomes.value -
+                                                curr.incomes.tax
+                                              ).toFixed(2)
                                             ),
                                           0
                                         ) *
@@ -1214,9 +1284,46 @@ const Dashboard = () => {
                     </option>
                   ))}
                 </Input>
+                <Row className='mt-2'>
+                  <Col md={6}>
+                    <Label htmlFor='firstMonthId'>
+                      Filter by initial month
+                    </Label>
+                    <Input
+                      id='firstMonthId'
+                      style={{ backgroundColor: '#2b3553' }}
+                      type='month'
+                      onChange={(e) => setFirstMonth(e.target.value)}
+                      value={firstMonth}
+                    />
+                  </Col>
+                  <Col md={6}>
+                    <Label htmlFor='lastMonthId'>Filter by last month</Label>
+                    <Input
+                      id='lastMonthId'
+                      style={{ backgroundColor: '#2b3553' }}
+                      type='month'
+                      onChange={(e) => setLastMonth(e.target.value)}
+                      value={lastMonth}
+                    />
+                  </Col>
+                </Row>
               </ModalBody>
               <ModalFooter>
-                <Button onClick={handleDefineAccount1} color='success'>
+                <Button
+                  onClick={() => {
+                    handleDefineAccount1();
+                    setTopSpendingCategories(
+                      setDataAccountsSpendingCategories(
+                        selectedAccount1,
+                        transactions,
+                        firstMonth,
+                        lastMonth
+                      )
+                    );
+                  }}
+                  color='success'
+                >
                   Define
                 </Button>
               </ModalFooter>
@@ -1362,7 +1469,7 @@ const Dashboard = () => {
             </Modal>
             <Row>
               <Col xs='12'>
-                <h1>
+                <h1 className='card-title'>
                   <i className='tim-icons icon-chart-pie-36'></i> Dashboard
                 </h1>
                 <Card className='card-chart'>

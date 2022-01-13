@@ -1,9 +1,9 @@
 import axios from 'axios';
 import React from 'react';
 import { useHistory } from 'react-router-dom';
-import Config from '../../config.json';
 
 const Verify = ({ location }) => {
+  const address = process.env.REACT_APP_SERVER_ADDRESS;
   const history = useHistory();
   const getDataVerified = async () => {
     const emailToken = location.pathname.replace('/verify/users/', '');
@@ -15,11 +15,7 @@ const Verify = ({ location }) => {
     };
 
     await axios
-      .put(
-        `${Config.SERVER_ADDRESS}/api/users/verify/${emailToken}`,
-        null,
-        config
-      )
+      .put(`${address}/api/users/verify/${emailToken}`, null, config)
       .then((res) => {
         console.log(res);
         history.push('/admin/dashboard');

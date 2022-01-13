@@ -27,6 +27,8 @@ import NotificationAlert from 'react-notification-alert';
 import classnames from 'classnames';
 import { GlobalContext } from 'context/GlobalState';
 import ReCAPTCHA from 'react-google-recaptcha';
+import Spinner from 'components/Spinner/Spinner';
+import { Helmet } from 'react-helmet';
 
 const Login = ({ location }) => {
   const recaptchaRef = React.useRef();
@@ -34,6 +36,7 @@ const Login = ({ location }) => {
   const { emptyState } = useContext(GlobalContext);
 
   let history = useHistory();
+  const [isLoading, setIsLoading] = useState(false);
   const [loginAttempts, setLoginAttempts] = useState(0);
   const [captcha, setCaptcha] = useState(false);
   const [captchaLogin, setCaptchaLogin] = useState(false);
@@ -89,20 +92,26 @@ const Login = ({ location }) => {
       }, 1800);
     }
   }, [userInfoParam]);
+
+  const meta = {
+    viewport: 'width=1024',
+    meta: {},
+  };
   const handleClick = () => {
     container.classList.toggle(styles.rightPanelActive);
   };
   const config = {
     headers: { 'Content-Type': 'application/json' },
   };
-
+  const address = process.env.REACT_APP_SERVER_ADDRESS;
   const doLogin = async (e, email, password) => {
+    setIsLoading(true);
     const recaptchaValue = recaptchaRefLogin.current.getValue();
     e.preventDefault();
 
     await axios
       .post(
-        `${Config.SERVER_ADDRESS}/api/users/login`,
+        `${address}/api/users/login`,
         {
           email,
           password,
@@ -122,8 +131,9 @@ const Login = ({ location }) => {
         }
       })
       .catch((error) => {
-        console.error(error);
-        if (error.response.data.times) {
+        recaptchaRefLogin.current.reset();
+        setIsLoading(false);
+        if (error.response?.data.times) {
           setLoginAttempts(error.response.data.times);
         } else {
           setLoginAttempts(0);
@@ -194,9 +204,10 @@ const Login = ({ location }) => {
         'danger'
       );
     } else {
+      setIsLoading(true);
       await axios
         .post(
-          `${Config.SERVER_ADDRESS}/api/users`,
+          `${address}/api/users`,
           {
             name,
             email,
@@ -214,14 +225,16 @@ const Login = ({ location }) => {
 
           history.push(`/auth/verify/${res.data._id}`);
         })
-        .catch((error) =>
+        .catch((error) => {
+          recaptchaRef.current.reset();
+          setIsLoading(false);
           notify(
             error.response && error.response.data.message
               ? error.response.data.message
               : error.message,
             'danger'
-          )
-        );
+          );
+        });
     }
   };
 
@@ -346,7 +359,7 @@ const Login = ({ location }) => {
   // })();
   const handleResetPassword = async () => {
     axios
-      .post(`${Config.SERVER_ADDRESS}/api/resetlogin`, {
+      .post(`${address}/api/resetlogin`, {
         email: document.querySelector('#emailResetPasword').value,
       })
       .then((res) => {
@@ -362,19 +375,14 @@ const Login = ({ location }) => {
         );
       });
   };
-  const flipBoxClassname = {
-    backgroundColor: 'transparent',
-    width: '768px',
-    height: '500px',
-    perspective: '1000px',
-    position: 'relative',
-    transformStyle: 'preserve-3d',
-    transition: 'transform 1.5s ease-in-out',
-  };
-  flipBoxClassname['transform'] = selected ? '' : 'rotateX( 180deg)';
+  // const flipBoxClassname = ;
+  // flipBoxClassname['transform'] = selected ? '' : 'rotateX( 180deg)';
 
   return (
     <>
+      <Helmet>
+        <meta name='viewport' content='width=1024' />
+      </Helmet>
       <div className='react-notification-alert-container'>
         <NotificationAlert ref={notificationAlertRef} />
       </div>
@@ -390,10 +398,24 @@ const Login = ({ location }) => {
           justifyContent: 'center',
         }}
       >
-        <div className='flip-box' style={flipBoxClassname}>
+        {isLoading ? <Spinner /> : null}
+        <div
+          className='flip-box'
+          style={{
+            backgroundColor: 'transparent',
+            width: '768px',
+            height: '580px',
+            perspective: '1000px',
+            position: 'relative',
+            transformStyle: 'preserve-3d',
+            transition: 'transform 1.5s ease-in-out',
+            transform: selected ? '' : 'rotateX(180deg)',
+          }}
+        >
           <div
             id='amnesiaId'
             style={{
+              filter: isLoading ? 'brightness(20%)' : '',
               backgroundColor: '#1e1e2f',
             }}
             className={[styles.containerAmnesia, styles.cardAmnesia].join(' ')}
@@ -408,7 +430,7 @@ const Login = ({ location }) => {
             <div
               className={styles.overlay}
               style={{
-                height: '310px',
+                height: '390px',
                 display: 'flex',
                 justifyContent: 'center',
                 alignItems: 'center',
@@ -417,7 +439,7 @@ const Login = ({ location }) => {
             >
               <img
                 style={{
-                  width: '300px',
+                  width: '380px',
                 }}
                 alt='Finanzen'
                 src={require('assets/img/logo.png').default}
@@ -462,6 +484,7 @@ const Login = ({ location }) => {
                   fontSize: '0.75rem',
                   marginBottom: ' 5px',
                   marginTop: '-10px',
+                  marginLeft: '5px',
                 }}
                 className='error'
               >
@@ -496,6 +519,7 @@ const Login = ({ location }) => {
             ].join(' ')}
             id='container'
             style={{
+              filter: isLoading ? 'brightness(20%)' : '',
               position: 'absolute',
               width: '100%',
               height: '100%',
@@ -614,6 +638,7 @@ const Login = ({ location }) => {
                     </InputGroupText>
                   </InputGroupAddon>
                   <Input
+                    style={{ border: 'auto' }}
                     id='registerPassword'
                     name='password'
                     autoComplete='new-password'

@@ -24,11 +24,11 @@ import { fetchArchiveInvestments } from '../services/Investments';
 import { currencyFormat, reverseFormatNumber } from '../helpers/functions';
 import axios from 'axios';
 import NotificationAlert from 'react-notification-alert';
-import Config from '../config.json';
 import ReactBSAlert from 'react-bootstrap-sweetalert';
 import NumberFormat from 'react-number-format';
 import MyTooltip from 'components/Tooltip/MyTooltip';
 import { GlobalContext } from 'context/GlobalState';
+import { currencies } from './pages/currencies';
 
 /*eslint-disable*/
 const ArchiveInvestments = () => {
@@ -36,7 +36,6 @@ const ArchiveInvestments = () => {
 
   const [currency, setCurrency] = useState('');
   const [typeOperation, setTypeOperation] = useState('archive');
-  const [hasSelectedAccount, setHasSelectedAccount] = useState(false);
   const [account, setAccount] = useState('');
   const [id, setId] = useState('');
   const [name, setName] = useState('');
@@ -46,12 +45,14 @@ const ArchiveInvestments = () => {
   const [indexer, setIndexer] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [investmentDate, setInvestmentDate] = useState('');
-  const [initialAmount, setInitialAmount] = useState(0);
+  const [initialAmount, setInitialAmount] = useState('');
+  const [transactionDueAccount, setTransactionDueAccount] = useState('');
   const [accruedIncome, setAccruedIncome] = useState(0);
   const [hasChanged, setHasChanged] = useState(false);
   const [brokers, setBrokers] = useState([]);
   const [alert, setAlert] = useState(null);
   const [isLoading, setIsLoading] = useState(false);
+  const [isLoadingUnarchive, setIsLoadingUnarchive] = useState(false);
   const [investment, setInvestment] = useState([]);
   const [modal, setModal] = useState(false);
   const [modalToSelectAccount, setModalToSelectAccount] = useState(false);
@@ -61,26 +62,31 @@ const ArchiveInvestments = () => {
       : null
   );
 
-  const toggleToSelectAccount = () => {
-    setAccount('');
-    setModalToSelectAccount(!modalToSelectAccount);
+  useEffect(() => {
+    if (account) {
+      handleProceed();
+    }
+  }, [account]);
+
+  const address = process.env.REACT_APP_SERVER_ADDRESS;
+  const config = {
+    headers: {
+      Authorization: `Bearer ${login.token}`,
+    },
   };
+  const toggleToSelectAccount = () => {
+    setModalToSelectAccount(!modalToSelectAccount);
+
+    setAccount('');
+  };
+
   const handleUpdate = async (investmentObj, id) => {
-    const config = {
-      headers: {
-        Authorization: `Bearer ${login.token}`,
-      },
-    };
     if (hasChanged) {
       investmentObj['initial_amount'] = reverseFormatNumber(initialAmount);
       setHasChanged(false);
     }
     await axios
-      .put(
-        `${Config.SERVER_ADDRESS}/api/investments/${id}`,
-        investmentObj,
-        config
-      )
+      .put(`${address}/api/investments/${id}`, investmentObj, config)
       .then((response) => {
         toggle();
         notify(`Investment updated successfully`);
@@ -146,15 +152,24 @@ const ArchiveInvestments = () => {
         warning
         style={{ display: 'block', marginTop: '-100px' }}
         title='Are you sure?'
-        onConfirm={() => {
+        onConfirm={async () => {
           if (type === 'archive') {
+            const transaction = investment.find((invest) => invest._id === id)
+              .transactionDueDate;
+            if (transaction) {
+              const { data } = await axios.get(
+                `${address}/api/transactions/${transaction}`,
+                config
+              );
+              setAccount(data.dueToAccount);
+            } else {
+              toggleToSelectAccount();
+            }
             setTypeOperation('archive');
             hideAlert();
-            toggleToSelectAccount();
           } else {
             handleDelete(id);
           }
-          setHasSelectedAccount(false);
         }}
         onCancel={() => cancel()}
         confirmBtnBsStyle='success'
@@ -179,7 +194,7 @@ const ArchiveInvestments = () => {
         },
       };
       const brokersFromTheAPI = await axios.get(
-        `${Config.SERVER_ADDRESS}/api/brokers`,
+        `${address}/api/brokers`,
         config
       );
 
@@ -286,9 +301,8 @@ const ArchiveInvestments = () => {
         Authorization: `Bearer ${login.token}`,
       },
     };
-    console.log(`Bearer ${login.token}`);
     await axios
-      .delete(`${Config.SERVER_ADDRESS}/api/investments/${id}`, {
+      .delete(`${address}/api/investments/${id}`, {
         ...config,
         data: { accountSelected: account },
       })
@@ -305,6 +319,7 @@ const ArchiveInvestments = () => {
           'danger'
         );
       });
+    setAccount('');
   };
   const hideAlert = () => {
     setAlert(null);
@@ -317,6 +332,7 @@ const ArchiveInvestments = () => {
     </button>
   );
   const handleUnarchive = async (id) => {
+    setIsLoadingUnarchive(true);
     const config = {
       headers: {
         Authorization: `Bearer ${login.token}`,
@@ -325,7 +341,7 @@ const ArchiveInvestments = () => {
     console.log(`Bearer ${login.token}`);
     await axios
       .put(
-        `${Config.SERVER_ADDRESS}/api/investments/${id}/unarchive`,
+        `${address}/api/investments/${id}/unarchive`,
         { accountSelected: account },
         config
       )
@@ -336,7 +352,7 @@ const ArchiveInvestments = () => {
 
         // await axios
         //   .put(
-        //     `${Config.SERVER_ADDRESS}/api/users/${login._id}`,
+        //     `${address}/api/users/${login._id}`,
         //     { fundsToInvest: login.fundsToInvest },
         //     config
         //   )
@@ -358,16 +374,18 @@ const ArchiveInvestments = () => {
           'danger'
         );
       });
+    setAccount('');
+    setIsLoadingUnarchive(false);
   };
 
   const handleProceed = () => {
-    if (hasSelectedAccount) {
-      toggleToSelectAccount();
+    if (account) {
       if (typeOperation === 'archive') {
         handleUnarchive(id);
       } else {
         handleDelete(id);
       }
+      // toggleToSelectAccount();
     }
   };
   return (
@@ -395,7 +413,6 @@ const ArchiveInvestments = () => {
                   defaultValue='default'
                   onChange={(e) => {
                     setAccount(e.target.value);
-                    setHasSelectedAccount(true);
                   }}
                 >
                   <option value='default' disabled={true}>
@@ -570,10 +587,10 @@ const ArchiveInvestments = () => {
                       }}
                       type='text'
                       value={initialAmount}
-                      placeholder='R$0.00'
+                      placeholder={`${currencies[currency]?.symbol_native}0`}
                       thousandSeparator={'.'}
                       decimalSeparator={','}
-                      prefix={'R$'}
+                      prefix={`${currencies[currency]?.symbol_native}`}
                       customInput={Input}
                     />
                   </Col>
@@ -623,6 +640,7 @@ const ArchiveInvestments = () => {
                     </CardTitle>
                   </CardHeader>
                   <CardBody>
+                    {isLoadingUnarchive ? <Spinner /> : null}
                     <Table
                       className='tablesorter'
                       // responsive
@@ -719,6 +737,11 @@ const ArchiveInvestments = () => {
                                           .parentElement.id
                                     ).broker.currency;
                                     setCurrency(filteredCurrency);
+                                    setTransactionDueAccount(
+                                      investment.find(
+                                        (invest) => invest._id === e.target.id
+                                      ).transactionDueDate
+                                    );
                                     setId(e.target.id);
                                     if (inves.broker) {
                                       warningWithConfirmAndCancelMessage(
@@ -754,6 +777,7 @@ const ArchiveInvestments = () => {
                                         e.target.parentElement.parentElement
                                           .parentElement.id
                                     );
+                                    setCurrency(filtered.broker.currency);
                                     setBroker(
                                       filtered.broker ? filtered.broker._id : ''
                                     );

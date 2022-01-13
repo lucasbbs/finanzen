@@ -29,7 +29,6 @@ import {
 } from '../../helpers/functions';
 import { ptBR } from 'date-fns/locale';
 import { currencies } from '../../views/pages/currencies';
-import Config from '../../config.json';
 import { GlobalContext } from 'context/GlobalState';
 
 const Incomes = ({
@@ -66,11 +65,11 @@ const Incomes = ({
   };
   const [alert, setAlert] = useState(null);
   const [notUpdate, setNotUpdate] = useState(false);
-  const [tax, setTax] = useState(0);
+  const [tax, setTax] = useState('');
   const [taxRate, setTaxRate] = useState(0);
   const [checkbox, setCheckbox] = useState(true);
   const [formerValue, setFormerValue] = useState(0);
-  const [valueIncome, setValueIncome] = useState(0);
+  const [valueIncome, setValueIncome] = useState('');
   const [dateIncome, setDateIncome] = useState('');
   const [modal, setModal] = useState(false);
   const [modalAddIncome, setModalAddIncome] = useState(false);
@@ -206,6 +205,8 @@ const Incomes = ({
 
     toggleAddIncome(null, true);
   };
+  const address = process.env.REACT_APP_SERVER_ADDRESS;
+
   const handleCurrentMoney = async (fundsReturn = 0) => {
     const config = { headers: { Authorization: `Bearer ${login.token}` } };
 
@@ -216,7 +217,7 @@ const Incomes = ({
     }
     await axios
       .put(
-        `${Config.SERVER_ADDRESS}/api/users/${login._id}`,
+        `${address}/api/users/${login._id}`,
         {
           fundsToInvest: login.fundsToInvest,
         },
@@ -231,7 +232,7 @@ const Incomes = ({
     login.fundsToInvest[currency] -= formerValue;
     await axios
       .put(
-        `${Config.SERVER_ADDRESS}/api/users/${login._id}`,
+        `${address}/api/users/${login._id}`,
         {
           fundsToInvest: login.fundsToInvest,
         },
@@ -317,11 +318,7 @@ const Incomes = ({
     };
     setNotUpdate(true);
     await axios
-      .put(
-        `${Config.SERVER_ADDRESS}/api/investments/${id}/incomes`,
-        incomesObj,
-        config
-      )
+      .put(`${address}/api/investments/${id}/incomes`, incomesObj, config)
       .then((response) => {
         setIsLoading(false);
         if (isEdit) {
@@ -476,11 +473,7 @@ const Incomes = ({
     };
 
     await axios
-      .put(
-        `${Config.SERVER_ADDRESS}/api/investments/${id}/incomes`,
-        incomesObj,
-        config
-      )
+      .put(`${address}/api/investments/${id}/incomes`, incomesObj, config)
       .then((response) => {
         setIsLoading(false);
         if (Object.keys(removido[0])[0].includes('income')) {
@@ -712,7 +705,7 @@ const Incomes = ({
                     background: '#2b3553',
                   }}
                   type='text'
-                  placeholder={`${currencies[currency]?.symbol_native}0,00`}
+                  placeholder={`${currencies[currency]?.symbol_native}0`}
                   thousandSeparator={'.'}
                   decimalSeparator={','}
                   prefix={`${currencies[currency]?.symbol_native}`}
@@ -789,7 +782,7 @@ const Incomes = ({
               </Col>
               <Col md='4'>
                 <NumberFormat
-                  placeholder={`${currencies[currency]?.symbol_native}0,00`}
+                  placeholder={`${currencies[currency]?.symbol_native}0`}
                   prefix={`${currencies[currency]?.symbol_native}`}
                   value={tax}
                   onChange={(e) => {
@@ -893,7 +886,7 @@ const Incomes = ({
                     background: '#2b3553',
                   }}
                   type='text'
-                  placeholder={`${currencies[currency]?.symbol_native}0,00`}
+                  placeholder={`${currencies[currency]?.symbol_native}0`}
                   prefix={`${currencies[currency]?.symbol_native}`}
                   thousandSeparator={'.'}
                   decimalSeparator={','}

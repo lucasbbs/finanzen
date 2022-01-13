@@ -3,7 +3,6 @@ import { format, parse } from 'date-fns';
 import Progressbar from 'components/Progress/Progress';
 import React, { useRef, useState } from 'react';
 import { Button, Col, CustomInput, Input, Label, Row, Table } from 'reactstrap';
-import Config from '../config.json';
 import { reverseFormatNumber } from '../helpers/functions';
 import { fetchInvestments } from 'services/Investments';
 import ProgressbarCircle from 'components/ProgressbarCircle/ProgressbarCircle';
@@ -12,6 +11,7 @@ import Spinner from '../components/Spinner/Spinner';
 import NumberFormat from 'react-number-format';
 import NotificationAlert from 'react-notification-alert';
 import ReactBSAlert from 'react-bootstrap-sweetalert';
+import { currencies } from './pages/currencies';
 
 const Uploader = () => {
   const [alert, setAlert] = useState(null);
@@ -37,6 +37,7 @@ const Uploader = () => {
     setSubmiCount(submitCount + 1);
   };
 
+  const address = process.env.REACT_APP_SERVER_ADDRESS;
   useEffect(() => {
     const handlePromise = async () => {
       setUploaded(true);
@@ -46,6 +47,7 @@ const Uploader = () => {
         i++;
         const investment = await fetchInvestments(income.id, login);
 
+        Object.assign(income, { currency: investment.invest.broker.currency });
         let incomeObject = {};
         incomeObject[
           `${format(parse(date, 'yyyy-MM', new Date()), 'yyyy-MM-dd')}income`
@@ -111,7 +113,7 @@ const Uploader = () => {
       },
     };
     await axios
-      .post(`${Config.SERVER_ADDRESS}/api/upload`, formData, config)
+      .post(`${address}/api/upload`, formData, config)
       .then((res) => {
         setInvestmentsBulkUpdate(res.data.xlData);
         setFile(res.fileName);
@@ -215,7 +217,7 @@ const Uploader = () => {
       </div>
       <div className='content'>
         {alert}
-        <h1>
+        <h1 className='card-title'>
           <i className='fas fa-cloud-upload-alt'></i> Upload
         </h1>
         <Row>
@@ -251,7 +253,7 @@ const Uploader = () => {
           <>
             <div className='row justify-content-center'>
               <Button
-                href={`${Config.SERVER_ADDRESS}/api/upload/download/${login._id}/${date}`}
+                href={`${address}/api/upload/download/${login._id}/${date}`}
                 color='primary'
               >
                 <i className='far fa-file-excel' /> Download Excel Template
@@ -309,10 +311,14 @@ const Uploader = () => {
                             <NumberFormat
                               disabled={uploading}
                               type='text'
-                              placeholder='R$0.00'
+                              placeholder={`0`}
                               thousandSeparator={'.'}
                               decimalSeparator={','}
-                              prefix={'R$'}
+                              prefix={`${
+                                invest.currency
+                                  ? currencies[invest.currency]?.symbol_native
+                                  : ''
+                              }`}
                               customInput={Input}
                               id={'selector' + invest.id}
                               defaultValue={
@@ -322,7 +328,6 @@ const Uploader = () => {
                               }
                               onChange={(e) => {
                                 e.target.id.replace('selector', '');
-                                console.log(incomesArray);
                                 const tax = Object.values(
                                   incomesArray[
                                     e.target.id.replace('selector', '')
@@ -366,10 +371,14 @@ const Uploader = () => {
                             <NumberFormat
                               disabled={uploading}
                               type='text'
-                              placeholder='R$0.00'
+                              placeholder='0'
                               thousandSeparator={'.'}
                               decimalSeparator={','}
-                              prefix={'R$'}
+                              prefix={`${
+                                invest.currency
+                                  ? currencies[invest.currency]?.symbol_native
+                                  : ''
+                              }`}
                               customInput={Input}
                               id={'taxSelector' + invest.id}
                               defaultValue={
@@ -379,7 +388,6 @@ const Uploader = () => {
                               }
                               onChange={(e) => {
                                 e.target.id.replace('taxSelector', '');
-                                console.log(incomesArray);
                                 const value = Object.values(
                                   incomesArray[
                                     e.target.id.replace('taxSelector', '')

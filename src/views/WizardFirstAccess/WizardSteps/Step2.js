@@ -107,7 +107,7 @@ const Step2 = React.forwardRef((props, ref) => {
         </Col>
         {/* <Col className='text-center' lg='5'>
           <Row>
-            <Label>Initial ammount</Label>
+            <Label>Initial amount</Label>
             <Input type='text'></Input>
           </Row>
         </Col> */}
@@ -127,7 +127,7 @@ const Step2 = React.forwardRef((props, ref) => {
                 props.wizardData.About?.currency &&
                 `${
                   currencies[props?.wizardData.About.currency]?.symbol_native
-                }0,00`
+                }0`
               }
               thousandSeparator={'.'}
               decimalSeparator={','}

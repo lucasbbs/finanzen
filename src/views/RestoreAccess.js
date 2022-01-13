@@ -10,7 +10,6 @@ import {
   Row,
 } from 'reactstrap';
 import classnames from 'classnames';
-import Config from '../config.json';
 import axios from 'axios';
 import { hasRestoredLogin } from 'services/auth';
 import { useHistory } from 'react-router-dom';
@@ -26,6 +25,8 @@ const RestoreAccess = () => {
   const [sourceState, setsourceState] = useState('');
   const [passwordFocus, setPasswordFocus] = useState('');
   const [confirmPasswordFocus, setConfirmPasswordFocus] = useState('');
+
+  const address = process.env.REACT_APP_SERVER_ADDRESS;
 
   const [login] = useState(
     localStorage.getItem('userInfo')
@@ -85,11 +86,7 @@ const RestoreAccess = () => {
       const config = { headers: { Authorization: `Bearer ${login.token}` } };
 
       await axios
-        .put(
-          `${Config.SERVER_ADDRESS}/api/users/${login._id}`,
-          { password },
-          config
-        )
+        .put(`${address}/api/users/${login._id}`, { password }, config)
         .then((res) => {
           delete login['hasRestoredLogin'];
           localStorage.setItem('userInfo', JSON.stringify(login));

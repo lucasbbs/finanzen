@@ -41,8 +41,8 @@ import {
   InputGroup,
   InputGroupText,
   CustomInput,
+  CardText,
 } from 'reactstrap';
-import Config from '../../config.json';
 import ReactBSAlert from 'react-bootstrap-sweetalert';
 import { useHistory } from 'react-router-dom';
 import NumberFormat from 'react-number-format';
@@ -151,6 +151,9 @@ const User = () => {
       ? JSON.parse(localStorage.getItem('userInfo')).currency
       : null
   );
+
+  const address = process.env.REACT_APP_SERVER_ADDRESS;
+
   const toggle = () => setModal(!modal);
   const toggleModalConfirmChangeEmail = () =>
     setModalConfirmChangeEmail(!modalConfirmChangeEmail);
@@ -163,13 +166,13 @@ const User = () => {
         },
       };
 
-      const accountsfromTheAPI = await axios.get(
-        `${Config.SERVER_ADDRESS}/api/accounts`,
+      const accountsFromTheAPI = await axios.get(
+        `${address}/api/accounts`,
         config
       );
-      setAccountsToFilter(accountsfromTheAPI.data.accounts);
+      setAccountsToFilter(accountsFromTheAPI.data.accounts);
       setAccounts(
-        accountsfromTheAPI.data.accounts.filter(
+        accountsFromTheAPI.data.accounts.filter(
           (account) => account.currency === currency
         )
       );
@@ -256,7 +259,7 @@ const User = () => {
           },
         };
         await axios
-          .put(`${Config.SERVER_ADDRESS}/api/users/${userId}`, userObj, config)
+          .put(`${address}/api/users/${userId}`, userObj, config)
           .then((res) => {
             notify('You have successfully updated you info data');
             userInfo['country'] = country;
@@ -297,7 +300,7 @@ const User = () => {
       },
     };
     await axios
-      .delete(`${Config.SERVER_ADDRESS}/api/users/${userId}`, config)
+      .delete(`${address}/api/users/${userId}`, config)
       .then((res) => {
         successDelete();
         notify('You have successfully deleted your account');
@@ -422,7 +425,7 @@ const User = () => {
 
     await axios
       .put(
-        `${Config.SERVER_ADDRESS}/api/users/change-email/${userInfo._id}`,
+        `${address}/api/users/change-email/${userInfo._id}`,
         { newEmail: registerNewEmail },
         config
       )
@@ -444,7 +447,7 @@ const User = () => {
     const config = { headers: { Authorization: `Bearer ${token}` } };
     await axios
       .put(
-        `${Config.SERVER_ADDRESS}/api/users/confirm-change-email/${code}`,
+        `${address}/api/users/confirm-change-email/${code}`,
         { code },
         config
       )
@@ -467,7 +470,7 @@ const User = () => {
   const checkAlreadySubmited = async () => {
     const config = { headers: { Authorization: `Bearer ${token}` } };
     const { data } = await axios.get(
-      `${Config.SERVER_ADDRESS}/api/register/check-by-user/${userInfo._id}`,
+      `${address}/api/register/check-by-user/${userInfo._id}`,
       config
     );
     if (data.found) {
@@ -476,22 +479,22 @@ const User = () => {
       toggle();
     }
   };
-  const askForNotificationPermission = () => {
+  const askForNotificationPermission = (condition) => {
     Notification.requestPermission(function (result) {
       console.log('User Choice', result);
       if (result !== 'granted') {
         console.log('No notification permission granted!');
       } else {
-        configurePushSub();
+        configurePushSub(condition);
       }
     });
   };
 
-  function configurePushSub() {
+  function configurePushSub(condition) {
     if (!('serviceWorker' in navigator)) {
       return;
     }
-    let hasUnsubscribed;
+    let hasUnsubscribed = false;
     var reg;
     console.log(
       'running',
@@ -552,9 +555,11 @@ const User = () => {
           const info = getOperatingSystemName(this);
           console.log(info);
           if (hasUnsubscribed) {
+            console.log('TESTE DE DELEÇÃO DE EVENTO');
             await axios.put(
-              `${Config.SERVER_ADDRESS}/api/pushNotifications/id`,
+              `${address}/api/pushNotifications/id`,
               {
+                isAdding: condition,
                 endpoint: endPoint,
                 key,
                 auth: authSecret,
@@ -568,7 +573,7 @@ const User = () => {
             );
           } else {
             await axios.post(
-              `${Config.SERVER_ADDRESS}/api/pushNotifications/`,
+              `${address}/api/pushNotifications/`,
               {
                 endpoint: endPoint,
                 key,
@@ -630,10 +635,7 @@ const User = () => {
       },
     };
     try {
-      await axios.delete(
-        `${Config.SERVER_ADDRESS}/api/pushNotifications/`,
-        config
-      );
+      await axios.delete(`${address}/api/pushNotifications/`, config);
       notify(
         'You have successfully deleted the push notifications in all of your devices!'
       );
@@ -972,7 +974,7 @@ const User = () => {
                             color: '#333',
                           }}
                         >
-                          {Config.SERVER_ADDRESS}
+                          {address}
                         </div>
                         <img
                           style={{
@@ -1025,7 +1027,7 @@ const User = () => {
                         }
                         type='text'
                         value={monthlySalary}
-                        placeholder={`${currencies[currency]?.symbol_native}0,00`}
+                        placeholder={`${currencies[currency]?.symbol_native}0`}
                         thousandSeparator={'.'}
                         decimalSeparator={','}
                         prefix={currencies[currency]?.symbol_native}
@@ -1044,7 +1046,7 @@ const User = () => {
                         }
                         type='text'
                         value={equityObjective}
-                        placeholder={`${currencies[currency]?.symbol_native}0,00`}
+                        placeholder={`${currencies[currency]?.symbol_native}0`}
                         thousandSeparator={'.'}
                         decimalSeparator={','}
                         prefix={currencies[currency]?.symbol_native}
@@ -1059,9 +1061,8 @@ const User = () => {
                         checked={checkboxSendPushNotifications}
                         onChange={(e) => {
                           setCheckboxSendPushNotifications(e.target.checked);
-                          if (e.target.checked) {
-                            askForNotificationPermission();
-                          }
+
+                          askForNotificationPermission(e.target.checked);
                         }}
                       />
                       <FormGroup check>
@@ -1281,46 +1282,7 @@ const User = () => {
               </CardFooter>
             </Card>
           </Col>
-          {/* <Col md='4'>
-            <Card className='card-user'>
-              <CardBody>
-                <CardText />
-                <div className='author'>
-                  <div className='block block-one' />
-                  <div className='block block-two' />
-                  <div className='block block-three' />
-                  <div className='block block-four' />
-                  <a href='#' onClick={(e) => e.preventDefault()}>
-                    <img
-                      alt='...'
-                      className='avatar'
-                      src={require('assets/img/emilyz.jpg').default}
-                    />
-                    <h5 className='title'>Mike Andrew</h5>
-                  </a>
-                  <p className='description'>Ceo/Co-Founder</p>
-                </div>
-                <div className='card-description'>
-                  Do not be scared of the truth because we need to restart the
-                  human foundation in truth And I love you like Kanye loves
-                  Kanye I love Rick Owens’ bed design but the back is...
-                </div>
-              </CardBody>
-              <CardFooter>
-                <div className='button-container'>
-                  <Button className='btn-icon btn-round' color='facebook'>
-                    <i className='fab fa-facebook' />
-                  </Button>
-                  <Button className='btn-icon btn-round' color='twitter'>
-                    <i className='fab fa-twitter' />
-                  </Button>
-                  <Button className='btn-icon btn-round' color='google'>
-                    <i className='fab fa-google-plus' />
-                  </Button>
-                </div>
-              </CardFooter>
-            </Card>
-          </Col> */}
+          <Col md='4'></Col>
         </Row>
       </div>
     </>

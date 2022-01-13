@@ -111,7 +111,7 @@ const Step3 = React.forwardRef((props, ref) => {
                 placeholder={`${
                   currencies[localStorage.getItem('tempCurrency')]
                     ?.symbol_native
-                }0,00`}
+                }0`}
                 thousandSeparator={'.'}
                 decimalSeparator={','}
                 prefix={
@@ -147,7 +147,7 @@ const Step3 = React.forwardRef((props, ref) => {
                 placeholder={`${
                   currencies[localStorage.getItem('tempCurrency')]
                     ?.symbol_native
-                }0,00`}
+                }0`}
                 thousandSeparator={'.'}
                 decimalSeparator={','}
                 prefix={

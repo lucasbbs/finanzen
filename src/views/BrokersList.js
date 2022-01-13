@@ -17,7 +17,6 @@ import {
   Row,
   Table,
 } from 'reactstrap';
-import Config from '../config.json';
 import { countries } from 'views/pages/countries';
 import { currencies } from 'views/pages/currencies';
 import ReactBSAlert from 'react-bootstrap-sweetalert';
@@ -26,10 +25,6 @@ import { Link } from 'react-router-dom';
 import Spinner from '../components/Spinner/Spinner';
 const BrokersList = () => {
   // const imageRef = useRef(null);
-
-  const sayIt = () => {
-    // imageRef.current.sayHello();
-  };
   const [login] = useState(
     localStorage.getItem('userInfo')
       ? JSON.parse(localStorage.getItem('userInfo'))
@@ -123,7 +118,7 @@ const BrokersList = () => {
   const hideAlert = () => {
     setAlert(null);
   };
-
+  const address = process.env.REACT_APP_SERVER_ADDRESS;
   useEffect(() => {
     const handleAsyncFunction = async () => {
       setIsLoading(true);
@@ -133,7 +128,7 @@ const BrokersList = () => {
         },
       };
       const brokersFromTheAPI = await axios.get(
-        `${Config.SERVER_ADDRESS}/api/brokers`,
+        `${address}/api/brokers`,
         config
       );
 
@@ -162,7 +157,7 @@ const BrokersList = () => {
         },
       };
       await axios
-        .post(`${Config.SERVER_ADDRESS}/api/uploadImages`, formData, config)
+        .post(`${address}/api/uploadImages`, formData, config)
         .then(async (res) => {
           const filepath = res.data.filepath.replace('\\', '/');
           const config = {
@@ -173,11 +168,7 @@ const BrokersList = () => {
           };
           brokerObj['filepath'] = filepath;
           await axios
-            .put(
-              `${Config.SERVER_ADDRESS}/api/brokers/${id}`,
-              brokerObj,
-              config
-            )
+            .put(`${address}/api/brokers/${id}`, brokerObj, config)
             .then((res) => {
               notify('Successfully updated');
               brokers.splice(
@@ -215,9 +206,11 @@ const BrokersList = () => {
           Authorization: `Bearer ${login.token}`,
         },
       };
-      brokerObj['filepath'] = imagePreview.replace(Config.SERVER_ADDRESS, '');
+      if (imagePreview) {
+        brokerObj['filepath'] = imagePreview.replace(address, '');
+      }
       await axios
-        .put(`${Config.SERVER_ADDRESS}/api/brokers/${id}`, brokerObj, config)
+        .put(`${address}/api/brokers/${id}`, brokerObj, config)
         .then((res) => {
           notify('Successfully updated');
           brokers.splice(
@@ -248,7 +241,7 @@ const BrokersList = () => {
       },
     };
     await axios
-      .put(`${Config.SERVER_ADDRESS}/api/brokers/${id}/archive`, null, config)
+      .put(`${address}/api/brokers/${id}/archive`, null, config)
       .then((res) => {
         success();
         notify('You have successfully archived the broker');
@@ -256,7 +249,6 @@ const BrokersList = () => {
       })
       .catch((error) => {
         hideAlert();
-        console.log(error, error.response.data.message);
         notify(
           error.response && error.response.data.message
             ? error.response.data.message
@@ -273,7 +265,7 @@ const BrokersList = () => {
       },
     };
     await axios
-      .delete(`${Config.SERVER_ADDRESS}/api/brokers/${id}`, config)
+      .delete(`${address}/api/brokers/${id}`, config)
       .then((res) => {
         success('delete');
         notify('You have successfully deleted the broker');
@@ -281,7 +273,6 @@ const BrokersList = () => {
       })
       .catch((error) => {
         hideAlert();
-        console.log(error, error.response.data.message);
         notify(
           error.response && error.response.data.message
             ? error.response.data.message
@@ -306,7 +297,7 @@ const BrokersList = () => {
     };
     notificationAlertRef.current.notificationAlert(options);
   };
-  console.log(brokers);
+  // console.log(brokers);
   return (
     <>
       <div className='react-notification-alert-container'>
@@ -332,9 +323,7 @@ const BrokersList = () => {
                 toggle={toggle}
                 close={closeBtn}
               >
-                <span style={{ color: 'hsla(0,0%,100%,.9)' }} onClick={sayIt()}>
-                  Edit Broker
-                </span>
+                <span style={{ color: 'hsla(0,0%,100%,.9)' }}>Edit Broker</span>
               </ModalHeader>
               <ModalBody
                 style={{
@@ -419,18 +408,46 @@ const BrokersList = () => {
                     alt=''
                   />
                 </div>
+                <div className='row justify-content-center'>
+                  <Button
+                    color='danger'
+                    style={{
+                      display:
+                        imagePreview !==
+                        `${address}/uploadImages/defaultImage.png`
+                          ? 'block'
+                          : 'none',
+                    }}
+                    onClick={() => {
+                      const label = document.querySelector(
+                        '#exampleCustomFileBrowser'
+                      ).parentElement.children[1];
+                      label.innerHTML = 'Choose file';
+
+                      setImage(null);
+                      setImagePreview(
+                        `${address}/uploadImages/defaultImage.png`
+                      );
+                    }}
+                  >
+                    Remove Image
+                  </Button>
+                </div>
                 <CustomInput
                   type='file'
                   id='exampleCustomFileBrowser'
                   name='customFile'
                   onChange={(e) => {
                     let reader = new FileReader();
+
                     let file = e.target.files[0];
-                    reader.onloadend = () => {
-                      setImage(file);
-                      setImagePreview(reader.result);
-                    };
-                    reader.readAsDataURL(file);
+                    if (file) {
+                      reader.onloadend = () => {
+                        setImage(file);
+                        setImagePreview(reader.result);
+                      };
+                      reader.readAsDataURL(file);
+                    }
                   }}
                 />
               </ModalBody>
@@ -487,7 +504,11 @@ const BrokersList = () => {
                           <th>
                             <div
                               style={{
-                                background: `url(${Config.SERVER_ADDRESS}${brk.filepath}) no-repeat center center / contain `,
+                                background: `url(${
+                                  brk.filepath.includes('defaultImage')
+                                    ? address + brk.filepath
+                                    : brk.filepath
+                                }) no-repeat center center / contain `,
                                 width: '100px',
                                 height: '100px',
                               }}
@@ -553,11 +574,18 @@ const BrokersList = () => {
                                         .parentElement.id
                                   );
                                   // imageRef.current.sayHello(
-                                  //   `${Config.SERVER_ADDRESS}${filtered.filepath}`
+                                  //   `${address}${filtered.filepath}`
                                   // );
-                                  setImagePreview(
-                                    `${Config.SERVER_ADDRESS}${filtered.filepath}`
-                                  );
+                                  if (
+                                    filtered.filepath ===
+                                    '/uploadImages/defaultImage.png'
+                                  ) {
+                                    setImagePreview(
+                                      `${address}${filtered.filepath}`
+                                    );
+                                  } else if (filtered.filepath) {
+                                    setImagePreview(`${filtered.filepath}`);
+                                  }
                                   setId(filtered._id);
                                   setName(filtered.name);
                                   setCountry(filtered.country);

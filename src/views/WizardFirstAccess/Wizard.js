@@ -28,7 +28,6 @@ import Step2 from './WizardSteps/Step2.js';
 import Step3 from './WizardSteps/Step3.js';
 
 import axios from 'axios';
-import Config from '../../config.json';
 import { useHistory } from 'react-router-dom';
 
 var steps = [
@@ -61,6 +60,9 @@ const WizardFirstAccess = () => {
       ? JSON.parse(localStorage.getItem('userInfo'))
       : null
   );
+
+  const address = process.env.REACT_APP_SERVER_ADDRESS;
+
   const handleFinish = async (states) => {
     const config = {
       headers: {
@@ -69,7 +71,7 @@ const WizardFirstAccess = () => {
       },
     };
     const account = await axios.post(
-      `${Config.SERVER_ADDRESS}/api/accounts`,
+      `${address}/api/accounts`,
       {
         name: states.Account.accountName,
         currency: states.About.currency,
@@ -80,7 +82,7 @@ const WizardFirstAccess = () => {
 
     await axios
       .put(
-        `${Config.SERVER_ADDRESS}/api/users/${login._id}`,
+        `${address}/api/users/${login._id}`,
         {
           country: states.About.country,
           currency: states.About.currency,

@@ -21,7 +21,13 @@ const Spinner = ({ percentage }) => {
             bottom: '50%',
           }}
         >
-          <section style={{ whiteSpace: 'nowrap' }}>
+          <section
+            style={{
+              whiteSpace: 'nowrap',
+              zIndex: 9999999999,
+              marginBottom: -86,
+            }}
+          >
             <div
               className={[styles.loading, styles.loading01].join(' ')}
               style={{
@@ -33,16 +39,31 @@ const Spinner = ({ percentage }) => {
                 fontFamily: 'Poppins',
               }}
             >
-              <span>C</span>
-              <span>A</span>
-              <span>R</span>
-              <span>R</span>
-              <span>E</span>
-              <span>G</span>
-              <span>A</span>
-              <span>N</span>
-              <span>D</span>
+              <span>L</span>
               <span>O</span>
+              <span>A</span>
+              <span>D</span>
+              <span>I</span>
+              <span>N</span>
+              <span>G</span>
+              <br style={{ height: 0, lineHeight: 0 }} />
+              <span style={{ lineHeight: 0 }}>
+                <img
+                  style={{
+                    top: 0,
+                    // position: 'relative',
+                    width: '20%',
+                    height: '40%',
+                    // left: '50%',
+                    // top: '50%',
+                    zIndex: 9999999999,
+                  }}
+                  alt='...'
+                  src={
+                    require('assets/img/purple-heavy-dollar-sign.svg').default
+                  }
+                />
+              </span>
             </div>
           </section>
           <div className='row' style={{ flexWrap: 'nowrap' }}>

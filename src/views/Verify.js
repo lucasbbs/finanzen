@@ -2,10 +2,11 @@ import axios from 'axios';
 import React, { useEffect, useRef } from 'react';
 import { useHistory, useParams } from 'react-router-dom';
 import { Button } from 'reactstrap';
-import Config from '../config.json';
 import NotificationAlert from 'react-notification-alert';
 
 const Verify = () => {
+  const address = process.env.REACT_APP_SERVER_ADDRESS;
+
   let history = useHistory();
   const { id } = useParams();
   useEffect(() => {
@@ -43,7 +44,7 @@ const Verify = () => {
   const handleSubmit = async (code) => {
     console.log(code);
     await axios
-      .get(`${Config.SERVER_ADDRESS}/api/register/${id}`)
+      .get(`${address}/api/register/${id}`)
       .then(async (res) => {
         if (res.data.code === code) {
           const config = {
@@ -54,7 +55,7 @@ const Verify = () => {
 
           await axios
             .put(
-              `${Config.SERVER_ADDRESS}/api/users/verify/${res.data.emailToken}`,
+              `${address}/api/users/verify/${res.data.emailToken}`,
               null,
               config
             )

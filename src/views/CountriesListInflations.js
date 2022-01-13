@@ -13,7 +13,6 @@ import {
   Row,
   Table,
 } from 'reactstrap';
-import Config from '../config.json';
 import NotificationAlert from 'react-notification-alert';
 import Spinner from '../components/Spinner/Spinner';
 import ReactBSAlert from 'react-bootstrap-sweetalert';
@@ -28,6 +27,9 @@ const CountriesListInflations = () => {
   const [values, setValues] = useState([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isNewDataModalOpen, setIsNewDataModalOpen] = useState(false);
+
+  const address = process.env.REACT_APP_SERVER_ADDRESS;
+
   const notificationAlertRef = useRef(null);
   const notify = (message, type = 'success', place = 'tc') => {
     var options = {};
@@ -53,9 +55,7 @@ const CountriesListInflations = () => {
 
   useEffect(() => {
     const getInflations = async () => {
-      const response = await axios.get(
-        `${Config.SERVER_ADDRESS}/api/inflations`
-      );
+      const response = await axios.get(`${address}/api/inflations`);
       setInflations(response.data);
     };
     getInflations();
@@ -145,7 +145,7 @@ const CountriesListInflations = () => {
     };
     await axios
       .put(
-        `${Config.SERVER_ADDRESS}/api/inflations/${originalAlpha2Code}`,
+        `${address}/api/inflations/${originalAlpha2Code}`,
         ObjCountryInfo,
         config
       )
@@ -177,7 +177,7 @@ const CountriesListInflations = () => {
   const handleDelete = async (id) => {
     const config = { headers: { Authorization: `Bearer ${login.token}` } };
     await axios
-      .delete(`${Config.SERVER_ADDRESS}/api/inflations/${id}`, config)
+      .delete(`${address}/api/inflations/${id}`, config)
       .then((res) => {
         notify('You have successfully deleted your country info data');
         success();
@@ -201,11 +201,7 @@ const CountriesListInflations = () => {
       },
     };
     await axios
-      .post(
-        `${Config.SERVER_ADDRESS}/api/inflations`,
-        ObjectCountryInfo,
-        config
-      )
+      .post(`${address}/api/inflations`, ObjectCountryInfo, config)
       .then((res) => {
         notify('You have successfully created a new country info data');
         setInflations(
@@ -333,7 +329,9 @@ const CountriesListInflations = () => {
           {alert}
           <Card>
             <CardHeader className='mb-4 m-2  row justify-content-between align-items-center'>
-              <h1 style={{ marginBottom: 0 }}>Countries List Inflation</h1>
+              <h1 style={{ marginBottom: 0 }}>
+                <i className='fas fa-flag'></i> Countries List Inflation
+              </h1>
               <Button
                 onClick={(e) => {
                   setAlpha2Code('');

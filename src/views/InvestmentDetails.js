@@ -10,7 +10,6 @@ import Incomes from '../components/Incomes/Incomes';
 import axios from 'axios';
 import NotificationAlert from 'react-notification-alert';
 import Spinner from '../components/Spinner/Spinner';
-import Config from '../config.json';
 import { currencies } from './pages/currencies';
 import { GlobalContext } from 'context/GlobalState';
 
@@ -50,8 +49,8 @@ const InvestmentDetails = () => {
   const [indexer, setIndexer] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [investmentDate, setInvestmentDate] = useState('');
-  const [initialAmount, setInitialAmount] = useState(0);
-  const [accruedIncome, setAccruedIncome] = useState(0);
+  const [initialAmount, setInitialAmount] = useState('');
+  const [accruedIncome, setAccruedIncome] = useState('');
   const [investment, setInvestment] = useState([]);
   const [incomes, setIncomes] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
@@ -61,6 +60,7 @@ const InvestmentDetails = () => {
       ? JSON.parse(localStorage.getItem('userInfo'))
       : null
   );
+  const address = process.env.REACT_APP_SERVER_ADDRESS;
   const { id } = useParams();
 
   useEffect(() => {
@@ -77,7 +77,7 @@ const InvestmentDetails = () => {
         },
       };
       const brokersFromTheAPI = await axios.get(
-        `${Config.SERVER_ADDRESS}/api/brokers`,
+        `${address}/api/brokers`,
         config
       );
       setBrokers(brokersFromTheAPI.data.brokers);
@@ -126,10 +126,7 @@ const InvestmentDetails = () => {
   useEffect(() => {
     const getAccounts = async () => {
       const config = { headers: { Authorization: `Bearer ${login.token}` } };
-      const { data } = await axios.get(
-        `${Config.SERVER_ADDRESS}/api/accounts`,
-        config
-      );
+      const { data } = await axios.get(`${address}/api/accounts`, config);
       setAccountsFromTheApi(data.accounts);
     };
     getAccounts();
@@ -161,6 +158,7 @@ const InvestmentDetails = () => {
   };
   const history = useHistory();
   const handleSave = async (investmentObj) => {
+    setIsLoading(true);
     const config = {
       headers: {
         'Content-Type': 'application/json',
@@ -168,7 +166,7 @@ const InvestmentDetails = () => {
       },
     };
     await axios
-      .post(`${Config.SERVER_ADDRESS}/api/investments`, investmentObj, config)
+      .post(`${address}/api/investments`, investmentObj, config)
       .then(async (response) => {
         notify(`${response.data.name} successfully investment registered`);
         updateAccounts();
@@ -186,6 +184,7 @@ const InvestmentDetails = () => {
           'danger'
         );
       });
+    // .finally(() => setIsLoading(false));
   };
 
   const handleGetAccounts = (currency) => {
@@ -210,7 +209,7 @@ const InvestmentDetails = () => {
                 marginBottom: '30px',
               }}
             >
-              <h1 style={{ marginBottom: '0' }}>
+              <h1 className='card-title' style={{ marginBottom: '0' }}>
                 <i className='tim-icons icon-money-coins'></i> {name}
               </h1>
             </div>
@@ -397,7 +396,11 @@ const InvestmentDetails = () => {
                       onChange={(e) => setInitialAmount(e.target.value)}
                       type='text'
                       value={initialAmount}
-                      placeholder={`${currencies[currency]?.symbol_native}0,00`}
+                      placeholder={`${
+                        currencies[currency]
+                          ? currencies[currency]?.symbol_native
+                          : ''
+                      }0`}
                       thousandSeparator={'.'}
                       decimalSeparator={','}
                       prefix={currencies[currency]?.symbol_native}
@@ -409,9 +412,9 @@ const InvestmentDetails = () => {
                               (floatValue >= 0 &&
                                 floatValue <=
                                   accounts.find((acc) => acc._id === account)
-                                    .initialAmmount +
+                                    ?.initialAmmount +
                                     accounts.find((acc) => acc._id === account)
-                                      .balance)
+                                      ?.balance)
                           : true;
                       }}
                     />
@@ -427,7 +430,7 @@ const InvestmentDetails = () => {
                       }}
                       type='text'
                       value={accruedIncome}
-                      placeholder={`${currencies[currency]?.symbol_native}0,00`}
+                      placeholder={`${currencies[currency]?.symbol_native}0`}
                       thousandSeparator={'.'}
                       decimalSeparator={','}
                       prefix={currencies[currency]?.symbol_native}
@@ -491,6 +494,7 @@ const InvestmentDetails = () => {
                   // style={{ flexDirection: 'column' }}
                 >
                   <Button
+                    disabled={isLoading}
                     className='mt-30'
                     color='success'
                     onClick={() =>

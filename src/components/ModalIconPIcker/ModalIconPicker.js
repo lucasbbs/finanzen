@@ -1,17 +1,15 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
 import { Button, Modal, ModalBody, ModalFooter, ModalHeader } from 'reactstrap';
-import Config from '../../config.json';
 
 const ModalIconPicker = ({ modalIcons, setModalIcons, setIcon, setIconId }) => {
   const [icons, setIcons] = useState([]);
   const [categories, setCategories] = useState([]);
 
+  const address = process.env.REACT_APP_SERVER_ADDRESS;
   useEffect(() => {
     const getIcons = async () => {
-      const iconsFromAPI = await axios.get(
-        `${Config.SERVER_ADDRESS}/api/icons`
-      );
+      const iconsFromAPI = await axios.get(`${address}/api/icons`);
       setIcons(iconsFromAPI.data);
       setCategories([
         ...new Set([

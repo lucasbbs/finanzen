@@ -12,7 +12,6 @@ import {
   ModalHeader,
   Row,
 } from 'reactstrap';
-import Config from '../config.json';
 import NotificationAlert from 'react-notification-alert';
 import Spinner from '../components/Spinner/Spinner';
 import { ISODateFormat } from 'helpers/functions';
@@ -52,6 +51,8 @@ const Inflations = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isAddModalOpen, setIsAddModalOpen] = useState(false);
 
+  const address = process.env.REACT_APP_SERVER_ADDRESS;
+
   const toggle = () => {
     setIsModalOpen(!isModalOpen);
   };
@@ -60,9 +61,7 @@ const Inflations = () => {
   };
   useEffect(() => {
     const getInflations = async () => {
-      const response = await axios.get(
-        `${Config.SERVER_ADDRESS}/api/inflations`
-      );
+      const response = await axios.get(`${address}/api/inflations`);
       setInflations(response.data);
     };
     getInflations();
@@ -136,11 +135,7 @@ const Inflations = () => {
     };
 
     await axios
-      .put(
-        `${Config.SERVER_ADDRESS}/api/inflations/${alpha2Code}`,
-        InflationsObject,
-        config
-      )
+      .put(`${address}/api/inflations/${alpha2Code}`, InflationsObject, config)
       .then((res) =>
         notify(`You have updated the inflations for ${countryName}`)
       )
@@ -239,7 +234,9 @@ const Inflations = () => {
           <Row className='justify-content-center align-items-center ml-2 mt-1 mr-2 '>
             {/* <Card style={{ position: 'relative' }}> */}
             <Col md='6' className='row'>
-              <h1 style={{ marginRight: '25px' }}>Inflations Editor</h1>
+              <h1 style={{ marginRight: '25px' }}>
+                <i className='fas fa-comment-dollar'></i> Inflations Editor
+              </h1>
               {isThereAnyChanges ? (
                 <Button
                   onClick={() =>

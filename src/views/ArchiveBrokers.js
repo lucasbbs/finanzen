@@ -17,7 +17,6 @@ import {
   Row,
   Table,
 } from 'reactstrap';
-import Config from '../config.json';
 import { countries } from 'views/pages/countries';
 import { currencies } from 'views/pages/currencies';
 import ReactBSAlert from 'react-bootstrap-sweetalert';
@@ -123,7 +122,7 @@ const ArchiveBrokers = () => {
   const hideAlert = () => {
     setAlert(null);
   };
-
+  const address = process.env.REACT_APP_SERVER_ADDRESS;
   useEffect(() => {
     const handleAsyncFunction = async () => {
       const config = {
@@ -132,7 +131,7 @@ const ArchiveBrokers = () => {
         },
       };
       const brokersFromTheAPI = await axios.get(
-        `${Config.SERVER_ADDRESS}/api/brokers/archive`,
+        `${address}/api/brokers/archive`,
         config
       );
       setBrokers(brokersFromTheAPI.data);
@@ -158,7 +157,7 @@ const ArchiveBrokers = () => {
         },
       };
       await axios
-        .post(`${Config.SERVER_ADDRESS}/api/uploadImages`, formData, config)
+        .post(`${address}/api/uploadImages`, formData, config)
         .then(async (res) => {
           const filepath = res.data.filepath.replace('\\', '/');
           const config = {
@@ -169,11 +168,7 @@ const ArchiveBrokers = () => {
           };
           brokerObj['filepath'] = filepath;
           await axios
-            .put(
-              `${Config.SERVER_ADDRESS}/api/brokers/${id}`,
-              brokerObj,
-              config
-            )
+            .put(`${address}/api/brokers/${id}`, brokerObj, config)
             .then((res) => {
               notify('Successfully updated');
               brokers.splice(
@@ -196,9 +191,9 @@ const ArchiveBrokers = () => {
           Authorization: `Bearer ${login.token}`,
         },
       };
-      brokerObj['filepath'] = imagePreview.replace(Config.SERVER_ADDRESS, '');
+      brokerObj['filepath'] = imagePreview.replace(address, '');
       await axios
-        .put(`${Config.SERVER_ADDRESS}/api/brokers/${id}`, brokerObj, config)
+        .put(`${address}/api/brokers/${id}`, brokerObj, config)
         .then((res) => {
           notify('Successfully updated');
           brokers.splice(
@@ -222,7 +217,7 @@ const ArchiveBrokers = () => {
       },
     };
     await axios
-      .put(`${Config.SERVER_ADDRESS}/api/brokers/${id}/unarchive`, null, config)
+      .put(`${address}/api/brokers/${id}/unarchive`, null, config)
       .then((res) => {
         success();
         notify('You have successfully unarchived the broker');
@@ -247,7 +242,7 @@ const ArchiveBrokers = () => {
       },
     };
     await axios
-      .delete(`${Config.SERVER_ADDRESS}/api/brokers/${id}`, config)
+      .delete(`${address}/api/brokers/${id}`, config)
       .then((res) => {
         success('delete');
         notify('You have successfully deleted the broker');
@@ -456,7 +451,7 @@ const ArchiveBrokers = () => {
                           <th>
                             <div
                               style={{
-                                background: `url(${Config.SERVER_ADDRESS}${brk.filepath}) no-repeat center  center   / contain `,
+                                background: `url(${address}${brk.filepath}) no-repeat center  center   / contain `,
                                 width: '100px',
                                 height: '100px',
                                 // backgroundPosition: 'center',
@@ -525,10 +520,10 @@ const ArchiveBrokers = () => {
                                         .parentElement.id
                                   );
                                   // imageRef.current.sayHello(
-                                  //   `${Config.SERVER_ADDRESS}${filtered.filepath}`
+                                  //   `${address}${filtered.filepath}`
                                   // );
                                   setImagePreview(
-                                    `${Config.SERVER_ADDRESS}${filtered.filepath}`
+                                    `${address}${filtered.filepath}`
                                   );
                                   setId(filtered._id);
                                   setName(filtered.name);

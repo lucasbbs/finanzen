@@ -13,7 +13,6 @@ import {
   ModalHeader,
 } from 'reactstrap';
 import { currencies } from 'views/pages/currencies';
-import Config from '../../config.json';
 import NotificationAlert from 'react-notification-alert';
 import { GlobalContext } from 'context/GlobalState';
 
@@ -65,11 +64,12 @@ const ModalTransactions = ({
     );
   }, [categories, selected]);
 
+  const address = process.env.REACT_APP_SERVER_ADDRESS;
   useEffect(() => {
     const getCategoriesAndAccounts = async () => {
       const config = { headers: { Authorization: `Bearer ${token}` } };
       const categoriesFromTheAPI = await axios.get(
-        `${Config.SERVER_ADDRESS}/api/categories`,
+        `${address}/api/categories`,
         config
       );
       setCategories(
@@ -78,7 +78,7 @@ const ModalTransactions = ({
         )
       );
       const accountsFromTheAPI = await axios.get(
-        `${Config.SERVER_ADDRESS}/api/accounts`,
+        `${address}/api/accounts`,
         config
       );
       setAccounts(accountsFromTheAPI.data.accounts);
@@ -96,7 +96,7 @@ const ModalTransactions = ({
     const config = { headers: { Authorization: `Bearer ${token}` } };
     const getExchanges = async () => {
       const response = await axios.post(
-        `${Config.SERVER_ADDRESS}/api/exchanges`,
+        `${address}/api/exchanges`,
         { currencies: [currency], localCurrency: accountExchange?.currency },
         config
       );
@@ -117,16 +117,13 @@ const ModalTransactions = ({
       <span style={{ color: 'white' }}>×</span>
     </button>
   );
+
   const handleAddTransaction = async (objTransaction) => {
     console.log(objTransaction);
     const config = { headers: { Authorization: `Bearer ${token}` } };
     if (transactionId === '') {
       await axios
-        .post(
-          `${Config.SERVER_ADDRESS}/api/transactions`,
-          objTransaction,
-          config
-        )
+        .post(`${address}/api/transactions`, objTransaction, config)
         .then((res) => {
           notify('You have successfully registered a new transaction');
 
@@ -172,7 +169,7 @@ const ModalTransactions = ({
     } else {
       await axios
         .put(
-          `${Config.SERVER_ADDRESS}/api/transactions/${transactionId}`,
+          `${address}/api/transactions/${transactionId}`,
           objTransaction,
           config
         )
@@ -387,7 +384,7 @@ const ModalTransactions = ({
               (currencies[currency]?.symbol_native
                 ? currencies[currency]?.symbol_native
                 : '') + ' '
-            }0,00`}
+            }0`}
             thousandSeparator={'.'}
             decimalSeparator={','}
             prefix={
@@ -428,7 +425,7 @@ const ModalTransactions = ({
                 (currencies[accountExchange?.currency]?.symbol_native
                   ? currencies[accountExchange.currency]?.symbol_native
                   : '') + ' '
-              }0,00`}
+              }0`}
               thousandSeparator={'.'}
               decimalSeparator={','}
               prefix={

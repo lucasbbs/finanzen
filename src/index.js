@@ -14,6 +14,7 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
+import axios from 'axios';
 import React, { useEffect } from 'react';
 import ReactDOM from 'react-dom';
 import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom';
@@ -39,9 +40,35 @@ import registerServiceWorker from 'registerServiceWorker';
 // axios.defaults.withCredentials = true;
 
 const PrivateRoute = ({ component: Component, ...rest }) => {
-  // useEffect(() => {
-  //   loadReCaptcha(Config.CLIENT_KEY_RECAPTCHA);
-  // }, []);
+  useEffect(() => {
+    // Implementar aqui o Remember me login
+  }, []);
+
+  const alreadyLoaded = sessionStorage.getItem('alreadyLoaded');
+  useEffect(() => {
+    const alreadyLoaded = sessionStorage.getItem('alreadyLoaded');
+    if (!alreadyLoaded) {
+      const getUserInfo = async () => {
+        const userInfo = JSON.parse(localStorage.getItem('userInfo'));
+        let config;
+        if (userInfo)
+          config = {
+            headers: { Authorization: `Bearer ${userInfo?.token}` },
+          };
+        const address = process.env.REACT_APP_SERVER_ADDRESS;
+        const { data } = await axios.get(
+          `${address}/api/users/profile`,
+          config
+        );
+
+        Object.assign(userInfo, data);
+        localStorage.setItem('userInfo', JSON.stringify(userInfo));
+      };
+      getUserInfo();
+
+      sessionStorage.setItem('alreadyLoaded', true);
+    }
+  }, []);
 
   return (
     <Route

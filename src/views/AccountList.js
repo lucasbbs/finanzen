@@ -24,7 +24,6 @@ import {
   Row,
   Table,
 } from 'reactstrap';
-import Config from '../config.json';
 import { currencies } from './pages/currencies';
 import Spinner from 'components/Spinner/Spinner';
 import { GlobalContext } from 'context/GlobalState';
@@ -45,7 +44,7 @@ const AccountList = () => {
   const [icon, setIcon] = useState(0);
   const [name, setName] = useState('');
   const [currency, setCurrency] = useState('');
-  const [amount, setAmount] = useState(0);
+  const [amount, setAmount] = useState('');
   const [accounts, setAccounts] = useState([]);
 
   const hideAlert = () => {
@@ -85,6 +84,7 @@ const AccountList = () => {
       ></ReactBSAlert>
     );
   };
+  const address = process.env.REACT_APP_SERVER_ADDRESS;
   const handleArchive = async (id) => {
     const config = {
       headers: {
@@ -93,7 +93,7 @@ const AccountList = () => {
     };
     console.log(`Bearer ${login.token}`);
     await axios
-      .put(`${Config.SERVER_ADDRESS}/api/accounts/${id}/archive`, null, config)
+      .put(`${address}/api/accounts/${id}/archive`, null, config)
       .then(async (response) => {
         success();
         notify(`You have successfully archived your account ${name}`);
@@ -102,7 +102,7 @@ const AccountList = () => {
 
         // await axios
         //   .put(
-        //     `${Config.SERVER_ADDRESS}/api/users/${login._id}`,
+        //     `${address}/api/users/${login._id}`,
         //     { fundsToInvest: login.fundsToInvest },
         //     config
         //   )
@@ -133,7 +133,7 @@ const AccountList = () => {
     };
     // console.log(`Bearer ${login.token}`);
     const answer = await axios
-      .delete(`${Config.SERVER_ADDRESS}/api/accounts/${id}`, config)
+      .delete(`${address}/api/accounts/${id}`, config)
       .then(async (response) => {
         success('delete');
         notify(`Account deleted successfully`);
@@ -143,7 +143,7 @@ const AccountList = () => {
 
         // await axios
         //   .put(
-        //     `${Config.SERVER_ADDRESS}/api/users/${login._id}`,
+        //     `${address}/api/users/${login._id}`,
         //     { fundsToInvest: login.fundsToInvest },
         //     config
         //   )
@@ -205,7 +205,7 @@ const AccountList = () => {
       };
 
       const accountsFromApi = await axios.get(
-        `${Config.SERVER_ADDRESS}/api/accounts`,
+        `${address}/api/accounts`,
         config
       );
       setAccounts(accountsFromApi.data.accounts);
@@ -223,7 +223,7 @@ const AccountList = () => {
       },
     };
     await axios
-      .put(`${Config.SERVER_ADDRESS}/api/accounts/${id}`, objAccount, config)
+      .put(`${address}/api/accounts/${id}`, objAccount, config)
       .then((res) => {
         if (
           currency !== accounts.find((account) => account._id === id).currency
@@ -432,6 +432,7 @@ const AccountList = () => {
                       Currency <sup style={{ color: 'red' }}>*</sup>
                     </Label>
                     <Input
+                      disabled
                       id='currencyID'
                       style={{
                         backgroundColor: '#2b3553',
@@ -470,7 +471,7 @@ const AccountList = () => {
                       id='initialAmountID'
                       type='text'
                       value={amount}
-                      placeholder={`${currencies[currency]?.symbol_native}0,00`}
+                      placeholder={`${currencies[currency]?.symbol_native}0`}
                       thousandSeparator={'.'}
                       decimalSeparator={','}
                       customInput={Input}

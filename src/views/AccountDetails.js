@@ -2,7 +2,6 @@ import { useContext, useEffect, useRef } from 'react';
 import Spinner from 'components/Spinner/Spinner';
 import NotificationAlert from 'react-notification-alert';
 import { useState } from 'react';
-import Config from '../config.json';
 import axios from 'axios';
 import { format } from 'date-fns';
 import { useHistory, useParams } from 'react-router-dom';
@@ -46,7 +45,7 @@ const AccountDetails = () => {
   const [icons, setIcons] = useState([]);
   const [modalIcons, setModalIcons] = useState(false);
   const [icon, setIcon] = useState('');
-  const [amount, setAmount] = useState(0);
+  const [amount, setAmount] = useState('');
   const [oldAmount, setOldAmount] = useState(0);
   const [formerAmount, setFormerAmount] = useState(0);
   const [amountTransactions, setAmountTransactions] = useState(0);
@@ -59,7 +58,7 @@ const AccountDetails = () => {
   const [account, setAccount] = useState('');
   const [accountId, setAccountId] = useState('');
   const [observation, setObservation] = useState('');
-  const [amountTransaction, setAmountTransaction] = useState(0);
+  const [amountTransaction, setAmountTransaction] = useState('');
   const [date, setDate] = useState('');
   const [login] = useState(
     localStorage.getItem('userInfo')
@@ -80,7 +79,7 @@ const AccountDetails = () => {
       setAccountId('');
       setObservation('');
       setAccountId('');
-      setAmountTransaction(0);
+      setAmountTransaction('');
       setDate('');
       setIsEditing(false);
       setExchangeRate(0);
@@ -90,6 +89,7 @@ const AccountDetails = () => {
   };
 
   const toggleModalIcons = () => setModalIcons(!modalIcons);
+  const address = process.env.REACT_APP_SERVER_ADDRESS;
   const handleSubmit = async (objAccount) => {
     const config = {
       headers: {
@@ -98,7 +98,7 @@ const AccountDetails = () => {
       },
     };
     await axios
-      .post(`${Config.SERVER_ADDRESS}/api/accounts`, objAccount, config)
+      .post(`${address}/api/accounts`, objAccount, config)
       .then((res) => {
         notify('You have successfully created an account');
         history.push(`/account/${res.data._id}`);
@@ -122,7 +122,7 @@ const AccountDetails = () => {
         },
       };
       const transactionsFromTheAPI = await axios.get(
-        `${Config.SERVER_ADDRESS}/api/transactions/account/${id}`,
+        `${address}/api/transactions/account/${id}`,
         config
       );
       let totalBalance = 0;
@@ -153,9 +153,7 @@ const AccountDetails = () => {
   }, [login.token]);
   useEffect(() => {
     const getAccountDetails = async () => {
-      const iconsFromTheAPI = await axios.get(
-        `${Config.SERVER_ADDRESS}/api/icons`
-      );
+      const iconsFromTheAPI = await axios.get(`${address}/api/icons`);
       setIcons(iconsFromTheAPI.data);
 
       if (id !== ':id') {
@@ -166,7 +164,7 @@ const AccountDetails = () => {
         };
 
         const accountFromTheAPI = await axios.get(
-          `${Config.SERVER_ADDRESS}/api/accounts/${id}`,
+          `${address}/api/accounts/${id}`,
           config
         );
         setAccount(accountFromTheAPI.data.account);
@@ -259,7 +257,7 @@ const AccountDetails = () => {
     };
 
     await axios
-      .delete(`${Config.SERVER_ADDRESS}/api/transactions/${transactId}`, {
+      .delete(`${address}/api/transactions/${transactId}`, {
         headers: config,
         data: {
           dueToAccount: id,
@@ -278,7 +276,8 @@ const AccountDetails = () => {
         setTransactions(
           transactions.filter((trans) => trans._id !== res.data._id)
         );
-
+        updateAccounts();
+        getAccounts();
         if (res.data.type === 'Revenue') {
           setAmount(Number((amount - res.data.ammount).toFixed(2)));
         } else if (res.data.type === 'Expense') {
@@ -286,7 +285,6 @@ const AccountDetails = () => {
         } else {
           setAmount(Number((amount + res.data.ammount).toFixed(2)));
         }
-        getAccounts();
       })
       .catch((error) => {
         console.error(error);
@@ -429,6 +427,7 @@ const AccountDetails = () => {
                   }}
                 >
                   <h1
+                    className='card-title'
                     style={{
                       marginBottom: '0',
                     }}
@@ -440,7 +439,7 @@ const AccountDetails = () => {
                     (!account?.isArchived || id !== ':id') ? ( 
                     
                     <Button 
-                    disabled={account.isArchived}
+                    disabled={account?.isArchived}
                     onClick = {
               toggleModalTransactions
             } >
@@ -528,7 +527,7 @@ const AccountDetails = () => {
                           (currencies[currency]?.symbol_native
                             ? currencies[currency]?.symbol_native
                             : '') + ' '
-                        }0,00`}
+                        }0`}
                         thousandSeparator={'.'}
                         decimalSeparator={','}
                         prefix={

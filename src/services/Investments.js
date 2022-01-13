@@ -1,5 +1,6 @@
 import axios from 'axios';
-import Config from '../config.json';
+
+const address = process.env.REACT_APP_SERVER_ADDRESS;
 
 export async function fetchInvestments(id = '', login) {
   let config = {};
@@ -11,10 +12,7 @@ export async function fetchInvestments(id = '', login) {
     };
   }
 
-  const res = await axios(
-    `${Config.SERVER_ADDRESS}/api/investments/${id}`,
-    config
-  );
+  const res = await axios(`${address}/api/investments/${id}`, config);
   return res.data;
 }
 
@@ -28,10 +26,7 @@ export async function fetchArchiveInvestments(id = '', login) {
     };
   }
 
-  const res = await axios(
-    `${Config.SERVER_ADDRESS}/api/investments/archive${id}`,
-    config
-  );
+  const res = await axios(`${address}/api/investments/archive${id}`, config);
   return res.data;
 }
 
@@ -45,9 +40,6 @@ export async function fetchAllInvestments(id = '', login) {
     };
   }
 
-  const res = await axios(
-    `${Config.SERVER_ADDRESS}/api/investments/all${id}`,
-    config
-  );
+  const res = await axios(`${address}/api/investments/all${id}`, config);
   return res.data;
 }

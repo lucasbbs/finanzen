@@ -401,11 +401,11 @@ export const getDataForTotalTaxes = (income, exchanges, defaultCurrency) => {
         .filter((key) => Object.values(key)[0].type === 'income')
         .map((key) => Object.keys(key)[0]),
     ]);
-
+    console.log(data.broker);
     incomesarray.push(
       ...data.incomes.map((value) => [
         ...Object.entries(value)[0],
-        data.broker.currency,
+        data.broker?.currency,
       ])
     );
   });
@@ -471,7 +471,10 @@ export const getGlobalAverageReturn = (investments, dateInput) => {
                 dateInput
               );
             })
-            .map((income) => Object.values(income)[0].value)
+            .map(
+              (income) =>
+                Object.values(income)[0].value - Object.values(income)[0].tax
+            )
             .reduce((acc, curr) => acc + curr, 0)
       );
 
@@ -494,7 +497,11 @@ export const getGlobalAverageReturn = (investments, dateInput) => {
         )
       )
       .filter((value) => value !== undefined)
-      .map((value) => value.map((obj) => Object.values(obj)[0].value))
+      .map((value) =>
+        value.map(
+          (obj) => Object.values(obj)[0].value - Object.values(obj)[0].tax
+        )
+      )
       .flat()
   );
 
@@ -510,7 +517,9 @@ export const getGlobalAverageReturn = (investments, dateInput) => {
       })
     )
     .filter((value) => value !== undefined)
-    .map((value) => Object.values(value)[0].value);
+    .map(
+      (value) => Object.values(value)[0].value - Object.values(value)[0].tax
+    );
 
   return currentAmounts.flat().length
     ? incomes.reduce((acc, curr) => acc + curr, 0) /
@@ -842,6 +851,7 @@ export const getDataForTheAverageInflationAllThePeriod = (
   firstPeriod = undefined,
   lastPeriod = undefined
 ) => {
+  console.log(inflation, 'this is inflation');
   if (firstPeriod === undefined || firstPeriod === '-01') {
     firstPeriod = inflation[0].data;
   }
@@ -1061,13 +1071,16 @@ export const getDataForTheTopInvestmentsTable = (
     returns.push([
       filteredInvestments[i]._id,
       filteredInvestments[i].name,
-      Object.values(incomes[i][1][0])[0].value /
+      (Object.values(incomes[i][1][0])[0].value -
+        Object.values(incomes[i][1][0])[0].tax) /
         (filteredInvestments[i].initial_amount +
           accrued_income[i] -
-          Object.values(incomes[i][1][0])[0].value),
+          Object.values(incomes[i][1][0])[0].value -
+          Object.values(incomes[i][1][0])[0].tax),
       filteredInvestments[i].initial_amount + accrued_income[i],
       filteredInvestments[i].broker.currency,
-      Object.values(incomes[i][1][0])[0].value,
+      Object.values(incomes[i][1][0])[0].value -
+        Object.values(incomes[i][1][0])[0].tax,
     ]);
   }
   return returns.sort((a, b) => b[2] - a[2]).slice(0, 7);
@@ -1075,7 +1088,34 @@ export const getDataForTheTopInvestmentsTable = (
 // Codigo usado para representar numero como percentuais
 // .toLocaleString('pt-br', { style: 'percent', minimumFractionDigits: 2 }
 
-export function setDataAccountsSpendingCategories(accounts, transactions) {
+export function setDataAccountsSpendingCategories(
+  accounts,
+  transactions,
+  firstMonth = undefined,
+  lastMonth = undefined
+) {
+  if (firstMonth) {
+    const [year, month] = firstMonth.split('-');
+    console.log(new Date(Number(year), Number(month) - 1, 0));
+    transactions = transactions.filter(
+      (trnsct) =>
+        new Date(trnsct.date) > new Date(Number(year), Number(month) - 1, 0)
+    );
+  }
+
+  if (lastMonth) {
+    const [year, month] = lastMonth.split('-');
+    transactions = transactions.filter(
+      (trnsct) =>
+        new Date(trnsct.date) <=
+        new Date(
+          new Date(Number(year), Number(month), 0).setUTCHours(23, 59, 59, 999)
+        )
+    );
+  }
+
+  console.log(transactions);
+
   const groupBy = function (xs, key) {
     return xs.reduce(function (rv, x) {
       (rv[x[key]] = rv[x[key]] || []).push(x);

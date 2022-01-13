@@ -1,5 +1,4 @@
 import axios from 'axios';
-import { format, parse } from 'date-fns';
 import Progressbar from 'components/Progress/Progress';
 import React, { useRef, useState } from 'react';
 import {
@@ -11,15 +10,9 @@ import {
   Row,
   Table,
 } from 'reactstrap';
-import Config from '../config.json';
-import { percentageFormat, reverseFormatNumber } from '../helpers/functions';
-import { fetchInvestments } from 'services/Investments';
-import ProgressbarCircle from 'components/ProgressbarCircle/ProgressbarCircle';
 import { useEffect } from 'react';
 import Spinner from '../components/Spinner/Spinner';
-import NumberFormat from 'react-number-format';
 import NotificationAlert from 'react-notification-alert';
-import { tr } from 'date-fns/locale';
 const BulkUpdaterInflations = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
   const [lengthArray, setlengthArray] = useState(0);
@@ -46,6 +39,8 @@ const BulkUpdaterInflations = () => {
     setSubmiCount(submitCount + 1);
   };
 
+  const address = process.env.REACT_APP_SERVER_ADDRESS;
+
   useEffect(() => {
     // const handlePromise = async () => {
     //   for (const inflation of inflationsBulkUpdate) {
@@ -63,7 +58,7 @@ const BulkUpdaterInflations = () => {
     // ) {}
     // console.log(investmentsBulkUpdate);
     const getInflations = async () => {
-      await axios.get(`${Config.SERVER_ADDRESS}/api/inflations`).then((res) =>
+      await axios.get(`${address}/api/inflations`).then((res) =>
         setInflations(
           res.data
             .map((inf) => {
@@ -101,11 +96,7 @@ const BulkUpdaterInflations = () => {
     };
 
     await axios
-      .post(
-        `${Config.SERVER_ADDRESS}/api/inflationsbulkupload`,
-        formData,
-        config
-      )
+      .post(`${address}/api/inflationsbulkupload`, formData, config)
       .then(async (res) => {
         const array = res.data.xlData.filter(
           (data) => Object.keys(data).length !== 0
@@ -123,7 +114,7 @@ const BulkUpdaterInflations = () => {
             },
           };
           await axios.put(
-            `${Config.SERVER_ADDRESS}/api/inflations/${String(
+            `${address}/api/inflations/${String(
               Object.keys(array[iterator])[0]
             )}`,
             {
@@ -196,9 +187,7 @@ const BulkUpdaterInflations = () => {
         <>
           <div className='row justify-content-center'>
             <Button
-              href={`${
-                Config.SERVER_ADDRESS
-              }/api/inflationsbulkupload/download/${inflations
+              href={`${address}/api/inflationsbulkupload/download/${inflations
                 .filter((inf) => inf.selected)
                 .map((inf) => inf.alpha2Code)}`}
               color='primary'
@@ -303,60 +292,6 @@ const BulkUpdaterInflations = () => {
             />
           </form>
         </>
-        {uploaded ? (
-          <>
-            <Table>
-              <thead>
-                <tr>
-                  <th>Alpha 2 Code</th>
-                  <th>Name</th>
-                  <th>Value</th>
-                </tr>
-              </thead>
-              <tbody>
-                {inflationsBulkUpdate.map((infl) => (
-                  <tr key={Object.keys(infl)}>
-                    <th scope='row'>{Object.keys(infl)}</th>
-                    <td>
-                      {
-                        inflations.find(
-                          (inf) => inf.alpha2Code === String(Object.keys(infl))
-                        )['Country Name']
-                      }
-                    </td>
-                    <td
-                      className='row align-items-center justify-content-center py-0'
-                      style={{ paddingTop: '0 !important' }}
-                    >
-                      <div></div>
-                      <ProgressbarCircle
-                        handleAddIncomeCall={isSubmited}
-                        incomesObj={{ incomes: incomesArray[infl.id] }}
-                        id={infl.id}
-                        setCounting={setCounting}
-                        isTheLastOne={
-                          inflationsBulkUpdate[inflationsBulkUpdate.length - 1]
-                            .id
-                        }
-                      />
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </Table>
-            <Row className='justify-content-center mt-4'>
-              <Button
-                color='success'
-                className='text-center'
-                onClick={() => submitHandler()}
-              >
-                Submit
-              </Button>
-            </Row>
-          </>
-        ) : (
-          <></>
-        )}
       </div>
     </>
   );

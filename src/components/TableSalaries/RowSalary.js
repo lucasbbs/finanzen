@@ -40,7 +40,7 @@ const RowSalary = ({
         <p className='title py-0 my-0'>{`Salary of ${currencyFormat(
           salary.salary,
           currency
-        )} from ${moment(salary.month).format('MMMM/yyyy')}`}</p>
+        )} from ${moment(salary.month, 'YYYY-MM').format('MMMM/yyyy')}`}</p>
       </td>
       <td className='td-actions text-right'>
         <Button

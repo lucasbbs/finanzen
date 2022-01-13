@@ -50,7 +50,6 @@ import { fetchAllInvestments } from '../../services/Investments';
 import MyTooltip from 'components/Tooltip/MyTooltip';
 import { GlobalContext } from 'context/GlobalState';
 import axios from 'axios';
-import Config from '../../config.json';
 import NotificationAlert from 'react-notification-alert';
 
 const AdminNavbar = (props) => {
@@ -58,6 +57,7 @@ const AdminNavbar = (props) => {
   useEffect(() => {
     getAccounts();
   }, []);
+  console.log(accounts);
   const [name] = useState(JSON.parse(localStorage.getItem('userInfo')).name);
   const [currencies, setCurrencies] = useState([]);
   const [filter, setFilter] = useState('');
@@ -79,13 +79,11 @@ const AdminNavbar = (props) => {
   const [title, setTitle] = useState('');
   const [message, setMessage] = useState('');
 
+  const address = process.env.REACT_APP_SERVER_ADDRESS;
   useEffect(() => {
     const getNotifications = async () => {
       const config = { headers: { Authorization: `Bearer ${login.token}` } };
-      const { data } = await axios.get(
-        `${Config.SERVER_ADDRESS}/api/notifications/`,
-        config
-      );
+      const { data } = await axios.get(`${address}/api/notifications/`, config);
 
       setNotifications(data);
     };
@@ -165,7 +163,7 @@ const AdminNavbar = (props) => {
     if (!modalNotifications && !isRead) {
       const config = { headers: { Authorization: `Bearer ${login.token}` } };
       await axios.put(
-        `${Config.SERVER_ADDRESS}/api/notifications/${id}`,
+        `${address}/api/notifications/${id}`,
         { read: true },
         config
       );
@@ -200,10 +198,7 @@ const AdminNavbar = (props) => {
   const handleDeleteNotification = async (id, attr = true) => {
     const config = { headers: { Authorization: `Bearer ${login.token}` } };
     try {
-      await axios.delete(
-        `${Config.SERVER_ADDRESS}/api/notifications/${id}`,
-        config
-      );
+      await axios.delete(`${address}/api/notifications/${id}`, config);
       setNotifications(notifications.filter((not) => not._id !== id));
       notify('You have successfully deleted your notification');
 
@@ -484,7 +479,22 @@ const AdminNavbar = (props) => {
                     </Link>
                     <span>
                       {currencyFormat(
-                        fund.initialAmmount + fund.balance,
+                        fund.initialAmmount +
+                          fund.dueToAccount.reduce(
+                            (acc, curr) =>
+                              curr.type === 'Expense' ||
+                              curr.type === 'Transfer'
+                                ? acc - curr.ammount
+                                : acc + curr.ammount,
+                            0
+                          ) +
+                          fund.dueFromAccount.reduce(
+                            (acc, curr) =>
+                              curr.exchangeRate
+                                ? acc + curr.ammount * curr.exchangeRate
+                                : acc + curr.ammount,
+                            0
+                          ),
                         fund.currency
                       )}
                     </span>

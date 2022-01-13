@@ -1,7 +1,6 @@
 import axios from 'axios';
 import React, { useEffect, useState, useRef } from 'react';
 import style from '../../assets/scss/black-dashboard-pro-react/MyCustomCSS/progressbarCircular.module.scss';
-import Config from '../../config.json';
 import NotificationAlert from 'react-notification-alert';
 
 const ProgressbarCircle = ({
@@ -39,6 +38,7 @@ const ProgressbarCircle = ({
       ? JSON.parse(localStorage.getItem('userInfo'))
       : null
   );
+  const address = process.env.REACT_APP_SERVER_ADDRESS;
   const handleAddIncome = async (incomesObj, id) => {
     const config = {
       headers: {
@@ -54,11 +54,7 @@ const ProgressbarCircle = ({
       },
     };
     await axios
-      .put(
-        `${Config.SERVER_ADDRESS}/api/investments/${id}/incomes`,
-        incomesObj,
-        config
-      )
+      .put(`${address}/api/investments/${id}/incomes`, incomesObj, config)
       .then((response) => {
         if (id === isTheLastOne) {
           notify(`You have successfully bulk updated your investments`);

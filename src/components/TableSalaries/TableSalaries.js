@@ -10,9 +10,9 @@ import {
   Table,
 } from 'reactstrap';
 import RowSalary from './RowSalary';
-import Config from '../../config.json';
 import NumberFormat from 'react-number-format';
 import { reverseFormatNumber } from 'helpers/functions';
+import { currencies } from 'views/pages/currencies';
 
 const TableSalaries = ({ handleCurrentMoney, handleTransactions }) => {
   const [id, setId] = useState('');
@@ -25,13 +25,11 @@ const TableSalaries = ({ handleCurrentMoney, handleTransactions }) => {
       : null
   );
 
+  const address = process.env.REACT_APP_SERVER_ADDRESS;
   useEffect(() => {
     const asyncSalaries = async () => {
       const config = { headers: { Authorization: `Bearer ${login.token}` } };
-      const res = await axios.get(
-        `${Config.SERVER_ADDRESS}/api/salary`,
-        config
-      );
+      const res = await axios.get(`${address}/api/salary`, config);
       setSalaries(res.data);
     };
     asyncSalaries();
@@ -50,7 +48,7 @@ const TableSalaries = ({ handleCurrentMoney, handleTransactions }) => {
       };
       await axios
         .put(
-          `${Config.SERVER_ADDRESS}/api/salary/${id}`,
+          `${address}/api/salary/${id}`,
           { salary: removeSalary.salary },
           config
         )
@@ -99,10 +97,10 @@ const TableSalaries = ({ handleCurrentMoney, handleTransactions }) => {
               background: '#2b3553',
             }}
             type='text'
-            placeholder='R$0.00'
+            placeholder={`${currencies[login.currency]?.symbol_native}0`}
             thousandSeparator={'.'}
             decimalSeparator={','}
-            prefix={'R$'}
+            prefix={`${currencies[login.currency]?.symbol_native}`}
             customInput={Input}
             onChange={(e) => {
               // if (isEdit) {

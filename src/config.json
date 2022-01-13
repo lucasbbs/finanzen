@@ -1,5 +1,5 @@
 {
-  "SERVER_ADDRESS": "http://localhost:4000",
+  "SERVER_ADDRESS": "https://finanzen-fr.herokuapp.com",
   "SERVER_ADDRESS2": "https://finanzen-fr.herokuapp.com",
   "ANOTHER_SERVER": "https://finanzen-backend.glitch.me/",
   "CLIENT_KEY_RECAPTCHA": "6LfjHuAcAAAAAL0xKz38hIznTdlIVJQ_9U1BjuuI"

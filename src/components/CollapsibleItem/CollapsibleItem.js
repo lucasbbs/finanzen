@@ -33,7 +33,7 @@ const CollapsibleItem = ({
 
     setTransactionsForTheComponent([newObjTransaction, ...transactions]);
   }, [initialAmmount, transactions]);
-  const [openedCollapse, setopenedCollapse] = useState(false);
+  const [openedCollapse, setOpenedCollapse] = useState(false);
   const type = {
     Revenue: 'plus',
     Expense: 'minus',
@@ -70,7 +70,7 @@ const CollapsibleItem = ({
           data-toggle='collapse'
           onClick={(e) => {
             e.preventDefault();
-            setopenedCollapse(!openedCollapse);
+            setOpenedCollapse(!openedCollapse);
           }}
         >
           <div className='col row justify-content-between align-items-center'>

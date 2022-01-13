@@ -22,7 +22,6 @@ import Spinner from '../components/Spinner/Spinner';
 import { currencyFormat, reverseFormatNumber } from '../helpers/functions';
 import axios from 'axios';
 import NotificationAlert from 'react-notification-alert';
-import Config from '../config.json';
 import ReactBSAlert from 'react-bootstrap-sweetalert';
 import NumberFormat from 'react-number-format';
 import MyTooltip from 'components/Tooltip/MyTooltip';
@@ -48,12 +47,13 @@ const ArchiveAccounts = () => {
   const [alert, setAlert] = useState(null);
   const [icon, setIcon] = useState(0);
   const [currency, setCurrency] = useState('');
-  const [amount, setAmount] = useState(0);
+  const [amount, setAmount] = useState('');
   // const [initialAmount, setInitialAmount] = useState(0);
   // const [hasChanged, setHasChanged] = useState(false);
 
   const [accounts, setAccounts] = useState([]);
 
+  const address = process.env.REACT_APP_SERVER_ADDRESS;
   const handleUpdate = async (objAccount, id) => {
     const config = {
       headers: {
@@ -62,7 +62,7 @@ const ArchiveAccounts = () => {
       },
     };
     await axios
-      .put(`${Config.SERVER_ADDRESS}/api/accounts/${id}`, objAccount, config)
+      .put(`${address}/api/accounts/${id}`, objAccount, config)
       .then(({ data }) => {
         console.log(data);
         objAccount['_id'] = id;
@@ -162,7 +162,7 @@ const ArchiveAccounts = () => {
       };
 
       let { data } = await axios.get(
-        `${Config.SERVER_ADDRESS}/api/accounts/archive/`,
+        `${address}/api/accounts/archive/`,
         config
       );
 
@@ -199,7 +199,7 @@ const ArchiveAccounts = () => {
     };
     console.log(`Bearer ${login.token}`);
     await axios
-      .delete(`${Config.SERVER_ADDRESS}/api/accounts/${id}`, config)
+      .delete(`${address}/api/accounts/${id}`, config)
       .then((response) => {
         success('delete');
         notify(`Account deleted successfully`);
@@ -233,11 +233,7 @@ const ArchiveAccounts = () => {
       },
     };
     await axios
-      .put(
-        `${Config.SERVER_ADDRESS}/api/accounts/${id}/unarchive`,
-        null,
-        config
-      )
+      .put(`${address}/api/accounts/${id}/unarchive`, null, config)
       .then(async (response) => {
         success();
         notify(`You have successfully unarchived your account`);
@@ -366,7 +362,7 @@ const ArchiveAccounts = () => {
                       id='initialAmountID'
                       type='text'
                       value={amount}
-                      placeholder={`${currencies[currency]?.symbol_native}0,00`}
+                      placeholder={`${currencies[currency]?.symbol_native}0`}
                       thousandSeparator={'.'}
                       decimalSeparator={','}
                       prefix={currencies[currency]?.symbol_native}

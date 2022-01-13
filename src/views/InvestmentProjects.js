@@ -8,6 +8,7 @@ import {
   Card,
   CardBody,
   CardHeader,
+  CardTitle,
   Col,
   CustomInput,
   FormGroup,
@@ -20,7 +21,6 @@ import {
   Row,
   Table,
 } from 'reactstrap';
-import Config from '../config.json';
 import NotificationAlert from 'react-notification-alert';
 import ReactBSAlert from 'react-bootstrap-sweetalert';
 
@@ -42,6 +42,8 @@ const InvestmentProjects = () => {
       ? JSON.parse(localStorage.getItem('userInfo'))
       : null
   );
+
+  const address = process.env.REACT_APP_SERVER_ADDRESS;
 
   const hideAlert = () => {
     setAlert(null);
@@ -105,7 +107,7 @@ const InvestmentProjects = () => {
     const getData = async () => {
       const config = { headers: { Authorization: `Bearer ${login.token}` } };
       const { data } = await axios.get(
-        `${Config.SERVER_ADDRESS}/api/investmentProjects/`,
+        `${address}/api/investmentProjects/`,
         config
       );
       setInvestmentProjects(data);
@@ -287,11 +289,7 @@ const InvestmentProjects = () => {
     const config = { headers: { Authorization: `Bearer ${login.token}` } };
 
     await axios
-      .post(
-        `${Config.SERVER_ADDRESS}/api/investmentProjects/`,
-        objInvestProject,
-        config
-      )
+      .post(`${address}/api/investmentProjects/`, objInvestProject, config)
       .then(({ data }) => {
         setInvestmentProjects([...investmentProjects, data]);
         notify('You have successfully saved your investment project');
@@ -322,10 +320,7 @@ const InvestmentProjects = () => {
   const handleDelete = async (id) => {
     const config = { headers: { Authorization: `Bearer ${login.token}` } };
     try {
-      await axios.delete(
-        `${Config.SERVER_ADDRESS}/api/investmentProjects/${id}`,
-        config
-      );
+      await axios.delete(`${address}/api/investmentProjects/${id}`, config);
       setInvestmentProjects([
         ...investmentProjects.filter((inv) => inv._id !== id),
       ]);
@@ -434,9 +429,12 @@ const InvestmentProjects = () => {
       {alert}
       <Card className='card-chart'>
         <CardHeader>
-          <h1>
-            <i className='tim-icons icon-chart-bar-32'></i> Investment Projects
-          </h1>
+          <Row>
+            <CardTitle className='m-0' tag='h1'>
+              <i className='tim-icons icon-chart-bar-32'></i> Investment
+              Projects
+            </CardTitle>
+          </Row>
         </CardHeader>
         <CardBody>
           <Row>

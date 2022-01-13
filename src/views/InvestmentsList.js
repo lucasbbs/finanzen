@@ -28,7 +28,6 @@ import {
 } from '../helpers/functions';
 import axios from 'axios';
 import NotificationAlert from 'react-notification-alert';
-import Config from '../config.json';
 import ReactBSAlert from 'react-bootstrap-sweetalert';
 import NumberFormat from 'react-number-format';
 import MyTooltip from 'components/Tooltip/MyTooltip';
@@ -44,6 +43,11 @@ const InvestmentsList = () => {
   const [code, setCode] = useState('');
   // const [accountsToBeDisplayed, setAccountsToBeDisplayed] = useState([]);
   const [currency, setCurrency] = useState('');
+  console.log(
+    accounts.find((account) => account.currency === currency)?.initialAmmount,
+    accounts.find((account) => account.currency === currency)?.balance,
+    'this is the value of initial Amount 2'
+  );
   const [id, setId] = useState('');
   const [name, setName] = useState('');
   const [broker, setBroker] = useState('');
@@ -52,7 +56,7 @@ const InvestmentsList = () => {
   const [indexer, setIndexer] = useState('');
   const [dueDate, setDueDate] = useState('');
   const [investmentDate, setInvestmentDate] = useState('');
-  const [initialAmount, setInitialAmount] = useState(0);
+  const [initialAmount, setInitialAmount] = useState('');
   const [initialAmount2, setInitialAmount2] = useState(0);
   const [accruedIncome, setAccruedIncome] = useState(0);
   const [hasChanged, setHasChanged] = useState(false);
@@ -68,6 +72,8 @@ const InvestmentsList = () => {
       : null
   );
 
+  const address = process.env.REACT_APP_SERVER_ADDRESS;
+
   const handleUpdate = async (investmentObj, id) => {
     const config = {
       headers: {
@@ -79,11 +85,7 @@ const InvestmentsList = () => {
       setHasChanged(false);
     }
     await axios
-      .put(
-        `${Config.SERVER_ADDRESS}/api/investments/${id}`,
-        investmentObj,
-        config
-      )
+      .put(`${address}/api/investments/${id}`, investmentObj, config)
       .then(async (response) => {
         toggle();
         notify(`Investment updated successfully`);
@@ -106,7 +108,7 @@ const InvestmentsList = () => {
 
         await axios
           .put(
-            `${Config.SERVER_ADDRESS}/api/users/${login._id}`,
+            `${address}/api/users/${login._id}`,
             { fundsToInvest: login.fundsToInvest },
             config
           )
@@ -208,7 +210,7 @@ const InvestmentsList = () => {
         },
       };
       const brokersFromTheAPI = await axios.get(
-        `${Config.SERVER_ADDRESS}/api/brokers`,
+        `${address}/api/brokers`,
         config
       );
 
@@ -261,7 +263,7 @@ const InvestmentsList = () => {
     };
     // console.log(`Bearer ${login.token}`);
     const answer = await axios
-      .delete(`${Config.SERVER_ADDRESS}/api/investments/${id}`, {
+      .delete(`${address}/api/investments/${id}`, {
         ...config,
         data: { accountSelected: account },
       })
@@ -274,7 +276,7 @@ const InvestmentsList = () => {
 
         await axios
           .put(
-            `${Config.SERVER_ADDRESS}/api/users/${login._id}`,
+            `${address}/api/users/${login._id}`,
             { fundsToInvest: login.fundsToInvest },
             config
           )
@@ -324,7 +326,7 @@ const InvestmentsList = () => {
     };
     await axios
       .put(
-        `${Config.SERVER_ADDRESS}/api/investments/${id}/archive`,
+        `${address}/api/investments/${id}/archive`,
         { accountSelected: account },
         config
       )
@@ -335,7 +337,7 @@ const InvestmentsList = () => {
 
         // await axios
         //   .put(
-        //     `${Config.SERVER_ADDRESS}/api/users/${login._id}`,
+        //     `${address}/api/users/${login._id}`,
         //     { fundsToInvest: login.fundsToInvest },
         //     config
         //   )
@@ -574,11 +576,10 @@ const InvestmentsList = () => {
                       onChange={(e) => {
                         setHasChanged(true);
                         setInitialAmount(reverseFormatNumber(e.target.value));
-                        console.log(accounts[currency] || 0);
                       }}
                       type='text'
                       value={initialAmount}
-                      placeholder={`${currencies[currency]?.symbol_native}0,00`}
+                      placeholder={`${currencies[currency]?.symbol_native}0`}
                       thousandSeparator={'.'}
                       decimalSeparator={','}
                       prefix={currencies[currency]?.symbol_native}
@@ -589,7 +590,15 @@ const InvestmentsList = () => {
                           ? formattedValue === '' ||
                               (floatValue >= 0 &&
                                 floatValue <=
-                                  initialAmount2 + (accounts[currency] || 0))
+                                  initialAmount2 +
+                                    (accounts.find(
+                                      (account) => account.currency === currency
+                                    )?.initialAmmount +
+                                      accounts.find(
+                                        (account) =>
+                                          account.currency === currency
+                                      )?.balance +
+                                      0.0 || 0))
                           : true;
                       }}
                     />

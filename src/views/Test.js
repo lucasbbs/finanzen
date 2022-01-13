@@ -1,6 +1,5 @@
 import axios from 'axios';
 import React, { useEffect, useState } from 'react';
-import Config from '../config.json';
 const Test = () => {
   const [login] = useState(
     localStorage.getItem('userInfo')
@@ -9,6 +8,8 @@ const Test = () => {
   );
   const [broker, setBroker] = useState('');
   const [brokers, setBrokers] = useState([]);
+
+  const address = process.env.REACT_APP_SERVER_ADDRESS;
   useEffect(() => {
     const asyncFunction = async () => {
       const config = {
@@ -17,7 +18,7 @@ const Test = () => {
         },
       };
       const brokersFromTheAPI = await axios.get(
-        `${Config.SERVER_ADDRESS}/api/brokers`,
+        `${address}/api/brokers`,
         config
       );
       setBrokers(brokersFromTheAPI.data);

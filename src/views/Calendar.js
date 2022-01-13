@@ -31,11 +31,13 @@ import {
   FormGroup,
   ModalFooter,
   Button,
+  CardHeader,
+  CardTitle,
+  Collapse,
 } from 'reactstrap';
 import NotificationAlert from 'react-notification-alert';
 import 'moment-recur';
 import axios from 'axios';
-import Config from '../config.json';
 import {
   RGBAToHexA,
   contrast,
@@ -49,6 +51,14 @@ const localizer = momentLocalizer(moment);
 // const DnDCalendar = withDragAndDrop(BigCalendar);
 
 const Calendar = () => {
+  const [name, setName] = useState('');
+  const [nestedModal, setNestedModal] = useState(false);
+  const [closeAll, setCloseAll] = useState(false);
+
+  const [investmentProjectId, setInvestmentProjectId] = useState('');
+  const [calendarslt, setCalendarslt] = useState('');
+  const [openedCollapseOne, setopenedCollapseOne] = useState(true);
+  const [openedCollapseTwo, setopenedCollapseTwo] = useState(false);
   const [isEditable, setIsEditable] = useState(true);
   const [displayColorPicker, setDisplayColorPicker] = useState(false);
   const [color, setColor] = useState(undefined);
@@ -57,6 +67,7 @@ const Calendar = () => {
       ? JSON.parse(localStorage.getItem('userInfo'))
       : null
   );
+  const [modalSelectCalendar, setModalSelectCalendar] = useState(false);
   const [calendarEvents, setCalendarEvents] = useState([]);
   const [alert, setAlert] = useState(null);
   const [view, setView] = useState('month');
@@ -72,12 +83,17 @@ const Calendar = () => {
   const [isRecurringEvent, setIsRecurringEvent] = useState(false);
   const [description, setDescription] = useState('');
   const [id, setId] = useState('');
+  const [calendarId, setCalendarId] = useState('');
   const [title, setTitle] = useState('');
   const [startFrom, setStartFrom] = useState('');
   const [endAt, setEndAt] = useState('');
   const [modal, setModal] = useState(false);
   const [startRecurrenceFrom, setStartRecurrenceFrom] = useState('');
+  const [inputMonth, setInputMonth] = useState(
+    new Date().toISOString().slice(0, 7)
+  );
 
+  const address = process.env.REACT_APP_SERVER_ADDRESS;
   const selectedEvent = (event, pointerEvent) => {
     if (pointerEvent.nativeEvent.offsetX <= 13) {
       warningWithConfirmAndCancelMessage(event);
@@ -111,29 +127,67 @@ const Calendar = () => {
   };
 
   useEffect(() => {
+    if (calendarslt !== '') {
+      setCalendarEvents(
+        ...calendars
+          .filter((clnd) => clnd._id === calendarslt)
+          .map((clnd) =>
+            clnd.eventCalendars.map((event) => ({
+              ...event,
+              color: event.color ? event.color : clnd.color,
+            }))
+          )
+      );
+
+      console.log(
+        ...calendars
+          .filter((clnd) => clnd._id === calendarslt)
+          .map((clnd) =>
+            clnd.eventCalendars.map((event) => ({
+              ...event,
+              color: event.color ? event.color : clnd.color,
+            }))
+          )
+      );
+    } else {
+      setCalendarEvents(
+        calendars
+          .map((clnd) =>
+            clnd.eventCalendars.map((event) => ({
+              ...event,
+              color: event.color ? event.color : clnd.color,
+            }))
+          )
+          .flat()
+      );
+    }
+  }, [calendarslt]);
+
+  useEffect(() => {
     const getEvents = async () => {
       const config = { headers: { Authorization: `Bearer ${login.token}` } };
-      let { data } = await axios.get(
-        `${Config.SERVER_ADDRESS}/api/calendars/`,
-        config
-      );
+      let { data } = await axios.get(`${address}/api/calendars/`, config);
       setCalendars(data);
       setInitialEvents(
-        ...data.map((calendar) =>
-          calendar.eventCalendars.map((evt) => ({
-            ...evt,
-            start: new Date(evt.start),
-            end: new Date(evt.end),
-          }))
-        )
+        data
+          .map((calendar) =>
+            calendar.eventCalendars.map((evt) => ({
+              ...evt,
+              start: new Date(evt.start),
+              end: new Date(evt.end),
+            }))
+          )
+          .flat()
       );
       setCalendarEvents(
-        ...data.map((calendar) =>
-          calendar.eventCalendars.map((event) => ({
-            ...event,
-            color: calendar.color,
-          }))
-        )
+        data
+          .map((calendar) =>
+            calendar.eventCalendars.map((event) => ({
+              ...event,
+              color: calendar.color,
+            }))
+          )
+          .flat()
       );
     };
     getEvents();
@@ -320,15 +374,17 @@ const Calendar = () => {
       obj.until = until;
       obj.startRecurrenceFrom = ISODateFormat(startRecurrenceFrom);
     }
+
     let data;
     if (id === '') {
       try {
-        data = await axios.post(
-          `${Config.SERVER_ADDRESS}/api/eventCalendars/`,
-          obj,
-          config
-        );
+        data = await axios.post(`${address}/api/eventCalendars/`, obj, config);
         data = data.data;
+
+        calendars[
+          calendars.findIndex((clndr) => clndr._id === data.calendar)
+        ].eventCalendars.push(data);
+
         newEvents.push({
           ...data,
           start: new Date(data.start),
@@ -350,13 +406,28 @@ const Calendar = () => {
     } else {
       try {
         data = await axios.put(
-          `${Config.SERVER_ADDRESS}/api/eventCalendars/${id}`,
+          `${address}/api/eventCalendars/${id}`,
           obj,
           config
         );
         data = data.data;
         const pickedEvent = newEvents.findIndex((evt) => evt._id === id);
-        newEvents[pickedEvent] = data;
+        const indexCalendar = calendars.findIndex(
+          (clndr) => clndr._id === data.calendar
+        );
+        const indexEventCalendar = calendars[
+          indexCalendar
+        ].eventCalendars.findIndex((evt) => evt._id === data._id);
+        calendars[indexCalendar].eventCalendars[indexEventCalendar] = {
+          ...data,
+          start: new Date(data.start),
+          end: new Date(data.end),
+        };
+        newEvents[pickedEvent] = {
+          ...data,
+          start: new Date(data.start),
+          end: new Date(data.end),
+        };
         handleEvents();
         toggle();
         notify(
@@ -370,6 +441,7 @@ const Calendar = () => {
           'danger'
         );
       }
+      console.log(calendars);
     }
     function handleEvents() {
       if (isRecurringEvent) {
@@ -466,7 +538,7 @@ const Calendar = () => {
     };
     try {
       const { data } = await axios.put(
-        `${Config.SERVER_ADDRESS}/api/eventCalendars/${event._id}`,
+        `${address}/api/eventCalendars/${event._id}`,
         obj,
         config
       );
@@ -520,13 +592,42 @@ const Calendar = () => {
       );
     }
   };
+  const deleteCalendar = async (id) => {
+    const config = { headers: { Authorization: `Bearer ${login.token}` } };
+    try {
+      const { data } = await axios.delete(
+        `${address}/api/calendars/${id}`,
+        config
+      );
+      success('calendar');
+      setCalendars(calendars.filter((calendar) => calendar._id !== id));
+      setCalendarEvents(
+        calendarEvents.filter((event) => event.calendar !== id)
+      );
+      notify('You have succesfully deleted a calendar and all of its events');
+    } catch (error) {
+      notify(
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message,
+        'danger'
+      );
+    }
+  };
   const deleteEvent = async (id) => {
     const config = { headers: { Authorization: `Bearer ${login.token}` } };
     try {
-      await axios.delete(
-        `${Config.SERVER_ADDRESS}/api/eventCalendars/${id}`,
+      const { data } = await axios.delete(
+        `${address}/api/eventCalendars/${id}`,
         config
       );
+
+      const indexCalendar = calendars.findIndex(
+        (clndr) => clndr._id === data.calendar
+      );
+      calendars[indexCalendar].eventCalendars = calendars[
+        indexCalendar
+      ].eventCalendars.filter((evt) => evt._id !== id);
       setCalendarEvents(calendarEvents.filter((evt) => evt._id !== id));
       setRecurringEvents(recurringEvents.filter((evt) => evt._id !== id));
       successDeleteRecurring();
@@ -585,11 +686,18 @@ const Calendar = () => {
     };
   };
 
-  const closeBtn = (
-    <button color='danger' className='close' onClick={() => toggle()}>
-      <span style={{ color: 'white' }}>×</span>
-    </button>
-  );
+  const closeBtn = (fn) => {
+    return (
+      <button color='danger' className='close' onClick={() => fn()}>
+        <span style={{ color: 'white' }}>×</span>
+      </button>
+    );
+  };
+
+  const toggleModalSelectCalendar = () => {
+    setModalSelectCalendar(!modalSelectCalendar);
+  };
+
   const toggle = () => {
     setModal(!modal);
     if (modal) {
@@ -635,11 +743,11 @@ const Calendar = () => {
         confirmBtnBsStyle='success'
         btnSize=''
       >
-        Your recurring event was deleted...
+        Your event was deleted...
       </ReactBSAlert>
     );
   };
-  const success = () => {
+  const success = (type = 'event') => {
     setAlert(
       <ReactBSAlert
         success
@@ -652,7 +760,9 @@ const Calendar = () => {
         confirmBtnBsStyle='success'
         btnSize=''
       >
-        Your event was deleted...
+        {type === 'event'
+          ? 'Your event was deleted...'
+          : 'Your calendar was deleted'}
       </ReactBSAlert>
     );
   };
@@ -670,28 +780,28 @@ const Calendar = () => {
       ></ReactBSAlert>
     );
   };
-  const warningWithConfirmAndCancelMessage = (event) => {
+  const warningWithConfirmAndCancelMessage = (event, type = 'event') => {
     setAlert(
       <ReactBSAlert
         warning
         style={{ display: 'block', marginTop: '-100px' }}
         title='Are you sure?'
-        onConfirm={() => {
-          try {
-            handleDelete();
-          } catch (error) {}
-        }}
-        onCancel={() => cancelDelete()}
-        confirmBtnBsStyle='success'
-        cancelBtnBsStyle='danger'
-        confirmBtnText='Yes, delete!'
         customButtons={
           <>
             <Button color='danger' onClick={() => cancelDelete()}>
               Cancel
             </Button>
 
-            <Button color='success' onClick={() => deleteEvent(event._id)}>
+            <Button
+              color='success'
+              onClick={() => {
+                if (type === 'event') {
+                  deleteEvent(event._id);
+                } else {
+                  deleteCalendar(event);
+                }
+              }}
+            >
               {event.recurrent
                 ? 'Delete all the event for this recurrence'
                 : 'Delete'}
@@ -704,16 +814,65 @@ const Calendar = () => {
             ) : null}
           </>
         }
-        cancelBtnText='Cancel'
         showCancel
         btnSize=''
       >
-        you will not be able to restore this event data
+        {type === 'event'
+          ? 'you will not be able to restore this event data'
+          : 'you will not be able to restore this calendar'}
       </ReactBSAlert>
     );
   };
   const hideAlert = () => {
     setAlert(null);
+  };
+  const toggleNested = () => {
+    if (nestedModal) {
+      setColor(undefined);
+      setName('');
+      setId('');
+    }
+    setNestedModal(!nestedModal);
+    setCloseAll(false);
+  };
+  const toggleAll = () => {
+    setNestedModal(!nestedModal);
+    setCloseAll(true);
+  };
+
+  const handleSave = async (objCalendar) => {
+    const config = { headers: { Authorization: `Bearer ${login.token}` } };
+    try {
+      if (calendarId === '') {
+        const { data } = await axios.post(
+          `${address}/api/calendars`,
+          objCalendar,
+          config
+        );
+        data['eventCalendars'] = [];
+        setCalendars([...calendars, data]);
+        notify('You have successfully created a calendar');
+      } else {
+        const { data } = await axios.put(
+          `${address}/api/calendars/${calendarId}`,
+          objCalendar,
+          config
+        );
+        const newCalendars = calendars;
+        newCalendars[
+          calendars.findIndex((calendar) => calendar._id === calendarId)
+        ] = data;
+        setCalendars([...newCalendars]);
+        notify('You have successfully updated a calendar');
+      }
+    } catch (error) {
+      notify(
+        error.response && error.response.data.message
+          ? error.response.data.message
+          : error.message,
+        'danger'
+      );
+    }
   };
 
   return (
@@ -729,7 +888,9 @@ const Calendar = () => {
           modalClassName='modal-black'
           autoFocus={false}
         >
-          <ModalHeader close={closeBtn}>Add New Calendar Event</ModalHeader>
+          <ModalHeader close={closeBtn(toggle)}>
+            Add New Calendar Event
+          </ModalHeader>
           <ModalBody>
             <Label>Calendar</Label>
             <Input
@@ -937,9 +1098,308 @@ const Calendar = () => {
             </Button>
           </ModalFooter>
         </Modal>
+
+        <Modal
+          isOpen={modalSelectCalendar}
+          toggle={() => toggleModalSelectCalendar()}
+          modalClassName='modal-black'
+          autoFocus={false}
+        >
+          <ModalHeader close={closeBtn(toggleModalSelectCalendar)}>
+            Handle your calendars
+          </ModalHeader>
+          <ModalBody>
+            <Modal
+              modalClassName='modal-black'
+              isOpen={nestedModal}
+              toggle={() => {
+                toggleNested();
+              }}
+              onClosed={closeAll ? toggleModalSelectCalendar : undefined}
+            >
+              <ModalHeader close={closeBtn(toggleNested)}>
+                Create a new calendar
+              </ModalHeader>
+              <ModalBody>
+                <Label htmlFor='nameCalendarId'>Name</Label>
+                <Input
+                  value={name}
+                  onChange={(e) => setName(e.target.value)}
+                  id='nameCalendarId'
+                />
+                <Label htmlFor='ColorPickerId'>Color</Label>
+                <br />
+                <button
+                  style={{
+                    borderRadius: '20px',
+                    color:
+                      contrast(
+                        [255, 255, 255],
+                        [color?.r, color?.g, color?.b]
+                      ) >= 4
+                        ? 'white'
+                        : 'black',
+                    background: color
+                      ? RGBAToHexA(color.r, color.g, color.b, color.a)
+                      : null,
+                    outline: 'none',
+                    border: 'none',
+                  }}
+                  onClick={handleClick}
+                >
+                  Pick Color
+                </button>
+                {displayColorPicker ? (
+                  <div style={popover}>
+                    <div style={cover} onClick={handleClick} />
+                    <ChromePicker
+                      id='ColorPickerId'
+                      color={color}
+                      onChange={(e) => setColor(e.rgb)}
+                    />
+                  </div>
+                ) : null}
+                <br />
+              </ModalBody>
+              <ModalFooter>
+                <Button
+                  color='primary'
+                  onClick={() => {
+                    handleSave({
+                      name,
+                      color: color
+                        ? RGBAToHexA(color.r, color.g, color.b, color.a)
+                        : undefined,
+                    });
+                    toggleNested();
+                  }}
+                >
+                  Save
+                </Button>
+                <Button
+                  onClick={() => {
+                    handleSave({
+                      name,
+                      color: color
+                        ? RGBAToHexA(color.r, color.g, color.b, color.a)
+                        : undefined,
+                    });
+                    toggleAll();
+                  }}
+                >
+                  Save and Close All
+                </Button>
+              </ModalFooter>
+            </Modal>
+            <div
+              aria-multiselectable={true}
+              className='card-collapse'
+              id='accordion'
+              role='tablist'
+            >
+              <Card className='card-plain'>
+                <CardHeader role='tab'>
+                  <a
+                    aria-expanded={openedCollapseOne}
+                    href='#'
+                    data-parent='#accordion'
+                    data-toggle='collapse'
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setopenedCollapseOne(!openedCollapseOne);
+                      setopenedCollapseTwo(false);
+                    }}
+                  >
+                    Filter Calendar
+                    <i className='tim-icons icon-minimal-down' />
+                  </a>
+                </CardHeader>
+                <Collapse role='tabpanel' isOpen={openedCollapseOne}>
+                  <CardBody>
+                    <Input
+                      id='calendarSelectorId'
+                      type='select'
+                      style={{ backgroundColor: '#27293d' }}
+                    >
+                      <option value=''>Select all</option>
+                      {calendars.map((calendar) => (
+                        <option key={calendar._id} value={calendar._id}>
+                          {calendar.name}
+                        </option>
+                      ))}
+                    </Input>
+                    <div className='mt-3 row justify-content-center'>
+                      <Button
+                        color='success'
+                        onClick={() => {
+                          setCalendarslt(
+                            document.querySelector('#calendarSelectorId').value
+                          );
+                          toggleModalSelectCalendar();
+                        }}
+                      >
+                        Filter
+                      </Button>
+                    </div>
+                  </CardBody>
+                </Collapse>
+              </Card>
+              <Card className='card-plain'>
+                <CardHeader role='tab'>
+                  <a
+                    aria-expanded={openedCollapseTwo}
+                    href='#'
+                    data-parent='#accordion'
+                    data-toggle='collapse'
+                    onClick={(e) => {
+                      e.preventDefault();
+                      setopenedCollapseTwo(!openedCollapseTwo);
+                      setopenedCollapseOne(false);
+                    }}
+                  >
+                    Manage Calendars
+                    <i className='tim-icons icon-minimal-down' />
+                  </a>
+                </CardHeader>
+                <Collapse role='tabpanel' isOpen={openedCollapseTwo}>
+                  <CardBody>
+                    {calendars.map((calendar) => (
+                      <div
+                        className='row justify-content-between'
+                        key={calendar._id}
+                      >
+                        <FormGroup check className='form-check-radio'>
+                          <Label check>
+                            <Input
+                              checked={calendar._id === investmentProjectId}
+                              onChange={(e) =>
+                                setInvestmentProjectId(e.target.value)
+                              }
+                              value={calendar._id}
+                              id='exampleRadios2'
+                              name='radiosToSelectProject'
+                              type='radio'
+                            />
+                            <span className='form-check-sign' />
+                            {calendar.name}
+                          </Label>
+                        </FormGroup>
+                        <div>
+                          <Button
+                            className='btn-link'
+                            data-id={calendar._id}
+                            onClick={
+                              (e) => {
+                                setName(
+                                  calendars.find(
+                                    (calendar) =>
+                                      calendar._id ===
+                                      e.currentTarget.getAttribute('data-id')
+                                  ).name
+                                );
+                                setColor(
+                                  hexAToRGBA(
+                                    calendars.find(
+                                      (calendar) =>
+                                        calendar._id ===
+                                        e.currentTarget.getAttribute('data-id')
+                                    ).color
+                                  )
+                                );
+                                setCalendarId(
+                                  e.currentTarget.getAttribute('data-id')
+                                );
+
+                                toggleNested();
+                              }
+                              // warningWithConfirmAndCancelMessage(
+                              //   e.currentTarget.getAttribute('data-id'),
+                              //   'calendar'
+                              // )
+                            }
+                            color='warning'
+                          >
+                            <i className='fas fa-pencil-alt'></i>
+                          </Button>
+                          <Button
+                            className='btn-link'
+                            data-id={calendar._id}
+                            onClick={(e) =>
+                              warningWithConfirmAndCancelMessage(
+                                e.currentTarget.getAttribute('data-id'),
+                                'calendar'
+                              )
+                            }
+                            color='danger'
+                          >
+                            <i className='fas fa-trash-alt'></i>
+                          </Button>
+                        </div>
+                      </div>
+                    ))}
+                    <Row>
+                      <Button className='m-0' onClick={toggleNested}>
+                        New Calendar
+                      </Button>
+                    </Row>
+                  </CardBody>
+                </Collapse>
+              </Card>
+            </div>
+          </ModalBody>
+          <ModalFooter></ModalFooter>
+        </Modal>
+
         <Row>
           <Col className='ml-auto mr-auto' md='10'>
             <Card className='card-calendar'>
+              <CardHeader>
+                <CardTitle className='row justify-content-between' tag='h2'>
+                  <Col>
+                    <div>
+                      <i className='tim-icons icon-calendar-60'></i> Calendar
+                    </div>
+                  </Col>
+                  <Col>
+                    <Input
+                      className='mx-auto'
+                      style={{
+                        width: '290px',
+                        marginTop: '0',
+                        fontSize: '1.2rem',
+                      }}
+                      type='month'
+                      value={inputMonth}
+                      onChange={(e) => {
+                        const diffStart =
+                          new Date().getTime() -
+                          new Date(
+                            new Date().getFullYear(),
+                            new Date().getMonth(),
+                            new Date().getDate()
+                          ).getTime();
+                        setInputMonth(e.target.value);
+                        setDate(
+                          new Date(
+                            new Date(e.target.value + '-01').getTime() +
+                              diffStart
+                          )
+                        );
+                      }}
+                    ></Input>
+                  </Col>
+
+                  <Col>
+                    <Button
+                      type='button'
+                      style={{ float: 'right' }}
+                      onClick={() => toggleModalSelectCalendar()}
+                    >
+                      Select Calendar
+                    </Button>
+                  </Col>
+                </CardTitle>
+              </CardHeader>
               <CardBody>
                 <BigCalendar
                   selectable

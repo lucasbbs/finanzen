@@ -3,7 +3,6 @@ import { Button, Col, Input, Label, Row, Table } from 'reactstrap';
 import axios from 'axios';
 import NotificationAlert from 'react-notification-alert';
 import Spinner from '../components/Spinner/Spinner';
-import Config from '../config.json';
 import { countries } from 'views/pages/countries';
 import { currencies } from 'views/pages/currencies';
 import ImageUpload from 'components/CustomUpload/ImageUpload';
@@ -29,6 +28,9 @@ const BrokerDetails = () => {
   const [isArchived, setIsArchived] = useState(false);
 
   const { id } = useParams();
+
+  const address = process.env.REACT_APP_SERVER_ADDRESS;
+
   useEffect(() => {
     const getBrokerDetails = async () => {
       if (id !== ':id') {
@@ -38,17 +40,16 @@ const BrokerDetails = () => {
           },
         };
         const investmentsFromApi = await axios.get(
-          `${Config.SERVER_ADDRESS}/api/investments/all`,
+          `${address}/api/investments/all`,
           config
         );
         setinvestments(investmentsFromApi.data);
         setIsLoading(true);
 
         const brokerFromTheAPI = await axios.get(
-          `${Config.SERVER_ADDRESS}/api/brokers/${id}`,
+          `${address}/api/brokers/${id}`,
           config
         );
-        console.log(brokerFromTheAPI);
         setName(brokerFromTheAPI.data['broker'].name);
         setCountry(brokerFromTheAPI.data['broker'].country);
         setCurrency(brokerFromTheAPI.data['broker'].currency);
@@ -91,7 +92,7 @@ const BrokerDetails = () => {
         };
 
         await axios
-          .post(`${Config.SERVER_ADDRESS}/api/uploadImages`, formData, config)
+          .post(`${address}/api/uploadImages`, formData, config)
           .then(async (res) => {
             const filepath = res.data.filepath.replace('\\', '/');
             const config = {
@@ -102,7 +103,7 @@ const BrokerDetails = () => {
             };
             await axios
               .post(
-                `${Config.SERVER_ADDRESS}/api/brokers/`,
+                `${address}/api/brokers/`,
                 {
                   name,
                   country,
@@ -141,7 +142,7 @@ const BrokerDetails = () => {
       };
       await axios
         .post(
-          `${Config.SERVER_ADDRESS}/api/brokers/`,
+          `${address}/api/brokers/`,
           {
             name,
             country,
@@ -192,10 +193,15 @@ const BrokerDetails = () => {
             <Row className='justify-content-center'>
               <div
                 style={{
-                  background: `url(${Config.SERVER_ADDRESS}${filePath}) no-repeat center center / contain `,
+                  background: `url(${
+                    filePath === '/uploadImages/defaultImage.png'
+                      ? address + filePath
+                      : filePath
+                  }) no-repeat center center / contain `,
                   maxWidth: '700px',
                   minWidth: '500px',
                   minHeight: '120px',
+                  test: 'teste',
                 }}
                 alt={name}
               />
@@ -210,7 +216,7 @@ const BrokerDetails = () => {
                     marginBottom: '30px',
                   }}
                 >
-                  <h1 style={{ marginBottom: '0' }}>
+                  <h1 className='card-title' style={{ marginBottom: '0' }}>
                     <i className='far fa-handshake'></i> {name}
                   </h1>
                 </div>
@@ -317,10 +323,16 @@ const BrokerDetails = () => {
                                 )}
                               </td>
                               <td style={{ textAlign: 'right' }}>
-                                {currencyFormat(investment.initial_amount)}
+                                {currencyFormat(
+                                  investment.initial_amount,
+                                  currency
+                                )}
                               </td>
                               <td style={{ textAlign: 'right' }}>
-                                {currencyFormat(investment.accrued_income)}
+                                {currencyFormat(
+                                  investment.accrued_income,
+                                  currency
+                                )}
                               </td>
                             </tr>
                           ))}
@@ -345,7 +357,8 @@ const BrokerDetails = () => {
                                   .reduce(
                                     (acc, curr) => acc + curr.initial_amount,
                                     0
-                                  )
+                                  ),
+                                currency
                               )}
                             </td>
                             <td style={{ textAlign: 'right' }}>
@@ -360,7 +373,8 @@ const BrokerDetails = () => {
                                   .reduce(
                                     (acc, curr) => acc + curr.accrued_income,
                                     0
-                                  )
+                                  ),
+                                currency
                               )}
                             </td>
                           </tr>
@@ -384,7 +398,8 @@ const BrokerDetails = () => {
                                 .reduce(
                                   (acc, curr) => acc + curr.initial_amount,
                                   0
-                                )
+                                ),
+                              currency
                             )}
                           </td>
                           <td style={{ textAlign: 'right' }}>
@@ -399,7 +414,8 @@ const BrokerDetails = () => {
                                 .reduce(
                                   (acc, curr) => acc + curr.accrued_income,
                                   0
-                                )
+                                ),
+                              currency
                             )}
                           </td>
                         </tr>
