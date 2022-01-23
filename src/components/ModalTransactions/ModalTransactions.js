@@ -100,7 +100,7 @@ const ModalTransactions = ({
         { currencies: [currency], localCurrency: accountExchange?.currency },
         config
       );
-      console.log(response);
+      // console.log(response);
       if (response.status === 200) {
         setExchangeRate(
           response.data[`${currency}_${accountExchange?.currency}`]
@@ -119,7 +119,7 @@ const ModalTransactions = ({
   );
 
   const handleAddTransaction = async (objTransaction) => {
-    console.log(objTransaction);
+    // console.log(objTransaction);
     const config = { headers: { Authorization: `Bearer ${token}` } };
     if (transactionId === '') {
       await axios
@@ -197,7 +197,7 @@ const ModalTransactions = ({
             transactions.sort((a, b) => new Date(a.date) - new Date(b.date))
           );
           toggleModalTransactions();
-          console.log(amount, oldAmount, accountAmount, res.data.ammount);
+          // console.log(amount, oldAmount, accountAmount, res.data.ammount);
           if (res.data.type === 'Revenue') {
             setAccountAmount(
               Number((accountAmount + res.data.ammount - oldAmount).toFixed(2))
@@ -300,7 +300,8 @@ const ModalTransactions = ({
           {selected === 'Transfer' ? (
             <>
               <Label className='mt-3' htmlFor='destinationAccountId'>
-                Destination Account <sup style={{ color: 'red' }}>*</sup>
+                Destination Account
+                <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
               </Label>
               <Input
                 disabled={isEditing}
@@ -332,7 +333,7 @@ const ModalTransactions = ({
           ) : (
             <>
               <Label className='mt-3' htmlFor='categorySelectorId'>
-                Category <sup style={{ color: 'red' }}>*</sup>
+                Category <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
               </Label>
               <Input
                 required
@@ -368,7 +369,8 @@ const ModalTransactions = ({
             id='observationId'
           />
           <Label className='mt-3' htmlFor='valueTransactionId'>
-            Value <sup style={{ color: 'red' }}>*</sup>
+            Value
+            <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
           </Label>
           <NumberFormat
             required

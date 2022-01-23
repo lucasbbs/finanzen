@@ -43,7 +43,7 @@ function MyPopover({ target, id, handleDelete }) {
                   alignItems: 'baseline',
                 }}
               >
-                <i className='tim-icons icon-trash-simple' />{' '}
+                <i className='tim-icons icon-trash-simple' />
                 <span> Deletar</span>
               </strong>
             </Link>

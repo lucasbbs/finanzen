@@ -481,9 +481,9 @@ const User = () => {
   };
   const askForNotificationPermission = (condition) => {
     Notification.requestPermission(function (result) {
-      console.log('User Choice', result);
+      // console.log('User Choice', result);
       if (result !== 'granted') {
-        console.log('No notification permission granted!');
+        // console.log('No notification permission granted!');
       } else {
         configurePushSub(condition);
       }
@@ -496,21 +496,21 @@ const User = () => {
     }
     let hasUnsubscribed = false;
     var reg;
-    console.log(
-      'running',
-      navigator.serviceWorker,
-      navigator.serviceWorker.ready
-    );
+    // console.log(
+    //   'running',
+    //   navigator.serviceWorker,
+    //   navigator.serviceWorker.ready
+    // );
     navigator.serviceWorker.ready
       .then(function (swreg) {
-        console.log(swreg, 'navigator has loaded');
+        // console.log(swreg, 'navigator has loaded');
         reg = swreg;
         return swreg.pushManager.getSubscription();
       })
       .then((sub) => {
         if (!!sub) {
           return sub.unsubscribe().then(function (s) {
-            console.log('has unsubscribed 1,2,3');
+            // console.log('has unsubscribed 1,2,3');
             hasUnsubscribed = true;
             return navigator.serviceWorker.ready;
           });
@@ -553,9 +553,8 @@ const User = () => {
           };
           const gpuTier = await getGPUTier();
           const info = getOperatingSystemName(this);
-          console.log(info);
+          // console.log(info);
           if (hasUnsubscribed) {
-            console.log('TESTE DE DELEÇÃO DE EVENTO');
             await axios.put(
               `${address}/api/pushNotifications/id`,
               {
@@ -592,8 +591,8 @@ const User = () => {
       .then(function (res) {
         displayConfirmNotification();
       })
-      .catch(function (err) {
-        console.log(err);
+      .catch(function (error) {
+        console.error(error);
       });
   }
   function displayConfirmNotification() {

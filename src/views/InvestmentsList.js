@@ -43,11 +43,11 @@ const InvestmentsList = () => {
   const [code, setCode] = useState('');
   // const [accountsToBeDisplayed, setAccountsToBeDisplayed] = useState([]);
   const [currency, setCurrency] = useState('');
-  console.log(
-    accounts.find((account) => account.currency === currency)?.initialAmmount,
-    accounts.find((account) => account.currency === currency)?.balance,
-    'this is the value of initial Amount 2'
-  );
+  // console.log(
+  //   accounts.find((account) => account.currency === currency)?.initialAmmount,
+  //   accounts.find((account) => account.currency === currency)?.balance,
+  //   'this is the value of initial Amount 2'
+  // );
   const [id, setId] = useState('');
   const [name, setName] = useState('');
   const [broker, setBroker] = useState('');
@@ -228,8 +228,8 @@ const InvestmentsList = () => {
       //   localStorage.removeItem('filter');
       // }
       setInvestment(investments.investments);
-      console.log(investments);
-      console.log(investment);
+      // console.log(investments);
+      // console.log(investment);
       if (investments.hasLoaded) {
         setIsLoading(false);
       }
@@ -281,7 +281,7 @@ const InvestmentsList = () => {
             config
           )
           .then((res) => {
-            console.log(response.data.invest.broker.currency);
+            // console.log(response.data.invest.broker.currency);
             login.fundsToInvest[response.data.invest.broker.currency] =
               login.fundsToInvest[response.data.invest.broker.currency] || 0;
             login.fundsToInvest[response.data.invest.broker.currency] +=
@@ -445,7 +445,8 @@ const InvestmentsList = () => {
                 }}
               >
                 <Label htmlFor='nameID'>
-                  Name <sup style={{ color: 'red' }}>*</sup>
+                  Name
+                  <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                 </Label>
                 <Input
                   id='nameID'
@@ -460,7 +461,8 @@ const InvestmentsList = () => {
                 <Row style={{ marginBottom: '10px' }}>
                   <Col md='3' style={{ paddingRight: '0' }}>
                     <Label htmlFor='brokerID'>
-                      Broker <sup style={{ color: 'red' }}>*</sup>
+                      Broker
+                      <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                     </Label>
                     <Input
                       id='brokerID'
@@ -469,7 +471,7 @@ const InvestmentsList = () => {
                       type='select'
                       value={broker}
                       onChange={(e) => {
-                        console.log(broker, e.target.value);
+                        // console.log(broker, e.target.value);
                         setBroker(e.target.value);
                         setCurrency(
                           brokers.find(
@@ -490,7 +492,8 @@ const InvestmentsList = () => {
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
                     <Label htmlFor='typeID'>
-                      Type <sup style={{ color: 'red' }}>*</sup>
+                      Type
+                      <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                     </Label>
                     <Input
                       id='typeID'
@@ -510,7 +513,8 @@ const InvestmentsList = () => {
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
                     <Label htmlFor='rateID'>
-                      Rate <sup style={{ color: 'red' }}>*</sup>
+                      Rate
+                      <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                     </Label>
                     <Input
                       id='rateID'
@@ -522,7 +526,8 @@ const InvestmentsList = () => {
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
                     <Label htmlFor='indexerID'>
-                      Indexer <sup style={{ color: 'red' }}>*</sup>
+                      Indexer
+                      <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                     </Label>
                     <Input
                       id='indexerID'
@@ -542,7 +547,8 @@ const InvestmentsList = () => {
                   </Col>
                   <Col md='3' style={{ paddingRight: '0' }}>
                     <Label htmlFor='investmentDateID'>
-                      Investment date <sup style={{ color: 'red' }}>*</sup>
+                      Investment date
+                      <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                     </Label>
                     <Input
                       id='investmentDateID'
@@ -556,7 +562,8 @@ const InvestmentsList = () => {
                   </Col>
                   <Col md='3' style={{ paddingRight: '0' }}>
                     <Label htmlFor='dueDateID'>
-                      Due date <sup style={{ color: 'red' }}>*</sup>
+                      Due date
+                      <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                     </Label>
                     <Input
                       id='dueDateID'
@@ -568,7 +575,8 @@ const InvestmentsList = () => {
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
                     <Label htmlFor='initialAmountID'>
-                      Initial amount <sup style={{ color: 'red' }}>*</sup>
+                      Initial amount
+                      <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                     </Label>
                     <NumberFormat
                       id='initialAmountID'
@@ -605,7 +613,8 @@ const InvestmentsList = () => {
                   </Col>
                   <Col md='3'>
                     <Label htmlFor='accountID'>
-                      Account <sup style={{ color: 'red' }}>*</sup>
+                      Account
+                      <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                     </Label>
                     <Input
                       id='accountID'
@@ -636,7 +645,8 @@ const InvestmentsList = () => {
                     md='2'
                   >
                     <Label htmlFor='codeId'>
-                      Code <sup style={{ color: 'red' }}>*</sup>
+                      Code
+                      <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                     </Label>
                     <Input
                       required={type === 'Debênture' && currency === 'BRL'}

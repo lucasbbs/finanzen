@@ -42,7 +42,7 @@ const Verify = () => {
     });
   }, []);
   const handleSubmit = async (code) => {
-    console.log(code);
+    // console.log(code);
     await axios
       .get(`${address}/api/register/${id}`)
       .then(async (res) => {
@@ -105,7 +105,6 @@ const Verify = () => {
   };
   return (
     <>
-      {' '}
       <div className='react-notification-alert-container'>
         <NotificationAlert ref={notificationAlertRef} />
       </div>

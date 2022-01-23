@@ -54,8 +54,6 @@ const Calendar = () => {
   const [name, setName] = useState('');
   const [nestedModal, setNestedModal] = useState(false);
   const [closeAll, setCloseAll] = useState(false);
-
-  const [investmentProjectId, setInvestmentProjectId] = useState('');
   const [calendarslt, setCalendarslt] = useState('');
   const [openedCollapseOne, setopenedCollapseOne] = useState(true);
   const [openedCollapseTwo, setopenedCollapseTwo] = useState(false);
@@ -130,32 +128,21 @@ const Calendar = () => {
     if (calendarslt !== '') {
       setCalendarEvents(
         ...calendars
-          .filter((clnd) => clnd._id === calendarslt)
-          .map((clnd) =>
-            clnd.eventCalendars.map((event) => ({
+          .filter((calendar) => calendar._id === calendarslt)
+          .map((calendar) =>
+            calendar.eventCalendars.map((event) => ({
               ...event,
-              color: event.color ? event.color : clnd.color,
-            }))
-          )
-      );
-
-      console.log(
-        ...calendars
-          .filter((clnd) => clnd._id === calendarslt)
-          .map((clnd) =>
-            clnd.eventCalendars.map((event) => ({
-              ...event,
-              color: event.color ? event.color : clnd.color,
+              color: event.color ? event.color : calendar.color,
             }))
           )
       );
     } else {
       setCalendarEvents(
         calendars
-          .map((clnd) =>
-            clnd.eventCalendars.map((event) => ({
+          .map((calendar) =>
+            calendar.eventCalendars.map((event) => ({
               ...event,
-              color: event.color ? event.color : clnd.color,
+              color: event.color ? event.color : calendar.color,
             }))
           )
           .flat()
@@ -382,7 +369,7 @@ const Calendar = () => {
         data = data.data;
 
         calendars[
-          calendars.findIndex((clndr) => clndr._id === data.calendar)
+          calendars.findIndex((calendar) => calendar._id === data.calendar)
         ].eventCalendars.push(data);
 
         newEvents.push({
@@ -413,7 +400,7 @@ const Calendar = () => {
         data = data.data;
         const pickedEvent = newEvents.findIndex((evt) => evt._id === id);
         const indexCalendar = calendars.findIndex(
-          (clndr) => clndr._id === data.calendar
+          (calendar) => calendar._id === data.calendar
         );
         const indexEventCalendar = calendars[
           indexCalendar
@@ -441,7 +428,7 @@ const Calendar = () => {
           'danger'
         );
       }
-      console.log(calendars);
+      // console.log(calendars);
     }
     function handleEvents() {
       if (isRecurringEvent) {
@@ -604,7 +591,7 @@ const Calendar = () => {
       setCalendarEvents(
         calendarEvents.filter((event) => event.calendar !== id)
       );
-      notify('You have succesfully deleted a calendar and all of its events');
+      notify('You have successfully deleted a calendar and all of its events');
     } catch (error) {
       notify(
         error.response && error.response.data.message
@@ -623,7 +610,7 @@ const Calendar = () => {
       );
 
       const indexCalendar = calendars.findIndex(
-        (clndr) => clndr._id === data.calendar
+        (calendar) => calendar._id === data.calendar
       );
       calendars[indexCalendar].eventCalendars = calendars[
         indexCalendar
@@ -658,7 +645,7 @@ const Calendar = () => {
     updatedEvent.isAllDay = allDay;
   };
 
-  const handleNavigate = (event, kind, direction, teste) => {
+  const handleNavigate = (event, kind, direction, test) => {
     setDate(event);
   };
   const handleView = (view) => {
@@ -889,7 +876,7 @@ const Calendar = () => {
           autoFocus={false}
         >
           <ModalHeader close={closeBtn(toggle)}>
-            Add New Calendar Event
+            {id ? 'Edit Event' : 'Add New Calendar Event'}
           </ModalHeader>
           <ModalBody>
             <Label>Calendar</Label>
@@ -1121,7 +1108,10 @@ const Calendar = () => {
                 Create a new calendar
               </ModalHeader>
               <ModalBody>
-                <Label htmlFor='nameCalendarId'>Name</Label>
+                <Label htmlFor='nameCalendarId'>
+                  Name
+                  <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
+                </Label>
                 <Input
                   value={name}
                   onChange={(e) => setName(e.target.value)}
@@ -1268,22 +1258,7 @@ const Calendar = () => {
                         className='row justify-content-between'
                         key={calendar._id}
                       >
-                        <FormGroup check className='form-check-radio'>
-                          <Label check>
-                            <Input
-                              checked={calendar._id === investmentProjectId}
-                              onChange={(e) =>
-                                setInvestmentProjectId(e.target.value)
-                              }
-                              value={calendar._id}
-                              id='exampleRadios2'
-                              name='radiosToSelectProject'
-                              type='radio'
-                            />
-                            <span className='form-check-sign' />
-                            {calendar.name}
-                          </Label>
-                        </FormGroup>
+                        <span>{calendar.name}</span>
                         <div>
                           <Button
                             className='btn-link'

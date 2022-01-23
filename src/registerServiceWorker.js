@@ -16,13 +16,11 @@ export default function registerServiceWorker() {
     navigator.serviceWorker
       .register(`/sw.js`)
       .then(function (register) {
-        console.log('worked', register);
-
+        // console.log('worked', register);
         // return register.pushManager
         //   .getSubscription()
         //   .then(function (subscription) {
         //     if (subscription) return;
-
         //     return register.pushManager
         //       .subscribe({
         //         userVisibleOnly: true,
@@ -48,7 +46,6 @@ export default function registerServiceWorker() {
         //               )
         //             )
         //           : '';
-
         //         endPoint = subscription.endpoint;
         //         console.log(JSON.parse(localStorage.getItem('userInfo')).token);
         //         const config = {

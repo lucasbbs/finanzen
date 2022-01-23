@@ -9,7 +9,7 @@ const ProgressbarCircle = ({
   id,
   isTheLastOne,
 }) => {
-  console.log(isTheLastOne);
+  // console.log(isTheLastOne);
   const notificationAlertRef = useRef(null);
   const notify = (message, type = 'success', place = 'tc') => {
     var options = {};

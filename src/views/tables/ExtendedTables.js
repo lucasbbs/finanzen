@@ -52,7 +52,6 @@ const ExtendedTables = () => {
             </BreadcrumbItem>
             <BreadcrumbItem>
               <a href='#' onClick={(e) => e.preventDefault()}>
-                {' '}
                 Library
               </a>
             </BreadcrumbItem>

@@ -175,7 +175,7 @@ const InvestmentDetails = () => {
         }, 1800);
       })
       .catch((error) => {
-        console.log(error);
+        console.error(error);
 
         notify(
           error.response && error.response.data.message
@@ -224,7 +224,8 @@ const InvestmentDetails = () => {
                 <Row style={{ marginBottom: '10px' }}>
                   <Col md='6' style={{ paddingRight: '0' }}>
                     <Label htmlFor='nameId'>
-                      Name <sup style={{ color: 'red' }}>*</sup>
+                      Name
+                      <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                     </Label>
                     <Input
                       id='nameId'
@@ -239,7 +240,8 @@ const InvestmentDetails = () => {
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
                     <Label htmlFor='brokerId'>
-                      Broker <sup style={{ color: 'red' }}>*</sup>
+                      Broker
+                      <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                     </Label>
                     <Input
                       id='brokerId'
@@ -280,7 +282,8 @@ const InvestmentDetails = () => {
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
                     <Label htmlFor='typeId'>
-                      Type <sup style={{ color: 'red' }}>*</sup>
+                      Type
+                      <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                     </Label>
                     <Input
                       required
@@ -301,7 +304,8 @@ const InvestmentDetails = () => {
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
                     <Label htmlFor='rateId'>
-                      Rate <sup style={{ color: 'red' }}>*</sup>
+                      Rate
+                      <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                     </Label>
                     <Input
                       required
@@ -316,7 +320,8 @@ const InvestmentDetails = () => {
                 <Row style={{ marginBottom: '10px' }}>
                   <Col md='2' style={{ paddingRight: '0' }}>
                     <Label htmlFor='indexerId'>
-                      Indexer <sup style={{ color: 'red' }}>*</sup>
+                      Indexer
+                      <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                     </Label>
                     <Input
                       id='indexerId'
@@ -336,7 +341,8 @@ const InvestmentDetails = () => {
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
                     <Label htmlFor='accountId'>
-                      Account <sup style={{ color: 'red' }}>*</sup>
+                      Account
+                      <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                     </Label>
                     <Input
                       id='accountId'
@@ -360,7 +366,8 @@ const InvestmentDetails = () => {
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
                     <Label htmlFor='investmentDateId'>
-                      Investment date <sup style={{ color: 'red' }}>*</sup>
+                      Investment date
+                      <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                     </Label>
                     <Input
                       required
@@ -375,7 +382,8 @@ const InvestmentDetails = () => {
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
                     <Label htmlFor='dueDateId'>
-                      Due date <sup style={{ color: 'red' }}>*</sup>
+                      Due date
+                      <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                     </Label>
                     <Input
                       required
@@ -388,7 +396,8 @@ const InvestmentDetails = () => {
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
                     <Label htmlFor='initialAmountId'>
-                      Initial amount <sup style={{ color: 'red' }}>*</sup>
+                      Initial amount
+                      <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                     </Label>
                     <NumberFormat
                       id='initialAmountId'
@@ -448,7 +457,8 @@ const InvestmentDetails = () => {
                 >
                   <Col md='2'>
                     <Label htmlFor='codeId'>
-                      Code <sup style={{ color: 'red' }}>*</sup>
+                      Code
+                      <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                     </Label>
                     <Input
                       id='codeId'

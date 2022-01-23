@@ -181,7 +181,9 @@ const ArchiveBrokers = () => {
 
               setImage(null);
             })
-            .catch((error) => console.log(error));
+            .catch((error) => {
+              console.error(error);
+            });
           toggle();
         });
     } else {
@@ -206,7 +208,9 @@ const ArchiveBrokers = () => {
 
           setImage(null);
         })
-        .catch((error) => console.log(error));
+        .catch((error) => {
+          console.error(error);
+        });
       toggle();
     }
   };
@@ -314,7 +318,8 @@ const ArchiveBrokers = () => {
                 <Row className='mb-10 align-items-center justify-content-center '>
                   <Col md='4' className='pr-0'>
                     <Label htmlFor='nameId'>
-                      Name <sup style={{ color: 'red' }}>*</sup>
+                      Name
+                      <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                     </Label>
                     <Input
                       id='nameId'
@@ -330,7 +335,8 @@ const ArchiveBrokers = () => {
 
                   <Col md='4' className='pr-0'>
                     <Label htmlFor='countryId'>
-                      Country <sup style={{ color: 'red' }}>*</sup>
+                      Country
+                      <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                     </Label>
                     <Input
                       id='countryId'
@@ -359,7 +365,8 @@ const ArchiveBrokers = () => {
                   </Col>
                   <Col md='4' className='pr-0'>
                     <Label htmlFor='currencyId'>
-                      Currency <sup style={{ color: 'red' }}>*</sup>
+                      Currency
+                      <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                     </Label>
                     <Input
                       id='currencyId'

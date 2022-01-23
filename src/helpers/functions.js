@@ -401,7 +401,7 @@ export const getDataForTotalTaxes = (income, exchanges, defaultCurrency) => {
         .filter((key) => Object.values(key)[0].type === 'income')
         .map((key) => Object.keys(key)[0]),
     ]);
-    console.log(data.broker);
+    // console.log(data.broker);
     incomesarray.push(
       ...data.incomes.map((value) => [
         ...Object.entries(value)[0],
@@ -805,7 +805,7 @@ const handleBigNumber = (array, index) => {
   const power = (base, exponent) => {
     let result = BigInt(1);
     for (let count = 0; count < exponent; count++) {
-      console.log(result);
+      // console.log(result);
       result *= base;
     }
     return result;
@@ -816,7 +816,7 @@ const handleBigNumber = (array, index) => {
 
     let s = base + 1n;
     let k1 = root - 1n;
-    console.log(s, k1);
+    // console.log(s, k1);
     let u = base;
     while (u < s) {
       s = u;
@@ -840,7 +840,7 @@ const handleBigNumber = (array, index) => {
     element = BigInt(element * 10 ** currentCount);
     N *= element;
   });
-  console.log(N, sumOfDecimals);
+  // console.log(N, sumOfDecimals);
   return iroot(BigInt(index + 1), N) / iroot(BigInt(index + 1), sumOfDecimals);
 };
 *
@@ -851,7 +851,7 @@ export const getDataForTheAverageInflationAllThePeriod = (
   firstPeriod = undefined,
   lastPeriod = undefined
 ) => {
-  console.log(inflation, 'this is inflation');
+  // console.log(inflation, 'this is inflation');
   if (firstPeriod === undefined || firstPeriod === '-01') {
     firstPeriod = inflation[0].data;
   }
@@ -1096,7 +1096,7 @@ export function setDataAccountsSpendingCategories(
 ) {
   if (firstMonth) {
     const [year, month] = firstMonth.split('-');
-    console.log(new Date(Number(year), Number(month) - 1, 0));
+    // console.log(new Date(Number(year), Number(month) - 1, 0));
     transactions = transactions.filter(
       (trnsct) =>
         new Date(trnsct.date) > new Date(Number(year), Number(month) - 1, 0)
@@ -1114,7 +1114,7 @@ export function setDataAccountsSpendingCategories(
     );
   }
 
-  console.log(transactions);
+  // console.log(transactions);
 
   const groupBy = function (xs, key) {
     return xs.reduce(function (rv, x) {
@@ -1152,7 +1152,9 @@ export function setDataAccountsTotalExpensesAndRevenues(
   transactions = transactions.filter(
     (transact) =>
       transact.dueToAccount._id === accounts._id &&
-      transact.category.name !== 'Investimento'
+      transact.category.name !== 'Investimento' &&
+      transact.category.name !== 'Receita de Juros' &&
+      transact.category.name !== 'Vencimento de Investimento'
   );
   const setGroups = (data) => {
     const groups = data.reduce((groups, transaction) => {

@@ -999,7 +999,6 @@ const chartDefault = (dataList, labels, currency) => {
       callbacks: {
         label: function (tooltipItem, data) {
           var indice = tooltipItem.index;
-          console.log(currency);
           return `${data.labels[indice]}:  ${currencyFormat(
             data.datasets[0].data[indice],
             currency

@@ -106,7 +106,7 @@ const ArchiveInvestments = () => {
         setInvestment([...investment]);
       })
       .catch((error) => {
-        console.log(error);
+        console.error(error);
         notify(
           error.response && error.response.data.message
             ? error.response.data.message
@@ -338,7 +338,7 @@ const ArchiveInvestments = () => {
         Authorization: `Bearer ${login.token}`,
       },
     };
-    console.log(`Bearer ${login.token}`);
+    // console.log(`Bearer ${login.token}`);
     await axios
       .put(
         `${address}/api/investments/${id}/unarchive`,
@@ -460,7 +460,8 @@ const ArchiveInvestments = () => {
                 }}
               >
                 <Label htmlFor='nameId'>
-                  Name <sup style={{ color: 'red' }}>*</sup>
+                  Name
+                  <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                 </Label>
                 <Input
                   id='nameId'
@@ -475,7 +476,8 @@ const ArchiveInvestments = () => {
                 <Row style={{ marginBottom: '10px' }}>
                   <Col md='3' style={{ paddingRight: '0' }}>
                     <Label htmlFor='brokerId'>
-                      Corretora <sup style={{ color: 'red' }}>*</sup>
+                      Corretora
+                      <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                     </Label>
                     <Input
                       id='brokerId'
@@ -484,7 +486,7 @@ const ArchiveInvestments = () => {
                       type='select'
                       value={broker}
                       onChange={(e) => {
-                        console.log(broker, e.target.value);
+                        // console.log(broker, e.target.value);
                         setBroker(e.target.value);
                       }}
                     >
@@ -500,7 +502,8 @@ const ArchiveInvestments = () => {
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
                     <Label htmlFor='typeId'>
-                      Type <sup style={{ color: 'red' }}>*</sup>
+                      Type
+                      <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                     </Label>
                     <Input
                       id='typeId'
@@ -520,7 +523,8 @@ const ArchiveInvestments = () => {
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
                     <Label htmlFor='rateId'>
-                      Rate <sup style={{ color: 'red' }}>*</sup>
+                      Rate
+                      <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                     </Label>
                     <Input
                       id='rateId'
@@ -532,7 +536,8 @@ const ArchiveInvestments = () => {
                   </Col>
                   <Col md='2' style={{ paddingRight: '0' }}>
                     <Label htmlFor='indexerId'>
-                      Indexer <sup style={{ color: 'red' }}>*</sup>
+                      Indexer
+                      <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                     </Label>
                     <Input
                       id='indexerId'
@@ -552,7 +557,8 @@ const ArchiveInvestments = () => {
                   </Col>
                   <Col md='3' style={{ paddingRight: '0' }}>
                     <Label htmlFor='investmentDateId'>
-                      Investment date <sup style={{ color: 'red' }}>*</sup>
+                      Investment date
+                      <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                     </Label>
                     <Input
                       id='investmentDateId'
@@ -566,7 +572,8 @@ const ArchiveInvestments = () => {
                   </Col>
                   <Col md='3' style={{ paddingRight: '0' }}>
                     <Label htmlFor='dueDateId'>
-                      Due Date <sup style={{ color: 'red' }}>*</sup>
+                      Due Date
+                      <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                     </Label>
                     <Input
                       id='dueDateId'
@@ -605,7 +612,7 @@ const ArchiveInvestments = () => {
                 <Button
                   color='success'
                   onClick={() => {
-                    console.log(id);
+                    // console.log(id);
                     handleUpdate(
                       {
                         _id: id,
@@ -823,7 +830,7 @@ const ArchiveInvestments = () => {
                                   className='tim-icons icon-trash-simple classVisible'
                                   onClick={(e) => {
                                     e.preventDefault();
-                                    console.log(e.target.id);
+                                    // console.log(e.target.id);
                                     warningWithConfirmAndCancelMessage(
                                       e.target.id,
                                       'delete'

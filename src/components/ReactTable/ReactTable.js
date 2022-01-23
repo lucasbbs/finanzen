@@ -1,19 +1,19 @@
 /*eslint-disable*/
-import React from "react";
+import React from 'react';
 import {
   useTable,
   useFilters,
   useAsyncDebounce,
   useSortBy,
   usePagination,
-} from "react-table";
-import classnames from "classnames";
+} from 'react-table';
+import classnames from 'classnames';
 // A great library for fuzzy filtering/sorting items
-import { matchSorter } from "match-sorter";
+import { matchSorter } from 'match-sorter';
 // react plugin used to create DropdownMenu for selecting items
-import Select from "react-select";
+import Select from 'react-select';
 // reactstrap components
-import { FormGroup, Input, Row, Col } from "reactstrap";
+import { FormGroup, Input, Row, Col } from 'reactstrap';
 
 // Define a default UI for filtering
 function DefaultColumnFilter({
@@ -24,8 +24,8 @@ function DefaultColumnFilter({
   return (
     <FormGroup>
       <Input
-        type="email"
-        value={filterValue || ""}
+        type='email'
+        value={filterValue || ''}
         onChange={(e) => {
           setFilter(e.target.value || undefined); // Set undefined to remove the filter entirely
         }}
@@ -113,24 +113,24 @@ function Table({ columns, data }) {
   let numberOfRowsData = [5, 10, 20, 25, 50, 100];
   return (
     <>
-      <div className="ReactTable -striped -highlight">
-        <div className="pagination-top">
-          <div className="-pagination">
-            <div className="-previous">
+      <div className='ReactTable -striped -highlight'>
+        <div className='pagination-top'>
+          <div className='-pagination'>
+            <div className='-previous'>
               <button
-                type="button"
+                type='button'
                 onClick={() => previousPage()}
                 disabled={!canPreviousPage}
-                className="-btn"
+                className='-btn'
               >
                 Previous
               </button>
             </div>
-            <div className="-center flex-nowrap">
+            <div className='-center flex-nowrap'>
               <Select
-                className="react-select info mx-5 w-100"
-                classNamePrefix="react-select"
-                name="singleSelect"
+                className='react-select info mx-5 w-100'
+                classNamePrefix='react-select'
+                name='singleSelect'
                 value={pageSelect}
                 onChange={(value) => {
                   gotoPage(value.value);
@@ -139,64 +139,64 @@ function Table({ columns, data }) {
                 options={pageSelectData.map((prop, key) => {
                   return {
                     value: key,
-                    label: "Page " + (key + 1),
+                    label: 'Page ' + (key + 1),
                   };
                 })}
-                placeholder="Select page"
+                placeholder='Select page'
               />
               <Select
-                className="react-select info mx-5 w-100"
-                classNamePrefix="react-select"
-                name="singleSelect"
+                className='react-select info mx-5 w-100'
+                classNamePrefix='react-select'
+                name='singleSelect'
                 value={numberOfRows}
                 onChange={(value) => {
-                  console.log(value);
+                  // console.log(value);
                   setPageSize(value.value);
                   setNumberOfRows(value);
                 }}
                 options={numberOfRowsData.map((prop) => {
                   return {
                     value: prop,
-                    label: prop + " rows",
+                    label: prop + ' rows',
                   };
                 })}
-                placeholder="Select #rows"
+                placeholder='Select #rows'
               />
             </div>
-            <div className="-next">
+            <div className='-next'>
               <button
-                type="button"
+                type='button'
                 onClick={() => nextPage()}
                 disabled={!canNextPage}
-                className="-btn"
+                className='-btn'
               >
                 Next
               </button>
             </div>
           </div>
         </div>
-        <table {...getTableProps()} className="rt-table">
-          <thead className="rt-thead -header">
+        <table {...getTableProps()} className='rt-table'>
+          <thead className='rt-thead -header'>
             {headerGroups.map((headerGroup) => (
-              <tr {...headerGroup.getHeaderGroupProps()} className="rt-tr">
+              <tr {...headerGroup.getHeaderGroupProps()} className='rt-tr'>
                 {headerGroup.headers.map((column, key) => (
                   <th
                     {...column.getHeaderProps(column.getSortByToggleProps())}
-                    className={classnames("rt-th rt-resizable-header", {
-                      "-cursor-pointer": headerGroup.headers.length - 1 !== key,
-                      "-sort-asc": column.isSorted && !column.isSortedDesc,
-                      "-sort-desc": column.isSorted && column.isSortedDesc,
+                    className={classnames('rt-th rt-resizable-header', {
+                      '-cursor-pointer': headerGroup.headers.length - 1 !== key,
+                      '-sort-asc': column.isSorted && !column.isSortedDesc,
+                      '-sort-desc': column.isSorted && column.isSortedDesc,
                     })}
                   >
-                    <div className="rt-resizable-header-content">
-                      {column.render("Header")}
+                    <div className='rt-resizable-header-content'>
+                      {column.render('Header')}
                     </div>
                     {/* Render the columns filter UI */}
                     <div>
                       {headerGroup.headers.length - 1 === key
                         ? null
                         : column.canFilter
-                        ? column.render("Filter")
+                        ? column.render('Filter')
                         : null}
                     </div>
                   </th>
@@ -204,22 +204,22 @@ function Table({ columns, data }) {
               </tr>
             ))}
           </thead>
-          <tbody {...getTableBodyProps()} className="rt-tbody">
+          <tbody {...getTableBodyProps()} className='rt-tbody'>
             {page.map((row, i) => {
               prepareRow(row);
               return (
                 <tr
                   {...row.getRowProps()}
                   className={classnames(
-                    "rt-tr",
-                    { " -odd": i % 2 === 0 },
-                    { " -even": i % 2 === 1 }
+                    'rt-tr',
+                    { ' -odd': i % 2 === 0 },
+                    { ' -even': i % 2 === 1 }
                   )}
                 >
                   {row.cells.map((cell) => {
                     return (
-                      <td {...cell.getCellProps()} className="rt-td">
-                        {cell.render("Cell")}
+                      <td {...cell.getCellProps()} className='rt-td'>
+                        {cell.render('Cell')}
                       </td>
                     );
                   })}
@@ -228,7 +228,7 @@ function Table({ columns, data }) {
             })}
           </tbody>
         </table>
-        <div className="pagination-bottom"></div>
+        <div className='pagination-bottom'></div>
       </div>
     </>
   );
@@ -246,6 +246,6 @@ function filterGreaterThan(rows, id, filterValue) {
 // when given the new filter value and returns true, the filter
 // will be automatically removed. Normally this is just an undefined
 // check, but here, we want to remove the filter if it's not a number
-filterGreaterThan.autoRemove = (val) => typeof val !== "number";
+filterGreaterThan.autoRemove = (val) => typeof val !== 'number';
 
 export default Table;

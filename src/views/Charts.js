@@ -37,7 +37,7 @@ const Charts = () => {
         <h2 className='text-center'>Charts.js</h2>
         <p className='category text-center'>
           Simple yet flexible JavaScript charting for designers &amp;
-          developers. Made by our friends from{' '}
+          developers. Made by our friends from
           <a
             href='http://www.chartjs.org'
             rel='noopener noreferrer'
@@ -45,7 +45,7 @@ const Charts = () => {
           >
             Charts.js
           </a>
-          . Please check{' '}
+          . Please check
           <a
             href='http://www.chartjs.org/docs/latest/'
             rel='noopener noreferrer'

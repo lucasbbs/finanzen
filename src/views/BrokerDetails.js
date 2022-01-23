@@ -225,7 +225,7 @@ const BrokerDetails = () => {
                     <Col md='6' style={{ paddingRight: '0' }}>
                       <Label htmlFor='nameId'>
                         Name
-                        <sup style={{ color: 'red' }}>*</sup>
+                        <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                       </Label>
                       <Input
                         id='nameId'
@@ -237,7 +237,8 @@ const BrokerDetails = () => {
                     </Col>
                     <Col md='3' style={{ paddingRight: '0' }}>
                       <Label htmlFor='countryId'>
-                        Country <sup style={{ color: 'red' }}>*</sup>
+                        Country
+                        <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                       </Label>
                       <Input
                         id='countryId'
@@ -266,7 +267,8 @@ const BrokerDetails = () => {
                     </Col>
                     <Col md='3' style={{ paddingRight: '0' }}>
                       <Label htmlFor='currencyId'>
-                        Currency <sup style={{ color: 'red' }}>*</sup>
+                        Currency
+                        <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                       </Label>
                       <Input
                         id='currencyId'

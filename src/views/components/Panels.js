@@ -246,7 +246,7 @@ const Panels = () => {
                         setopenedCollapseOne(!openedCollapseOne);
                       }}
                     >
-                      Collapsible Group Item #1{' '}
+                      Collapsible Group Item #1
                       <i className='tim-icons icon-minimal-down' />
                     </a>
                   </CardHeader>
@@ -310,7 +310,7 @@ const Panels = () => {
                         setopenedCollapseThree(!openedCollapseThree);
                       }}
                     >
-                      Collapsible Group Item #3{' '}
+                      Collapsible Group Item #3
                       <i className='tim-icons icon-minimal-down' />
                     </a>
                   </CardHeader>

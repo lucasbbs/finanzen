@@ -93,7 +93,7 @@ const WizardFirstAccess = () => {
         config
       )
       .then((res) => {
-        console.log('Testando', typeof account.data._id);
+        // console.log('Testando', typeof account.data._id);
         let userInfo = JSON.parse(localStorage.getItem('userInfo'));
         userInfo['isFirstAccess'] = false;
         userInfo['equityObjective'] = states.Equity.equityobjective;

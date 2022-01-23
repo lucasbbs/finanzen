@@ -91,7 +91,7 @@ const AccountList = () => {
         Authorization: `Bearer ${login.token}`,
       },
     };
-    console.log(`Bearer ${login.token}`);
+    // console.log(`Bearer ${login.token}`);
     await axios
       .put(`${address}/api/accounts/${id}/archive`, null, config)
       .then(async (response) => {
@@ -380,8 +380,8 @@ const AccountList = () => {
                 >
                   <Col md='4'>
                     <Label htmlFor='iconPickerId'>
-                      {' '}
-                      Icon <sup style={{ color: 'red' }}>*</sup>
+                      Icon
+                      <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                     </Label>
                     <Button
                       id='iconPickerId'
@@ -407,7 +407,8 @@ const AccountList = () => {
                   </Col>
                   <Col md='8'>
                     <Label htmlFor='nameID'>
-                      Name <sup style={{ color: 'red' }}>*</sup>
+                      Name
+                      <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                     </Label>
                     <Input
                       id='nameID'
@@ -429,7 +430,8 @@ const AccountList = () => {
                     }}
                   >
                     <Label htmlFor='currencyID'>
-                      Currency <sup style={{ color: 'red' }}>*</sup>
+                      Currency
+                      <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                     </Label>
                     <Input
                       disabled
@@ -458,7 +460,8 @@ const AccountList = () => {
                     }}
                   >
                     <Label htmlFor='initialAmountID'>
-                      Initial amount <sup style={{ color: 'red' }}>*</sup>
+                      Initial amount
+                      <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                     </Label>
                     <NumberFormat
                       style={{
@@ -710,7 +713,7 @@ const AccountList = () => {
                             className='tim-icons icon-trash-simple classVisible'
                             onClick={(e) => {
                               e.preventDefault();
-                              console.log(e.target.id);
+                              // console.log(e.target.id);
                               warningWithConfirmAndCancelMessage(
                                 e.target.id,
                                 'delete'

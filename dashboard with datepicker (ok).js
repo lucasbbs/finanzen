@@ -159,11 +159,11 @@ const Dashboard = () => {
     onClick: function (c, i) {
       let e = i[0];
       if (e !== undefined) {
-        console.log(e._index);
+        // console.log(e._index);
         var x_value = this.data.labels[e._index];
         var y_value = this.data.datasets[0].data[e._index];
-        console.log(x_value);
-        console.log(y_value);
+        // console.log(x_value);
+        // console.log(y_value);
       }
     },
     maintainAspectRatio: false,
@@ -631,7 +631,7 @@ const Dashboard = () => {
                   <CardHeader>
                     <h5 className='card-category'>Total Shipments</h5>
                     <CardTitle tag='h3'>
-                      <i className='tim-icons icon-bell-55 text-primary' />{' '}
+                      <i className='tim-icons icon-bell-55 text-primary' />
                       763,215
                     </CardTitle>
                   </CardHeader>
@@ -650,7 +650,7 @@ const Dashboard = () => {
                   <CardHeader>
                     <h5 className='card-category'>Daily Sales</h5>
                     <CardTitle tag='h3'>
-                      <i className='tim-icons icon-delivery-fast text-info' />{' '}
+                      <i className='tim-icons icon-delivery-fast text-info' />
                       3,500€
                     </CardTitle>
                   </CardHeader>

@@ -18,10 +18,10 @@ var STATIC_FILES = [
 ];
 
 self.addEventListener('install', function (event) {
-  console.log('[Service Worker] Installing Service Worker ...', event);
+  // console.log('[Service Worker] Installing Service Worker ...', event);
   event.waitUntil(
     caches.open(CACHE_STATIC_NAME).then(function (cache) {
-      console.log('[Service Worker] Precaching App Shell');
+      // console.log('[Service Worker] Precaching App Shell');
       cache.addAll(STATIC_FILES);
     })
   );
@@ -31,7 +31,7 @@ self.addEventListener('push', async function (event) {
   const payLoad = event.data
     ? JSON.parse(event.data.text())
     : 'sorry no payload';
-  console.log(payLoad);
+  // console.log(payLoad);
 
   const title = 'Finanzen';
   event.waitUntil(
@@ -51,13 +51,13 @@ self.addEventListener('notificationclick', function (event) {
   var notification = event.notification;
   var action = event.action;
 
-  console.log(notification);
+  // console.log(notification);
 
   if (action === 'confirm') {
     console.log('Confirm was chosen');
     notification.close();
   } else {
-    console.log(action);
+    // console.log(action);
     event.waitUntil(
       clients.matchAll().then(function (clis) {
         var client = clis.find(function (c) {
@@ -77,5 +77,7 @@ self.addEventListener('notificationclick', function (event) {
 });
 
 self.addEventListener('notificationclose', function (event) {
-  console.log('Notification was closed', event);
+  var notification = event.notification;
+  notification.close();
+  // console.log('Notification was closed', event);
 });

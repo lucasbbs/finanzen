@@ -77,7 +77,7 @@ const Incomes = ({
     if (isAdding) {
       setIsAdding(false);
       let incomeObject = {};
-      console.log(dateEl);
+      // console.log(dateEl);
       incomeObject[
         format(parse(dateEl, 'yyyy-MM', new Date()), 'yyyy-MM-dd')
       ] = reverseFormatNumber(valueEl);
@@ -130,7 +130,7 @@ const Incomes = ({
     }
 
     let incomeObject = {};
-    console.log(dateEl);
+    // console.log(dateEl);
     incomeObject[
       format(parse(dateEl, 'yyyy-MM', new Date()), 'yyyy-MM-dd')
     ] = reverseFormatNumber(valueEl);
@@ -138,7 +138,7 @@ const Incomes = ({
     const index = updatedIncome
       .map((key) => Object.keys(key)[0])
       .indexOf(Object.keys(incomeObject)[0]);
-    console.log(index, updatedIncome);
+    // console.log(index, updatedIncome);
     if (index !== -1) {
       updatedIncome.splice(index, 1);
       setUpdatedIncome(

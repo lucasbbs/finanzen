@@ -57,7 +57,7 @@ const AdminNavbar = (props) => {
   useEffect(() => {
     getAccounts();
   }, []);
-  console.log(accounts);
+  // console.log(accounts);
   const [name] = useState(JSON.parse(localStorage.getItem('userInfo')).name);
   const [currencies, setCurrencies] = useState([]);
   const [filter, setFilter] = useState('');
@@ -112,7 +112,7 @@ const AdminNavbar = (props) => {
         : investments
             .map((invest) => {
               if (invest.broker === null) {
-                console.log(invest.broker);
+                // console.log(invest.broker);
                 invest.broker = { name: 'unavailable' };
               }
               return invest;
@@ -206,7 +206,7 @@ const AdminNavbar = (props) => {
         toggleModalNotifications();
       }
     } catch (error) {
-      console.log(error);
+      console.error(error);
       notify(
         error.response && error.response.data.message
           ? error.response.data.message
@@ -537,28 +537,30 @@ const AdminNavbar = (props) => {
                   nav
                   disabled={notifications.length === 0}
                 >
-                  <div
-                    style={{
-                      height: '19px',
-                      width: '19px',
-                      lineHeight: '18px',
-                      top: '0px',
-                      right: '8px',
-                      backgroundColor: 'red',
-                    }}
-                    className='notification d-none d-lg-block d-md-block'
-                  >
-                    <span
+                  {notifications.filter((not) => !not.read).length ? (
+                    <div
                       style={{
-                        fontSize: '10px',
-                        verticalAlign: 'middle',
+                        height: '19px',
+                        width: '19px',
+                        lineHeight: '18px',
+                        top: '0px',
+                        right: '8px',
+                        backgroundColor: 'red',
                       }}
+                      className='notification d-none d-lg-block d-md-block'
                     >
-                      {notifications.filter((not) => !not.read).length <= 99
-                        ? notifications.filter((not) => !not.read).length
-                        : '+99'}
-                    </span>
-                  </div>
+                      <span
+                        style={{
+                          fontSize: '10px',
+                          verticalAlign: 'middle',
+                        }}
+                      >
+                        {notifications.filter((not) => !not.read).length <= 99
+                          ? notifications.filter((not) => !not.read).length
+                          : '+99'}
+                      </span>
+                    </div>
+                  ) : null}
                   <i className='tim-icons icon-bell-55'></i>
                   <p className='d-lg-none'>Notifications</p>
                 </DropdownToggle>

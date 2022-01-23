@@ -55,10 +55,10 @@ Array.prototype.min = function () {
 };
 
 const Dashboard = () => {
-  console.log(
-    process.env.REACT_APP_SERVER_ADDRESS,
-    'That is the server address'
-  );
+  // console.log(
+  //   process.env.REACT_APP_SERVER_ADDRESS,
+  //   'That is the server address'
+  // );
   const { accounts, updateAccounts } = useContext(GlobalContext);
   const [login] = useState(
     localStorage.getItem('userInfo')
@@ -297,7 +297,7 @@ const Dashboard = () => {
               config
             )
             .then((res) => {
-              console.log(res.data);
+              // console.log(res.data);
               setCurrencyExhangeRates(res.data);
             });
         }
@@ -306,11 +306,11 @@ const Dashboard = () => {
         // }
         if (Object.keys(currencyExhangeRates).length !== 0) {
           for (const location of Array.from(currencyExhangeRates)) {
-            console.log(location);
+            // console.log(location);
             mapdata[location[0]] = mapdata[location[0]] || 0;
             mapdata[location[0]] += location[2] * Object.values(location)[0];
           }
-          console.log(topLocations);
+          // console.log(topLocations);
           topLocations.sort((a, b) => b[2] - a[2]);
           setdataForInvestmentsTopLocation(topLocations);
           const mapdata = {};
@@ -648,11 +648,11 @@ const Dashboard = () => {
         ? function (c, i) {
             let e = i[0];
             if (e !== undefined) {
-              console.log(e._index);
+              // console.log(e._index);
               var x_value = this.data.labels[e._index];
               var y_value = this.data.datasets[0].data[e._index];
               setDateInput(x_value);
-              console.log(y_value);
+              // console.log(y_value);
             }
           }
         : null,
@@ -916,11 +916,24 @@ const Dashboard = () => {
 
   const handleTotalMoney = (array) => {
     let total = 0;
-    // console.log(array);
     if (array) {
       for (const account of array) {
         total +=
-          (account['initialAmmount'] + account['balance']) *
+          (account['initialAmmount'] +
+            account['dueToAccount'].reduce(
+              (acc, curr) =>
+                curr.type === 'Expense' || curr.type === 'Transfer'
+                  ? acc - curr.ammount
+                  : acc + curr.ammount,
+              0
+            ) +
+            account['dueFromAccount'].reduce(
+              (acc, curr) =>
+                curr.exchangeRate
+                  ? acc + curr.ammount * curr.exchangeRate
+                  : acc + curr.ammount,
+              0
+            )) *
           currencyExhangeRates[`${account['currency']}_${login.currency}`];
       }
       return total;
@@ -2113,13 +2126,13 @@ const Dashboard = () => {
                   </CardHeader>
                   <CardBody>
                     <Row>
-                      <Col md='6'>
+                      <Col md='6' style={{ overflowX: 'auto' }}>
                         <Table>
                           <tbody>
                             {dataForInvestmentsTopLocation.map(
                               (data, index) => (
                                 <tr key={index}>
-                                  <td>
+                                  <td style={{ padding: 0, minWidth: 40 }}>
                                     <div className='flag'>
                                       <img
                                         alt={`${data[0]}`}

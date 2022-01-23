@@ -52,7 +52,7 @@ const Footer = (props) => {
             <a className='nav-link' href='https://www.creative-tim.com'>
               Creative Tim
             </a>
-          </li>{' '}
+          </li>
           <li className='nav-item'>
             <a
               className='nav-link'
@@ -60,7 +60,7 @@ const Footer = (props) => {
             >
               About us
             </a>
-          </li>{' '}
+          </li>
           <li className='nav-item'>
             <a className='nav-link' href='https://blog.creative-tim.com'>
               Blog

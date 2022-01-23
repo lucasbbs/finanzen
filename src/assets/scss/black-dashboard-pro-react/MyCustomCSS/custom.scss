@@ -1,3 +1,11 @@
+.collapse > ul.nav > li > a {
+  display: flex;
+  align-items: center;
+}
+.rbc-show-more {
+  background-color: inherit !important;
+}
+
 .inflation:hover:after {
   content: 'edit';
   cursor: pointer;

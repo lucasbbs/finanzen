@@ -126,7 +126,7 @@ const Inflations = () => {
     setMonth('');
   };
   const handleSave = async (InflationsObject) => {
-    console.log(InflationsObject);
+    // console.log(InflationsObject);
     const config = {
       headers: {
         'Content-Type': 'application/json',

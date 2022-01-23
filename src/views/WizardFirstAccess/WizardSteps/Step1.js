@@ -160,7 +160,6 @@ const Step1 = React.forwardRef((props, ref) => {
                 Selecione uma opção
               </option>
               {Object.entries(currencies).map((currency) => (
-                // (country) => console.log(country[1].name)
                 <option key={currency[0]} value={currency[0]}>
                   {currency[1].name}
                 </option>

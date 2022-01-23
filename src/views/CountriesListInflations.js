@@ -136,7 +136,7 @@ const CountriesListInflations = () => {
     </button>
   );
   const handleSave = async (ObjCountryInfo) => {
-    console.log(ObjCountryInfo);
+    // console.log(ObjCountryInfo);
     const config = {
       headers: {
         'Content-Type': 'application/json',

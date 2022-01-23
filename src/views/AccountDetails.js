@@ -461,7 +461,8 @@ const AccountDetails = () => {
                       }}
                     >
                       <Label htmlFor='nameId'>
-                        Name <sup style={{ color: 'red' }}>*</sup>
+                        Name
+                        <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                       </Label>
                       <Input
                         id='nameId'
@@ -480,7 +481,8 @@ const AccountDetails = () => {
                       }}
                     >
                       <Label htmlFor='currencyId'>
-                        Currency <sup style={{ color: 'red' }}>*</sup>
+                        Currency
+                        <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                       </Label>
                       <Input
                         id='currencyId'
@@ -509,8 +511,8 @@ const AccountDetails = () => {
                       }}
                     >
                       <Label htmlFor='balanceId'>
-                        {id === ':id' ? 'Initial amount' : 'Balance'}{' '}
-                        <sup style={{ color: 'red' }}>*</sup>
+                        {id === ':id' ? 'Initial amount' : 'Balance'}
+                        <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                       </Label>
                       <NumberFormat
                         id='balanceId'
@@ -544,7 +546,8 @@ const AccountDetails = () => {
                     </Col>
                     <Col md='3' className='row flex-column'>
                       <Label htmlFor='iconId'>
-                        Pick an Icon <sup style={{ color: 'red' }}>*</sup>
+                        Pick an Icon
+                        <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                       </Label>
                       <Button
                         id='iconId'

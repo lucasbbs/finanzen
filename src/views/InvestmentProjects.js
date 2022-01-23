@@ -440,7 +440,8 @@ const InvestmentProjects = () => {
           <Row>
             <Col md='4'>
               <Label htmlFor='nameId'>
-                Name <sup style={{ color: 'red' }}>*</sup>
+                Name
+                <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
               </Label>
               <Input
                 style={{ backgroundColor: '#2b3553' }}
@@ -452,7 +453,8 @@ const InvestmentProjects = () => {
               <Row>
                 <Col md='6'>
                   <Label htmlFor='rateId'>
-                    Rate (%) <sup style={{ color: 'red' }}>*</sup>
+                    Rate (%)
+                    <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                   </Label>
                   <Input
                     style={{ backgroundColor: '#2b3553' }}

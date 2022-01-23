@@ -444,7 +444,7 @@ const Incomes = ({
             delete income[Object.keys(income)[0]].isSubmited;
           }
         });
-        console.log(updatedIncome);
+        // console.log(updatedIncome);
         setIsLoading(false);
         console.error(error);
         notify(

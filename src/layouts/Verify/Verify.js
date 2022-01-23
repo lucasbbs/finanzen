@@ -17,7 +17,7 @@ const Verify = ({ location }) => {
     await axios
       .put(`${address}/api/users/verify/${emailToken}`, null, config)
       .then((res) => {
-        console.log(res);
+        // console.log(res);
         history.push('/admin/dashboard');
       })
       .catch((error) => console.log(error));

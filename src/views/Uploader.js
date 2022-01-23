@@ -119,7 +119,7 @@ const Uploader = () => {
         setFile(res.fileName);
       })
       .catch((error) => {
-        console.log(error);
+        console.error(error);
         // notify(
         //   // error.response && error.response.data.message
         //   //   ? error.response.data.message

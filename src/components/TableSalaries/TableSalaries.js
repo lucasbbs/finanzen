@@ -53,7 +53,7 @@ const TableSalaries = ({ handleCurrentMoney, handleTransactions }) => {
           config
         )
         .then(async ({ data }) => {
-          console.log(data);
+          // console.log(data);
           setSalaries(filtered);
           handleCurrentMoney(removeSalary.salary);
           handleTransactions(data);

@@ -172,7 +172,7 @@ const Calendar = () => {
     // clear date selection
     if (id) {
       let click = infoClick.event;
-      console.log(click);
+      // console.log(click);
       click.setProp('allDay', slotInfo.allDay);
       click.setProp('id', id);
       click.setProp('title', title);
@@ -232,7 +232,7 @@ const Calendar = () => {
     const clicked = currentEvents.find(
       (evt) => evt._def.extendedProps._id === clickInfo.id
     );
-    console.log(clicked, clickInfo);
+    // console.log(clicked, clickInfo);
     if (clickInfo.jsEvent.offsetX < 11) {
       if (
         confirm(
@@ -519,7 +519,7 @@ const Calendar = () => {
                     value={recurrence}
                     type='select'
                     onChange={(e) => {
-                      console.log(e.target);
+                      // console.log(e.target);
                       setRecurrence(e.target.value);
                     }}
                   >

@@ -64,14 +64,14 @@ const ArchiveAccounts = () => {
     await axios
       .put(`${address}/api/accounts/${id}`, objAccount, config)
       .then(({ data }) => {
-        console.log(data);
+        // console.log(data);
         objAccount['_id'] = id;
         objAccount['balance'] = data.balance;
         const objIcon = {};
         objIcon['_id'] = iconId;
         objIcon['Number'] = icon;
         objAccount['icon'] = objIcon;
-        console.log(objAccount);
+        // console.log(objAccount);
         accounts.splice(
           accounts.findIndex((account) => account._id === id),
           1,
@@ -197,7 +197,7 @@ const ArchiveAccounts = () => {
         Authorization: `Bearer ${login.token}`,
       },
     };
-    console.log(`Bearer ${login.token}`);
+    // console.log(`Bearer ${login.token}`);
     await axios
       .delete(`${address}/api/accounts/${id}`, config)
       .then((response) => {
@@ -294,7 +294,8 @@ const ArchiveAccounts = () => {
                 <Row style={{ marginBottom: '10px' }}>
                   <Col md='4'>
                     <Label htmlFor='iconId'>
-                      Icon <sup style={{ color: 'red' }}>*</sup>
+                      Icon
+                      <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                     </Label>
                     <Button
                       id='iconId'
@@ -316,7 +317,8 @@ const ArchiveAccounts = () => {
                   </Col>
                   <Col md='8'>
                     <Label htmlFor='nameID'>
-                      Name <sup style={{ color: 'red' }}>*</sup>
+                      Name
+                      <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                     </Label>
                     <Input
                       id='nameID'
@@ -331,7 +333,8 @@ const ArchiveAccounts = () => {
                   </Col>
                   <Col md='6' style={{ paddingRight: '0' }}>
                     <Label htmlFor='currencyID'>
-                      Currency <sup style={{ color: 'red' }}>*</sup>
+                      Currency
+                      <sup style={{ color: 'red', fontWeight: 900 }}>*</sup>
                     </Label>
                     <Input
                       id='currencyID'
