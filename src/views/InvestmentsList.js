@@ -41,13 +41,7 @@ const InvestmentsList = () => {
   const [hasSelectedAccount, setHasSelectedAccount] = useState(false);
   const [account, setAccount] = useState('');
   const [code, setCode] = useState('');
-  // const [accountsToBeDisplayed, setAccountsToBeDisplayed] = useState([]);
   const [currency, setCurrency] = useState('');
-  // console.log(
-  //   accounts.find((account) => account.currency === currency)?.initialAmmount,
-  //   accounts.find((account) => account.currency === currency)?.balance,
-  //   'this is the value of initial Amount 2'
-  // );
   const [id, setId] = useState('');
   const [name, setName] = useState('');
   const [broker, setBroker] = useState('');
@@ -216,20 +210,7 @@ const InvestmentsList = () => {
 
       setBrokers(brokersFromTheAPI.data.brokers);
       let investments = await fetchInvestments('', login);
-      // const filter = JSON.parse(localStorage.getItem('filter'));
-
-      // if (filter !== null) {
-      //   investments =
-      //     filter.trim() === ''
-      //       ? [...investments]
-      //       : investments.filter((invest) =>
-      //           invest.name.toLowerCase().includes(filter)
-      //         );
-      //   localStorage.removeItem('filter');
-      // }
       setInvestment(investments.investments);
-      // console.log(investments);
-      // console.log(investment);
       if (investments.hasLoaded) {
         setIsLoading(false);
       }
@@ -261,7 +242,6 @@ const InvestmentsList = () => {
         Authorization: `Bearer ${login.token}`,
       },
     };
-    // console.log(`Bearer ${login.token}`);
     const answer = await axios
       .delete(`${address}/api/investments/${id}`, {
         ...config,
@@ -281,7 +261,6 @@ const InvestmentsList = () => {
             config
           )
           .then((res) => {
-            // console.log(response.data.invest.broker.currency);
             login.fundsToInvest[response.data.invest.broker.currency] =
               login.fundsToInvest[response.data.invest.broker.currency] || 0;
             login.fundsToInvest[response.data.invest.broker.currency] +=
@@ -335,21 +314,7 @@ const InvestmentsList = () => {
         notify(`You have successfully archived your investment ${name}`);
         setInvestment(investment.filter((invest) => invest._id !== id));
 
-        // await axios
-        //   .put(
-        //     `${address}/api/users/${login._id}`,
-        //     { fundsToInvest: login.fundsToInvest },
-        //     config
-        //   )
-        //   .then((res) => {
-        // console.log(response.data);
-        // login.fundsToInvest[response.data.broker.currency] =
-        //   login.fundsToInvest[response.data.broker.currency] || 0;
-        // login.fundsToInvest[response.data.broker.currency] +=
-        //   response.data.accrued_income + response.data.initial_amount;
-        // localStorage.setItem('userInfo', JSON.stringify(login));
         updateAccounts();
-        // });
       })
       .catch((err) => {
         notify(

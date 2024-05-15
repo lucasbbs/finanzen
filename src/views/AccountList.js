@@ -91,7 +91,7 @@ const AccountList = () => {
         Authorization: `Bearer ${login.token}`,
       },
     };
-    // console.log(`Bearer ${login.token}`);
+
     await axios
       .put(`${address}/api/accounts/${id}/archive`, null, config)
       .then(async (response) => {
@@ -99,22 +99,6 @@ const AccountList = () => {
         notify(`You have successfully archived your account ${name}`);
         setAccounts(accounts.filter((account) => account._id !== id));
         updateAccounts();
-
-        // await axios
-        //   .put(
-        //     `${address}/api/users/${login._id}`,
-        //     { fundsToInvest: login.fundsToInvest },
-        //     config
-        //   )
-        //   .then((res) => {
-        // console.log(response.data);
-        // login.fundsToInvest[response.data.broker.currency] =
-        //   login.fundsToInvest[response.data.broker.currency] || 0;
-        // login.fundsToInvest[response.data.broker.currency] +=
-        //   response.data.accrued_income + response.data.initial_amount;
-        // localStorage.setItem('userInfo', JSON.stringify(login));
-        // updateAccounts(login.fundsToInvest);
-        // });
       })
       .catch((err) => {
         notify(
@@ -131,7 +115,6 @@ const AccountList = () => {
         Authorization: `Bearer ${login.token}`,
       },
     };
-    // console.log(`Bearer ${login.token}`);
     const answer = await axios
       .delete(`${address}/api/accounts/${id}`, config)
       .then(async (response) => {
@@ -139,23 +122,6 @@ const AccountList = () => {
         notify(`Account deleted successfully`);
         setAccounts(accounts.filter((account) => account._id !== id));
         updateAccounts();
-        //------------STUFF RELATED TO THE CURRENT AMOUNT OF MONEY---------------//
-
-        // await axios
-        //   .put(
-        //     `${address}/api/users/${login._id}`,
-        //     { fundsToInvest: login.fundsToInvest },
-        //     config
-        //   )
-        // .then((res) => {
-        // console.log(response.data.invest.broker.currency);
-        // login.fundsToInvest[response.data.invest.broker.currency] =
-        //   login.fundsToInvest[response.data.invest.broker.currency] || 0;
-        // login.fundsToInvest[response.data.invest.broker.currency] +=
-        //   response.data.invest.accrued_income +
-        //   response.data.invest.initial_amount;
-        // localStorage.setItem('userInfo', JSON.stringify(login));
-        // });
       })
       .catch((error) => {
         notify(

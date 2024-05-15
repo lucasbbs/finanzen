@@ -197,7 +197,6 @@ const ArchiveAccounts = () => {
         Authorization: `Bearer ${login.token}`,
       },
     };
-    // console.log(`Bearer ${login.token}`);
     await axios
       .delete(`${address}/api/accounts/${id}`, config)
       .then((response) => {

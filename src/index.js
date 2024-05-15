@@ -21,7 +21,6 @@ import { BrowserRouter, Route, Switch, Redirect } from 'react-router-dom';
 
 import AuthLayout from 'layouts/Auth/Auth.js';
 import AdminLayout from 'layouts/Admin/Admin.js';
-import RTLLayout from 'layouts/RTL/RTL.js';
 import VerifyLayout from 'layouts/Verify/Verify.js';
 
 import '@fortawesome/fontawesome-free/css/all.min.css';
@@ -116,7 +115,6 @@ ReactDOM.render(
           path='/verify/users/:token'
           render={(props) => <VerifyLayout {...props} />}
         />
-        <Route path='/rtl' render={(props) => <RTLLayout {...props} />} />
         <Redirect from='/' to='/admin/dashboard' />
       </Switch>
     </BrowserRouter>

@@ -41,8 +41,6 @@ import CollapsibleItem from 'components/CollapsibleItem/CollapsibleItem';
 import { chartExample2 } from 'variables/charts';
 import { Link } from 'react-router-dom';
 import MyTooltip from 'components/Tooltip/MyTooltip';
-
-// import { Link } from 'react-router-dom';
 import moment from 'moment';
 
 /*eslint-disable*/
@@ -55,10 +53,6 @@ Array.prototype.min = function () {
 };
 
 const Dashboard = () => {
-  // console.log(
-  //   process.env.REACT_APP_SERVER_ADDRESS,
-  //   'That is the server address'
-  // );
   const { accounts, updateAccounts } = useContext(GlobalContext);
   const [login] = useState(
     localStorage.getItem('userInfo')
@@ -280,12 +274,6 @@ const Dashboard = () => {
         locationsForLoop.add(login.currency);
         setCurrencies([...locationsForLoop]);
 
-        // for (const location of locationsForLoop) {
-        // if (
-        //   location !== login.currency &&
-        //   !(`${location}_${login.currency}` in currencyExhangeRates)
-        // ) {
-        // try {
         if (Object.keys(currencyExhangeRates).length === 0) {
           axios
             .post(
@@ -297,20 +285,14 @@ const Dashboard = () => {
               config
             )
             .then((res) => {
-              // console.log(res.data);
               setCurrencyExhangeRates(res.data);
             });
         }
-        // } catch (error) {
-        //   currencyExhangeRates[`${location}_${login.currency}`] = 1.5;
-        // }
         if (Object.keys(currencyExhangeRates).length !== 0) {
           for (const location of Array.from(currencyExhangeRates)) {
-            // console.log(location);
             mapdata[location[0]] = mapdata[location[0]] || 0;
             mapdata[location[0]] += location[2] * Object.values(location)[0];
           }
-          // console.log(topLocations);
           topLocations.sort((a, b) => b[2] - a[2]);
           setdataForInvestmentsTopLocation(topLocations);
           const mapdata = {};
@@ -322,13 +304,6 @@ const Dashboard = () => {
           });
           setMapData(mapdata);
         }
-
-        // } else {
-        //   if (!(`${location}_${login.currency}` in currencyExhangeRates)) {
-        //     currencyExhangeRates[`${location}_${login.currency}`] = 1;
-        //   }
-        // }
-        // }
       }
       if (Object.keys(currencyExhangeRates).length !== 0) {
         const dataForTheFirstChart = getDataForTheFirstChart(
@@ -1672,23 +1647,6 @@ const Dashboard = () => {
                               <i className='tim-icons icon-gift-2' />
                             </span>
                           </Button>
-                          {/* <Button
-                            color='info'
-                            id='2'
-                            size='sm'
-                            tag='label'
-                            className={classNames('btn-simple', {
-                              active: bigChartData === 'data3',
-                            })}
-                            onClick={() => setBgChartData('data3')}
-                          >
-                            <span className='d-none d-sm-block d-md-block d-lg-block d-xl-block'>
-                              Sessions
-                            </span>
-                            <span className='d-block d-sm-none'>
-                              <i className='tim-icons icon-tap-02' />
-                            </span>
-                          </Button> */}
                         </ButtonGroup>
                       </Col>
                     </Row>

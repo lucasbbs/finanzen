@@ -14,23 +14,15 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
-
+/*
+This file was modified by the author of Finanzen, lucasbbs
+*/
 const { currencyFormat } = require('helpers/functions');
 
 // ##############################
 // // // Chart variables
 // #############################
 
-// chartExample1 and chartExample2 options
-
-// function format(label) {
-//   let formatCurrency = new Intl.NumberFormat('pt-BR', {
-//     style: 'currency',
-//     currency: 'BRL',
-//     minimumFractionDigits: 2,
-//   });
-//   return formatCurrency.format(Number(label));
-// }
 let chart_1_2_3_options = {
   maintainAspectRatio: false,
   legend: {
@@ -412,7 +404,7 @@ const chartExample4 = {
   options: {
     maintainAspectRatio: false,
     legend: {
-      display: false,
+            display: false,
     },
     tooltips: {
       backgroundColor: '#f5f5f5',
@@ -458,7 +450,7 @@ const chartExample4 = {
       ],
     },
   },
-};
+  };
 
 // #########################################
 // // // used inside src/views/Charts.js
@@ -471,17 +463,17 @@ const chartExample5 = {
     gradientStroke.addColorStop(1, 'rgba(72,72,176,0.4)');
     gradientStroke.addColorStop(0.8, 'rgba(72,72,176,0.2)');
     gradientStroke.addColorStop(0, 'rgba(119,52,169,0)'); //purple colors
-    return {
+  return {
       labels: ['JUL', 'AUG', 'SEP', 'OCT', 'NOV', 'DEC'],
-      datasets: [
-        {
+    datasets: [
+      {
           label: 'Data',
-          fill: true,
+        fill: true,
           backgroundColor: gradientStroke,
           borderColor: '#ba54f5',
-          borderWidth: 2,
-          borderDash: [],
-          borderDashOffset: 0.0,
+        borderWidth: 2,
+        borderDash: [],
+        borderDashOffset: 0.0,
           pointBackgroundColor: '#be55ed',
           pointBorderColor: 'rgba(255,255,255,0)',
           pointHoverBackgroundColor: '#be55ed',
@@ -492,7 +484,7 @@ const chartExample5 = {
           pointRadius: 4,
           data: [80, 100, 70, 80, 120, 80],
         },
-      ],
+    ],
     };
   },
   options: {
@@ -1042,22 +1034,22 @@ const chartDefault = (dataList, labels, currency) => {
       ],
     },
   };
-  return {
-    gradientStroke,
+    return {
+      gradientStroke,
     labels: labels,
-    datasets: [
-      {
+      datasets: [
+        {
         label: 'Countries',
-        fill: true,
+          fill: true,
         backgroundColor: 'transparent',
         hoverBackgroundColor: 'rgba(208, 72, 182, 0.15)',
         borderColor: 'rgba(208, 72, 182)',
-        borderWidth: 2,
-        borderDash: [],
-        borderDashOffset: 0.0,
+          borderWidth: 2,
+          borderDash: [],
+          borderDashOffset: 0.0,
         data: dataList,
       },
-    ],
+      ],
     options: options,
     data: data,
   };

@@ -14,6 +14,9 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
+/*
+This file was modified by the author of Finanzen, lucasbbs
+*/
 import React from 'react';
 import { Route, Switch, Redirect, useLocation } from 'react-router-dom';
 // javascript plugin used to create scrollbars on windows

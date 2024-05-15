@@ -117,13 +117,6 @@ export const GlobalProvider = ({ children }) => {
     }
   };
 
-  // const getAccounts = () => {
-  //   dispatch({
-  //     type: 'GET_ACCOUNTS',
-  //     payload: JSON.parse(localStorage.getItem('userInfo')).fundsToInvest,
-  //   });
-  // };
-
   const emptyState = () => {
     dispatch({
       type: 'EMPTY_STATE',

@@ -338,7 +338,6 @@ const ArchiveInvestments = () => {
         Authorization: `Bearer ${login.token}`,
       },
     };
-    // console.log(`Bearer ${login.token}`);
     await axios
       .put(
         `${address}/api/investments/${id}/unarchive`,
@@ -349,21 +348,7 @@ const ArchiveInvestments = () => {
         success();
         notify(`You have successfully unarchived your investment`);
         setInvestment(investment.filter((invest) => invest._id !== id));
-
-        // await axios
-        //   .put(
-        //     `${address}/api/users/${login._id}`,
-        //     { fundsToInvest: login.fundsToInvest },
-        //     config
-        //   )
-        //   .then((res) => {
-        // login.fundsToInvest[response.data.broker.currency] =
-        //   login.fundsToInvest[response.data.broker.currency] || 0;
-        // login.fundsToInvest[response.data.broker.currency] -=
-        //   response.data.accrued_income + response.data.initial_amount;
-        // localStorage.setItem('userInfo', JSON.stringify(login));
         updateAccounts();
-        // });
       })
       .catch((error) => {
         hideAlert();

@@ -14,6 +14,10 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
+
+/*
+This file was modified by the author of Finanzen, lucasbbs
+*/
 /*eslint-disable*/
 import React, { useState } from 'react';
 import {
@@ -47,26 +51,6 @@ const Footer = (props) => {
     <>
       <footer className={'footer' + (props.default ? ' footer-default' : '')}>
         <Container fluid={props.fluid ? true : false}>
-          {/* <ul className='nav'>
-          <li className='nav-item'>
-            <a className='nav-link' href='https://www.creative-tim.com'>
-              Creative Tim
-            </a>
-          </li>
-          <li className='nav-item'>
-            <a
-              className='nav-link'
-              href='https://www.creative-tim.com/presentation'
-            >
-              About us
-            </a>
-          </li>
-          <li className='nav-item'>
-            <a className='nav-link' href='https://blog.creative-tim.com'>
-              Blog
-            </a>
-          </li> */}
-          {/* </ul> */}
           <div className='copyright'>
             © {new Date().getFullYear()} made with{' '}
             <i className='tim-icons icon-heart-2' /> by{' '}

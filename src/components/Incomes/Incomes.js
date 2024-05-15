@@ -182,14 +182,6 @@ const Incomes = ({
       .indexOf(Object.keys(incomeObject)[0]);
     if (index !== -1) {
       updatedIncome.splice(index, 1);
-
-      // const incomesObjects = [
-      //   ...updatedIncome.filter(
-      //     (income) => Object.values(income)[0].type === 'income'
-      //   ),
-      //   incomeObject,
-      // ].sort((a, b) => Object.keys(a)[0].localeCompare(Object.keys(b)[0]));
-
       setUpdatedIncome(
         [...updatedIncome, incomeObject].sort((a, b) =>
           Object.keys(a)[0].localeCompare(Object.keys(b)[0])

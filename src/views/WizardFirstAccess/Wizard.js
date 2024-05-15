@@ -14,6 +14,10 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
+/*
+This file was modified by the author of Finanzen, lucasbbs
+*/
+
 import React, { useState } from 'react';
 // react plugin used to create a form with multiple steps
 import ReactWizard from 'react-bootstrap-wizard';

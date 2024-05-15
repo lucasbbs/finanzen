@@ -14,6 +14,9 @@
 * The above copyright notice and this permission notice shall be included in all copies or substantial portions of the Software.
 
 */
+/*
+This file was modified by the author of Finanzen, lucasbbs
+*/
 import { useState, useEffect, useContext, useRef } from 'react';
 import moment from 'moment';
 // nodejs library that concatenates classes
