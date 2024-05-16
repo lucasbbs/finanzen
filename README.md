@@ -6,7 +6,7 @@ Financial Independence Calculator (FIRE Simulator)
 
 The Financial Independence Calculator, also known as the Financial Independence and Retire Early (FIRE) Simulator, is a comprehensive tool designed to assist investors in achieving financial independence. By leveraging various features, the application provides a clear view of investment performance, budgeting, and progress towards financial goals.
 
-
+[![](https://img.youtube.com/vi/muOiWuPezYU/0.jpg)](https://youtu.be/muOiWuPezYU)
 
 ## Key Features
 
@@ -14,14 +14,14 @@ The Financial Independence Calculator, also known as the Financial Independence 
 - **Spreadsheet Upload**: Investors can upload a spreadsheet containing their investment returns.
 - **Immediate Indicators**: Provides immediate insights into various indicators of monthly returns, annualized measures, and tracks the journey towards financial independence.
 
-![](https://raw.githubusercontent.com/lucasbbs/finanzen/master/image-1.png?token=GHSAT0AAAAAACSEGOSELSEC5QQUUXTAB2VCZSF4FCQ)
+![](https://github.com/lucasbbs/finanzen/blob/master/image-1.png)
 
 ### Budget Control and Reporting
 - **Expense Tracking**: Manages and categorizes expenses with detailed reports.
 - **Monthly Reports**: Generates monthly reports indicating spending by categories.
 - **Financial Independence Calculator**: Calculates the progress towards financial independence.
 
-![](https://raw.githubusercontent.com/lucasbbs/finanzen/master/image-3.png?token=GHSAT0AAAAAACSEGOSFCCZLIAKOPK34JCDOZSF4HOQ)
+![](https://github.com/lucasbbs/finanzen/blob/master/image-3.png)
 
 ### Inflation and Deflator Tools
 - **Inflation History**: Tools to verify historical inflation rates.
@@ -37,9 +37,9 @@ The Financial Independence Calculator, also known as the Financial Independence 
 - **Currency Conversion**: Converts between different currencies.
 - **Inflation Calculation**: Calculates inflation impacts on investments.
 
-![](https://raw.githubusercontent.com/lucasbbs/finanzen/master/image-4.png?token=GHSAT0AAAAAACSEGOSEEHOBWO3EEN7NKBFCZSF4I4Q)
+![](https://github.com/lucasbbs/finanzen/blob/master/image-4.png)
 
-![](https://raw.githubusercontent.com/lucasbbs/finanzen/master/image-5.png?token=GHSAT0AAAAAACSEGOSFBOSAL4C5YVYKO3HSZSF4JZA)
+![](https://github.com/lucasbbs/finanzen/blob/master/image-5.png)
 
 ### Unique Value Propositions
 - **Neglected Niches**: Offers unique insights not available in competing platforms.
