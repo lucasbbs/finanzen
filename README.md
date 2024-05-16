@@ -6,7 +6,7 @@ Financial Independence Calculator (FIRE Simulator)
 
 The Financial Independence Calculator, also known as the Financial Independence and Retire Early (FIRE) Simulator, is a comprehensive tool designed to assist investors in achieving financial independence. By leveraging various features, the application provides a clear view of investment performance, budgeting, and progress towards financial goals.
 
-[![](https://img.youtube.com/vi/muOiWuPezYU/0.jpg)](https://youtu.be/muOiWuPezYU)
+
 
 ## Key Features
 
